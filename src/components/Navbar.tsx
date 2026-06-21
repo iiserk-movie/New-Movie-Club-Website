@@ -1,9 +1,10 @@
 import React, { useState } from 'react';
-import { Film, User as UserIcon, LogOut, Shield, ShieldCheck, HelpCircle, GraduationCap, Camera, UploadCloud, Image as ImageIcon } from 'lucide-react';
+import { Film, User as UserIcon, LogOut, Shield, ShieldCheck, HelpCircle, GraduationCap, Camera, UploadCloud, Image as ImageIcon, Settings, Key, Eye, EyeOff } from 'lucide-react';
 import { User } from '../types';
 import { auth, googleProvider } from '../firebase';
 import MovieClubLogo from './MovieClubLogo';
 import { signInWithPopup, signInWithRedirect, signOut as fbSignOut, signInAnonymously } from 'firebase/auth';
+import { getLocalGeminiKey, setLocalGeminiKey, clearLocalGeminiKey } from '../utils/movieApi';
 
 interface NavbarProps {
   currentUser: User | null;
@@ -34,6 +35,12 @@ export default function Navbar({
   const [showAdminVerify, setShowAdminVerify] = useState(false);
   const [isGoogleCustom, setIsGoogleCustom] = useState(false);
   const [showProfileDropdown, setShowProfileDropdown] = useState(false);
+
+  // Gemini Setup States for client fallback support
+  const [showGeminiModal, setShowGeminiModal] = useState(false);
+  const [geminiKeyInput, setGeminiKeyInput] = useState(getLocalGeminiKey());
+  const [showKeyText, setShowKeyText] = useState(false);
+  const [keySaveMsg, setKeySaveMsg] = useState('');
 
   // Profile Picture Upload State
   const [showEditProfilePic, setShowEditProfilePic] = useState(false);
@@ -361,19 +368,33 @@ export default function Navbar({
           <div className="flex items-center space-x-4">
             {/* Quick Admin Toggler for ease of editing schedules */}
             {adminMode ? (
-              <div className="flex items-center space-x-1.5 bg-amber-500/10 text-amber-400 border border-amber-500/20 px-2.5 py-1.5 rounded-lg text-xs font-mono">
-                <ShieldCheck className="h-4 w-4 text-amber-500" />
-                <span className="hidden sm:inline">Admin Mode Active</span>
+              <div className="flex items-center space-x-2">
+                <div className="flex items-center space-x-1.5 bg-amber-500/10 text-amber-400 border border-amber-500/20 px-2.5 py-1.5 rounded-lg text-xs font-mono">
+                  <ShieldCheck className="h-4 w-4 text-amber-500" />
+                  <span className="hidden sm:inline">Admin Mode Active</span>
+                  <button
+                    onClick={() => {
+                      setAdminMode(false);
+                      if (currentUser && currentUser.role === 'admin') {
+                        onLogin(currentUser.email, currentUser.name, 'student');
+                      }
+                    }}
+                    className="ml-1 underline hover:text-white cursor-pointer"
+                  >
+                    Exit
+                  </button>
+                </div>
+                
+                {/* Custom local Gemini Config gear for GitHub Pages fallback support */}
                 <button
                   onClick={() => {
-                    setAdminMode(false);
-                    if (currentUser && currentUser.role === 'admin') {
-                      onLogin(currentUser.email, currentUser.name, 'student');
-                    }
+                    setGeminiKeyInput(getLocalGeminiKey());
+                    setShowGeminiModal(true);
                   }}
-                  className="ml-1 underline hover:text-white cursor-pointer"
+                  className="bg-zinc-905/60 border border-zinc-800 text-zinc-400 hover:text-amber-400 hover:border-amber-500/40 p-1.5 rounded-lg text-xs font-mono transition-colors flex items-center justify-center cursor-pointer"
+                  title="Configure local Gemini API key (Required for GitHub Pages hosting)"
                 >
-                  Exit
+                  <Settings className="h-3.5 w-3.5" />
                 </button>
               </div>
             ) : (
@@ -976,6 +997,98 @@ export default function Navbar({
                 </button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+      {/* Gemini API Key Configuration Modal (For Static/GitHub Pages hosting) */}
+      {showGeminiModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/90 backdrop-blur-sm p-4 animate-fadeIn">
+          <div className="w-full max-w-lg rounded-2xl border border-zinc-850 bg-zinc-950 p-6 shadow-2xl">
+            <div className="flex flex-col items-center text-center mb-5">
+              <Key className="h-10 w-10 text-amber-500 mb-2 animate-pulse" />
+              <h2 className="font-serif text-lg font-bold text-zinc-100">Setup Local Gemini AI Engine</h2>
+              <p className="text-xs text-zinc-400 mt-1 pb-2 max-w-sm font-sans leading-relaxed">
+                Allows automatic movie poster lookup and Letterboxd RSS imports to run completely client-side. Guaranteed companion for static environments like <b>GitHub Pages</b>.
+              </p>
+            </div>
+
+            <div className="space-y-4">
+              <div className="rounded-xl bg-amber-500/5 border border-amber-500/10 p-3.5 text-[11px] text-amber-400/90 leading-relaxed font-mono">
+                💡 <b>How it works:</b> GitHub Pages does not support running backend servers (<code className="text-amber-300">server.ts</code>). By providing your personal Gemini API Key, the website will securely call Google's GenAI model directly from your browser. Your key is stored solely in your private local browser storage and is never uploaded anywhere.
+              </div>
+
+              <div>
+                <label className="block text-xs font-mono text-zinc-400 mb-1.5 uppercase tracking-wider">
+                  Gemini API Key
+                </label>
+                <div className="relative">
+                  <input
+                    type={showKeyText ? "text" : "password"}
+                    placeholder="AIzaSy..."
+                    value={geminiKeyInput}
+                    onChange={(e) => {
+                      setGeminiKeyInput(e.target.value);
+                      if (keySaveMsg) setKeySaveMsg('');
+                    }}
+                    className="w-full rounded-lg border border-zinc-800 bg-zinc-900/60 pl-4 pr-10 py-2.5 text-xs font-mono text-zinc-100 placeholder-zinc-750 focus:border-amber-500/50 focus:outline-none focus:ring-1 focus:ring-amber-500/50"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowKeyText(!showKeyText)}
+                    className="absolute inset-y-0 right-0 pr-3 flex items-center text-zinc-550 hover:text-zinc-350 cursor-pointer"
+                  >
+                    {showKeyText ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                  </button>
+                </div>
+              </div>
+
+              {keySaveMsg && (
+                <div className="rounded-lg bg-green-500/10 border border-green-500/25 p-3 text-xs text-green-450 text-center leading-relaxed font-mono">
+                  {keySaveMsg}
+                </div>
+              )}
+
+              <div className="flex items-center justify-between pt-2 border-t border-zinc-900">
+                <button
+                  type="button"
+                  onClick={() => {
+                    clearLocalGeminiKey();
+                    setGeminiKeyInput('');
+                    setKeySaveMsg('🗑️ Local Gemini key fully cleared! Website will attempt server proxies.');
+                  }}
+                  className="px-3 py-2 rounded-lg border border-red-500/20 text-xs text-red-400 hover:bg-red-500/10 hover:border-red-500/30 transition-colors cursor-pointer font-mono"
+                >
+                  Clear Key
+                </button>
+
+                <div className="flex space-x-2">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setShowGeminiModal(false);
+                      setKeySaveMsg('');
+                    }}
+                    className="px-4 py-2 text-xs font-semibold text-zinc-400 hover:text-zinc-200 cursor-pointer"
+                  >
+                    Close
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      if (!geminiKeyInput.trim()) {
+                        setKeySaveMsg('⚠️ Please enter a valid key or clear existing.');
+                        return;
+                      }
+                      setLocalGeminiKey(geminiKeyInput);
+                      setKeySaveMsg('✨ Gemini API Key saved locally! Your browser-based AI engine is fully ready.');
+                    }}
+                    className="bg-amber-500 hover:bg-amber-600 text-zinc-950 px-5 py-2 rounded-lg text-xs font-semibold transition-colors flex items-center space-x-1 cursor-pointer"
+                  >
+                    <span>Save Key</span>
+                  </button>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       )}

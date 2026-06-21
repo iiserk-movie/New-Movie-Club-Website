@@ -6,6 +6,7 @@ import {
 } from 'lucide-react';
 import { PastMovie, UserReview } from '../types';
 import { getPolishedPosterUrl } from '../letterboxdDb';
+import { syncLetterboxdRSS } from '../utils/movieApi';
 
 interface PastScreeningsProps {
   pastMovies: PastMovie[];
@@ -103,18 +104,20 @@ export default function PastScreenings({
     setSyncStatusMsg('Connecting to Letterboxd RSS services, retrieving public diary feed...');
 
     try {
-      const res = await fetch('/api/letterboxd-rss', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ username: trimmedUser })
-      });
+      const rawMovies = await syncLetterboxdRSS(trimmedUser);
+      const moviesList: Omit<PastMovie, 'reviews'>[] = rawMovies.map(m => ({
+        id: m.title.toLowerCase().replace(/[^a-z0-9]/g, '-') + '-' + m.year + '-' + Math.random().toString(36).substring(2, 6),
+        title: m.title,
+        director: m.director,
+        year: m.year,
+        screenedDate: m.screenedDate,
+        rating: m.rating,
+        letterboxdUrl: m.letterboxdUrl,
+        posterUrl: m.posterUrl,
+        synopsis: m.synopsis,
+        genre: m.genre
+      }));
 
-      const data = await res.json();
-      if (!res.ok) {
-        throw new Error(data.error || 'Failed to fetch the Letterboxd feed.');
-      }
-
-      const moviesList: Omit<PastMovie, 'reviews'>[] = data.movies || [];
       if (moviesList.length === 0) {
         throw new Error('No recent watched/diary items found in the public profile RSS feed.');
       }

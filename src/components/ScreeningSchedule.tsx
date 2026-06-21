@@ -8,6 +8,7 @@ import { Screening } from '../types';
 import { letterboxdMovies, LetterboxdMovie, findMovieByUrlOrSlug, parseLetterboxdUrlToMovie, getPolishedPosterUrl } from '../letterboxdDb';
 import { compressAndResizeImage } from '../utils/imageCompressor';
 import MovieClubLogo from './MovieClubLogo';
+import { getMovieDetails, searchMovies } from '../utils/movieApi';
 
 interface ScreeningScheduleProps {
   screenings: Screening[];
@@ -116,17 +117,7 @@ export default function ScreeningSchedule({
     setIsAiLoading(true);
     setAiError('');
     try {
-      const res = await fetch('/api/movie-details', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ movieQuery: query }),
-      });
-      if (!res.ok) {
-        throw new Error('Could not fetch metadata. Please try again.');
-      }
-      const data = await res.json();
+      const data = await getMovieDetails(query);
       if (data.title) setTitle(data.title);
       if (data.director) setDirector(data.director);
       if (data.year) setYear(Number(data.year));
@@ -171,35 +162,28 @@ export default function ScreeningSchedule({
       setIsAiLoading(true);
       setAiError('');
       try {
-        const res = await fetch('/api/movie-details', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ movieQuery: query })
-        });
-        if (res.ok) {
-          const detail = await res.json();
-          if (detail && detail.title) {
-            setTitle(detail.title);
-            setDirector(detail.director || '');
-            if (detail.year) setYear(Number(detail.year));
-            if (detail.duration) setRuntime(detail.duration);
-            if (detail.genre) setGenreInput(detail.genre);
-            if (detail.posterUrl) setPosterUrl(detail.posterUrl);
-            if (detail.backdropUrl) setBackdropUrl(detail.backdropUrl);
-            if (detail.description) setDescription(detail.description);
-            if (detail.language) setLanguage(detail.language);
-            if (detail.trailerUrl) setTrailerUrl(detail.trailerUrl);
-            
-            setFeedbackMsg(`✨ Auto-filled details for "${detail.title}"!`);
-            setTimeout(() => setFeedbackMsg(''), 4500);
-            setLetterboxdInput(''); // empty input on success
-          }
+        const detail = await getMovieDetails(query);
+        if (detail && detail.title) {
+          setTitle(detail.title);
+          setDirector(detail.director || '');
+          if (detail.year) setYear(Number(detail.year));
+          if (detail.duration) setRuntime(detail.duration);
+          if (detail.genre) setGenreInput(detail.genre);
+          if (detail.posterUrl) setPosterUrl(detail.posterUrl);
+          if (detail.backdropUrl) setBackdropUrl(detail.backdropUrl);
+          if (detail.description) setDescription(detail.description);
+          if (detail.language) setLanguage(detail.language);
+          if (detail.trailerUrl) setTrailerUrl(detail.trailerUrl);
+          
+          setFeedbackMsg(`✨ Auto-filled details for "${detail.title}"!`);
+          setTimeout(() => setFeedbackMsg(''), 4500);
+          setLetterboxdInput(''); // empty input on success
         } else {
           setAiError('Could not load details from this link. Please enter details manually.');
         }
       } catch (err: any) {
         console.warn("Autofill from link failed:", err);
-        setAiError('Could not load details from this link. Please enter details manually.');
+        setAiError(err.message || 'Could not load details from this link. Please enter details manually.');
       } finally {
         setIsAiLoading(false);
       }
@@ -232,24 +216,17 @@ export default function ScreeningSchedule({
     if (query.length >= 2) {
       setIsAiLoading(true);
       try {
-        const response = await fetch('/api/search-movies', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ query })
-        });
-        if (response.ok) {
-          const apiMovies = await response.json();
-          if (Array.isArray(apiMovies) && apiMovies.length > 0) {
-            // Merge unique
-            const merged = [...apiMovies];
-            formattedLocal.forEach(loc => {
-              const duplicated = merged.some(api => api.title.toLowerCase() === loc.title.toLowerCase());
-              if (!duplicated) {
-                merged.push(loc);
-              }
-            });
-            setLbSuggestions(merged);
-          }
+        const apiMovies = await searchMovies(query);
+        if (Array.isArray(apiMovies) && apiMovies.length > 0) {
+          // Merge unique
+          const merged = [...apiMovies];
+          formattedLocal.forEach(loc => {
+            const duplicated = merged.some(api => api.title.toLowerCase() === loc.title.toLowerCase());
+            if (!duplicated) {
+              merged.push(loc);
+            }
+          });
+          setLbSuggestions(merged);
         }
       } catch (e) {
         console.warn("API Autocomplete Fetch fail:", e);
