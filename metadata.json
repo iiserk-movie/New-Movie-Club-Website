@@ -1,0 +1,8 @@
+{
+  "name": "Movie Club IISER Kolkata",
+  "description": "The official movie screening club website of IISER Kolkata, listing current schedules, past screenings, and movie recommendations.",
+  "requestFramePermissions": [],
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}

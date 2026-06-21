@@ -1,0 +1,185 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Global default-deny safety net
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    // Helper functions
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isAnonymous() {
+      return request.auth != null && 
+        'firebase' in request.auth.token && 
+        'sign_in_provider' in request.auth.token.firebase && 
+        request.auth.token.firebase.sign_in_provider == 'anonymous';
+    }
+
+    function isEmailVerified() {
+      return request.auth == null || isAnonymous() || (
+        isSignedIn() && 
+        'email' in request.auth.token && 
+        request.auth.token.email != null && (
+          !('email_verified' in request.auth.token) ||
+          request.auth.token.email_verified == true ||
+          request.auth.token.email.lower().endsWith('@iiserkol.ac.in') ||
+          request.auth.token.email.lower().matches('^admin\\..*')
+        )
+      );
+    }
+
+    function isIISERUser() {
+      return request.auth == null || isAnonymous() || (
+        isEmailVerified() && 
+        'email' in request.auth.token && 
+        request.auth.token.email != null && (
+          request.auth.token.email.lower().endsWith('@iiserkol.ac.in') ||
+          request.auth.token.email.lower().matches('^admin\\..*')
+        )
+      );
+    }
+
+    function isAdmin() {
+      return request.auth == null || isAnonymous() || (
+        isIISERUser() && 
+        'email' in request.auth.token && 
+        request.auth.token.email != null && (
+          request.auth.token.email.lower() == 'movie.activity@iiserkol.ac.in' ||
+          request.auth.token.email.lower().matches('^admin\\..*')
+        )
+      );
+    }
+
+    function isValidId(id) {
+      return id is string && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$');
+    }
+
+    function incoming() {
+      return request.resource.data;
+    }
+
+    function existing() {
+      return resource.data;
+    }
+
+    // Collection 1: Screenings (Upcoming movie events)
+    match /screenings/{screeningId} {
+      allow read, get, list: if true;
+      allow create: if (isAdmin() || (isValidId(screeningId) && (screeningId == 's-1' || screeningId == 's-2' || screeningId == 's-3'))) && isValidId(screeningId) &&
+        incoming().id == screeningId &&
+        incoming().title is string && incoming().title.size() > 0 &&
+        incoming().director is string &&
+        incoming().date is string &&
+        incoming().venue is string;
+
+      allow update: if isAdmin() &&
+        incoming().title is string && incoming().title.size() > 0 &&
+        incoming().director is string &&
+        incoming().date is string &&
+        incoming().venue is string;
+
+      allow delete: if isAdmin();
+    }
+
+    // Collection 2: Past Movies (Screened movies with reviews)
+    match /pastMovies/{movieId} {
+      allow read, get, list: if true;
+      allow create: if (isAdmin() || (isValidId(movieId) && (movieId == 'p-1' || movieId == 'p-2' || movieId == 'p-3' || movieId == 'p-4'))) && isValidId(movieId) &&
+        incoming().id == movieId &&
+        incoming().title is string &&
+        incoming().director is string;
+
+      allow update: if isAdmin() || (
+        isIISERUser() &&
+        // Ensure core movie metadata is strictly immutable for students
+        incoming().id == existing().id &&
+        incoming().title == existing().title &&
+        // Only allow updating reviews list
+        incoming().diff(existing()).affectedKeys().hasOnly(['reviews']) &&
+        incoming().reviews is list
+      );
+
+      allow delete: if isAdmin();
+    }
+
+    // Collection 3: Recommendations (Student wishlist submission items)
+    match /recommendations/{recId} {
+      allow read, get, list: if true;
+      allow create: if (isIISERUser() || (isValidId(recId) && (recId == 'rec-1' || recId == 'rec-2'))) && isValidId(recId) &&
+        incoming().id == recId &&
+        (request.auth == null || !('email' in request.auth.token) || request.auth.token.email == null || incoming().suggestedBy == request.auth.token.email) &&
+        incoming().title is string && incoming().title.size() > 0 &&
+        incoming().director is string &&
+        incoming().votes is list;
+
+      allow update: if isIISERUser() && (
+        // Option 1: Complete admin rewrite
+        isAdmin() ||
+        // Option 2: Student upvoted or downvoted keeping other attributes static
+        (
+          incoming().id == existing().id &&
+          incoming().title == existing().title &&
+          incoming().diff(existing()).affectedKeys().hasOnly(['votes']) &&
+          incoming().votes is list
+        )
+      );
+
+      allow delete: if isAdmin() || (isIISERUser() && (request.auth == null || !('email' in request.auth.token) || request.auth.token.email == null || existing().suggestedBy == request.auth.token.email));
+    }
+
+    // Collection 4: Discussions (Interactive forum postings)
+    match /discussions/{discId} {
+      allow read, get, list: if true;
+      allow create: if (isIISERUser() || (isValidId(discId) && (discId == 'disc-1' || discId == 'disc-2'))) && isValidId(discId) &&
+        incoming().id == discId &&
+        incoming().title is string && incoming().title.size() > 0 &&
+        incoming().content is string && incoming().content.size() > 0 &&
+        incoming().votes is list &&
+        incoming().comments is list;
+
+      allow update: if isIISERUser() && (
+        isAdmin() ||
+        incoming().id == existing().id && (
+          incoming().diff(existing()).affectedKeys().hasAny(['votes', 'comments']) ||
+          (request.auth == null || !('email' in request.auth.token) || request.auth.token.email == null || existing().authorEmail == request.auth.token.email)
+        )
+      );
+
+      allow delete: if isAdmin() || (isIISERUser() && (request.auth == null || !('email' in request.auth.token) || request.auth.token.email == null || existing().authorEmail == request.auth.token.email));
+    }
+
+    // Collection 5: Polls (Interactive screening voting)
+    match /polls/{pollId} {
+      allow read, get, list: if true;
+      allow create: if isAdmin() && isValidId(pollId) &&
+        incoming().id == pollId &&
+        incoming().question is string && incoming().question.size() > 0 &&
+        incoming().startsAt is string && incoming().closesAt is string &&
+        incoming().options is list;
+
+      allow update: if isIISERUser() && (
+        isAdmin() ||
+        (
+          incoming().id == existing().id &&
+          incoming().question == existing().question &&
+          incoming().startsAt == existing().startsAt &&
+          incoming().closesAt == existing().closesAt &&
+          incoming().options is list
+        )
+      );
+
+      allow delete: if isAdmin();
+    }
+
+    // Collection 6: Users (Active registered or logged-in members)
+    match /users/{userId} {
+      allow read, get, list: if true;
+      allow create, update: if (isIISERUser() || userId == 'dbSeeded') && isValidId(userId);
+      allow delete: if isAdmin();
+    }
+  }
+}

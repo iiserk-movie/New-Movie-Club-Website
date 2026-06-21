@@ -1,0 +1,97 @@
+{
+  "entities": {
+    "screening": {
+      "title": "Screening",
+      "description": "Upcoming cinematic movie screening schedules",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "description": "Unique ID of the screening" },
+        "title": { "type": "string", "description": "Movie Title" },
+        "director": { "type": "string", "description": "Director of the movie" },
+        "year": { "type": "number", "description": "Release year of the movie" },
+        "date": { "type": "string", "description": "Date of screening as YYYY-MM-DD" },
+        "time": { "type": "string", "description": "Time of screening as HH:MM" },
+        "venue": { "type": "string", "description": "Screening auditorium or venue location" },
+        "description": { "type": "string", "description": "Movie description or synopsis" },
+        "posterUrl": { "type": "string", "description": "Poster image URL" },
+        "backdropUrl": { "type": "string", "description": "Widescreen backdrop image URL" },
+        "runtime": { "type": "string", "description": "Runtime of movie in min" },
+        "genre": { "type": "array", "description": "Movie genre tags" },
+        "language": { "type": "string", "description": "Movie language" },
+        "trailerUrl": { "type": "string", "description": "Promotional trailer link" },
+        "screenedByClub": { "type": "boolean", "description": "Whether screened officially by club" }
+      },
+      "required": ["id", "title", "director", "year", "date", "time", "venue", "description", "posterUrl", "runtime", "genre", "language"]
+    },
+    "pastMovie": {
+      "title": "PastMovie",
+      "description": "Historical screened movies with rating summaries and student reviews",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "description": "Unique past movie ID" },
+        "title": { "type": "string", "description": "Movie Title" },
+        "director": { "type": "string", "description": "Director name" },
+        "year": { "type": "number", "description": "Release year" },
+        "screenedDate": { "type": "string", "description": "Actual screened date as YYYY-MM-DD" },
+        "rating": { "type": "number", "description": "Average review rating" },
+        "letterboxdUrl": { "type": "string", "description": "Letterboxd official link" },
+        "posterUrl": { "type": "string", "description": "Poster image URL" },
+        "synopsis": { "type": "string", "description": "Synopsis" },
+        "genre": { "type": "array", "description": "Genre tags" },
+        "reviews": { "type": "array", "description": "List of user-submitted reviews" }
+      },
+      "required": ["id", "title", "director", "year", "screenedDate", "rating", "letterboxdUrl", "posterUrl", "synopsis", "genre", "reviews"]
+    },
+    "recommendation": {
+      "title": "Recommendation",
+      "description": "Student-submitted movie recommendation for the club with peer upvotes",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "description": "Unique key" },
+        "title": { "type": "string", "description": "Movie title proposed" },
+        "director": { "type": "string", "description": "Director" },
+        "year": { "type": "number", "description": "Release year" },
+        "genre": { "type": "string", "description": "Genre" },
+        "notes": { "type": "string", "description": "Optional notes from the student" },
+        "suggestedBy": { "type": "string", "description": "Student email" },
+        "suggestedByName": { "type": "string", "description": "Display name of the proposer" },
+        "suggestedAt": { "type": "string", "description": "Submission ISO timestamp" },
+        "votes": { "type": "array", "description": "Emails list of users who upvoted" },
+        "posterUrl": { "type": "string", "description": "Optional poster image URL" }
+      },
+      "required": ["id", "title", "director", "year", "genre", "notes", "suggestedBy", "suggestedByName", "suggestedAt", "votes"]
+    },
+    "user": {
+      "title": "User",
+      "description": "Logged in club members",
+      "type": "object",
+      "properties": {
+        "uid": { "type": "string", "description": "Firebase Authentication UID" },
+        "email": { "type": "string", "description": "Institute student/admin email ID" },
+        "name": { "type": "string", "description": "Display name" },
+        "role": { "type": "string", "description": "Admin or Student permission" },
+        "photoURL": { "type": "string", "description": "Google Profile picture URL" },
+        "lastActive": { "type": "string", "description": "ISO timestamp of last activity" }
+      },
+      "required": ["email", "name", "role", "lastActive"]
+    }
+  },
+  "firestore": {
+    "screenings": {
+      "schema": "screening",
+      "description": "Upcoming schedule collection"
+    },
+    "pastMovies": {
+      "schema": "pastMovie",
+      "description": "Previously screen movie list and critiques"
+    },
+    "recommendations": {
+      "schema": "recommendation",
+      "description": "Student wishlists"
+    },
+    "users": {
+      "schema": "user",
+      "description": "Logged in club members database"
+    }
+  }
+}
