@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Film, User as UserIcon, LogOut, Shield, ShieldCheck, HelpCircle, GraduationCap, Camera, UploadCloud, Image as ImageIcon, Settings, Key, Eye, EyeOff, RefreshCw, Menu, X } from 'lucide-react';
+import { Film, User as UserIcon, LogOut, Shield, ShieldCheck, HelpCircle, GraduationCap, Camera, UploadCloud, Image as ImageIcon, Settings, Key, Eye, EyeOff, RefreshCw, Menu, X, Calendar, MessageSquare, Sparkles, BarChart2, History } from 'lucide-react';
 import { User, PastMovie } from '../types';
 import { auth, googleProvider } from '../firebase';
 import MovieClubLogo from './MovieClubLogo';
@@ -618,64 +618,76 @@ export default function Navbar({
           <div className="fixed inset-0 z-55 md:hidden">
             {/* Dark Glass Overlay */}
             <div 
-              className="fixed inset-0 bg-black/80 backdrop-blur-sm transition-opacity duration-300"
+              className="fixed inset-0 bg-black/75 backdrop-blur-[6px] transition-opacity duration-300"
+              style={{ backdropFilter: 'blur(6px)', WebkitBackdropFilter: 'blur(6px)' }}
               onClick={() => setIsMobileMenuOpen(false)}
             />
-            {/* Side Drawer Body */}
-            <div className="fixed right-0 top-0 bottom-0 w-72 max-w-xs bg-[#0e0f1e]/95 backdrop-blur-md border-l border-[#24294d]/45 p-6 flex flex-col space-y-6 shadow-2xl transition-all duration-300 ease-out z-50">
-              <div className="flex items-center justify-between border-b border-zinc-900 pb-4">
-                <div className="flex items-center space-x-2">
-                  <div className="relative flex h-8 w-8 items-center justify-center rounded-lg">
-                    <MovieClubLogo className="h-8 w-8" />
+            {/* Side Drawer Body with solid translucent glass styling & safe hardware-accelerated blur support */}
+            <div 
+              className="fixed right-0 top-0 bottom-0 w-80 max-w-[85vw] border-l border-zinc-800/80 p-6 flex flex-col space-y-6 shadow-2xl transition-all duration-300 ease-out z-50 text-zinc-100"
+              style={{
+                backgroundColor: 'rgba(8, 9, 20, 0.96)',
+                backdropFilter: 'blur(20px)',
+                WebkitBackdropFilter: 'blur(20px)',
+              }}
+            >
+              <div className="flex items-center justify-between border-b border-zinc-900/60 pb-5">
+                <div className="flex items-center space-x-3">
+                  <div className="relative flex h-9 w-9 items-center justify-center rounded-xl bg-zinc-950 border border-zinc-900 p-1.5 shrink-0 shadow-inner">
+                    <MovieClubLogo className="h-full w-full" />
                   </div>
                   <div>
                     <span className="font-serif text-sm font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-zinc-100 to-amber-400 uppercase tracking-wide block">
                       Movie Club
                     </span>
-                    <span className="font-mono text-[9px] text-amber-500/80 block uppercase">
+                    <span className="font-mono text-[9px] text-amber-500/80 block uppercase tracking-wider font-semibold">
                       IISER Kolkata
                     </span>
                   </div>
                 </div>
                 <button
                   onClick={() => setIsMobileMenuOpen(false)}
-                  className="p-1.5 text-zinc-500 hover:text-zinc-200 rounded-lg cursor-pointer"
+                  className="p-1.5 text-zinc-500 hover:text-zinc-200 hover:bg-zinc-900/40 rounded-xl transition-all cursor-pointer"
                 >
                   <X className="h-5 w-5" />
                 </button>
               </div>
 
               {/* Navigation Tabs List */}
-              <div className="flex flex-col space-y-2 flex-grow">
+              <div className="flex flex-col space-y-2 flex-grow overflow-y-auto no-scrollbar py-2">
                 {[
-                  { id: 'schedule', label: 'Upcoming Screenings' },
-                  { id: 'past', label: 'Past Screenings' },
-                  { id: 'discussions', label: 'Club Discussions' },
-                  { id: 'recommendations', label: 'Recommendations' },
-                  { id: 'polls', label: 'Interactive Polls' },
-                  ...(currentUser ? [{ id: 'profile', label: 'My Member Profile' }] : [])
-                ].map((tab) => (
-                  <button
-                    key={tab.id}
-                    onClick={() => {
-                      setActiveTab(tab.id);
-                      setIsMobileMenuOpen(false);
-                    }}
-                    className={`w-full text-left px-4 py-3 rounded-xl text-sm font-semibold transition-all flex items-center space-x-3 ${
-                      activeTab === tab.id
-                        ? 'text-amber-400 bg-amber-500/10 border-l-[3px] border-amber-500 pl-3.5'
-                        : 'text-zinc-200 hover:text-zinc-100 hover:bg-zinc-900/50'
-                    }`}
-                  >
-                    <span>{tab.label}</span>
-                  </button>
-                ))}
+                  { id: 'schedule', label: 'Upcoming Screenings', icon: Calendar },
+                  { id: 'past', label: 'Past Screenings', icon: History },
+                  { id: 'discussions', label: 'Club Discussions', icon: MessageSquare },
+                  { id: 'recommendations', label: 'Recommendations', icon: Sparkles },
+                  { id: 'polls', label: 'Interactive Polls', icon: BarChart2 },
+                  ...(currentUser ? [{ id: 'profile', label: 'My Member Profile', icon: UserIcon }] : [])
+                ].map((tab) => {
+                  const Icon = tab.icon;
+                  return (
+                    <button
+                      key={tab.id}
+                      onClick={() => {
+                        setActiveTab(tab.id);
+                        setIsMobileMenuOpen(false);
+                      }}
+                      className={`w-full text-left px-4 py-3.5 rounded-xl text-xs font-semibold tracking-wide transition-all flex items-center space-x-4 border ${
+                        activeTab === tab.id
+                          ? 'text-amber-400 bg-amber-500/10 border-amber-500/25 shadow-[0_2px_12px_rgba(245,158,11,0.05)]'
+                          : 'text-zinc-350 hover:text-zinc-100 bg-transparent border-transparent hover:bg-zinc-900/30'
+                      }`}
+                    >
+                      <Icon className={`h-4.5 w-4.5 shrink-0 ${activeTab === tab.id ? 'text-amber-500' : 'text-zinc-550'}`} />
+                      <span>{tab.label}</span>
+                    </button>
+                  );
+                })}
               </div>
 
               {/* Profile snapshot in Drawer */}
               {currentUser && (
-                <div className="border-t border-zinc-900 pt-4 flex flex-col space-y-3">
-                  <div className="flex items-center space-x-3">
+                <div className="border-t border-zinc-900/80 pt-5 flex flex-col space-y-3.5">
+                  <div className="flex items-center space-x-3 bg-zinc-950/40 p-3 rounded-2xl border border-zinc-900/60">
                     <div className="h-9 w-9 rounded-full bg-zinc-800 border border-zinc-700 overflow-hidden shrink-0">
                       {currentUser.photoURL ? (
                         <img 
@@ -689,9 +701,9 @@ export default function Navbar({
                         </div>
                       )}
                     </div>
-                    <div className="min-w-0">
-                      <p className="text-xs font-bold text-zinc-200 truncate">{currentUser.name}</p>
-                      <p className="text-[10px] text-zinc-500 truncate font-mono">{currentUser.role === 'admin' ? 'Coordinator' : 'IISER-K Member'}</p>
+                    <div className="min-w-0 flex-1">
+                      <p className="text-xs font-bold text-zinc-200 truncate pr-1">{currentUser.name}</p>
+                      <p className="text-[9px] text-zinc-550 truncate font-mono uppercase tracking-wider">{currentUser.role === 'admin' ? 'Coordinator' : 'IISER-K Member'}</p>
                     </div>
                   </div>
                   <button
@@ -699,7 +711,7 @@ export default function Navbar({
                       handleSignOut();
                       setIsMobileMenuOpen(false);
                     }}
-                    className="w-full py-2.5 rounded-lg text-xs font-mono font-bold text-center border border-red-500/20 text-red-400 hover:bg-red-500/5 transition-colors cursor-pointer"
+                    className="w-full py-3 rounded-xl text-xs font-mono font-bold text-center border border-red-500/15 text-red-400 bg-red-950/5 hover:bg-red-950/15 transition-all cursor-pointer"
                   >
                     Sign Out
                   </button>
