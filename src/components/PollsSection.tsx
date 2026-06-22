@@ -40,8 +40,8 @@ export default function PollsSection({
 
   // Movie Options Builder State for Admin Create Poll
   const [options, setOptions] = useState<Omit<PollMovieOption, 'id' | 'votes'>[]>([
-    { title: '', director: '', year: 2024, genre: 'Drama', synopsis: '', posterUrl: '' },
-    { title: '', director: '', year: 2024, genre: 'Sci-Fi/Action', synopsis: '', posterUrl: '' }
+    { title: '', director: '', year: new Date().getFullYear(), genre: 'Drama', synopsis: '', posterUrl: '' },
+    { title: '', director: '', year: new Date().getFullYear(), genre: 'Sci-Fi/Action', synopsis: '', posterUrl: '' }
   ]);
 
   // Autofill states for options
@@ -79,7 +79,7 @@ export default function PollsSection({
       updated[index] = {
         title: info.title || movieTitle,
         director: info.director || '',
-        year: info.year ? Number(info.year) : 2024,
+        year: info.year ? Number(info.year) : new Date().getFullYear(),
         genre: info.genre || '',
         synopsis: info.plot || info.synopsis || '',
         posterUrl: info.posterUrl || ''
@@ -101,7 +101,7 @@ export default function PollsSection({
       setErrorMsg('A maximum of 10 movie candidates are allowed in a single poll.');
       return;
     }
-    setOptions([...options, { title: '', director: '', year: 2024, genre: 'Cinema', synopsis: '', posterUrl: '' }]);
+    setOptions([...options, { title: '', director: '', year: new Date().getFullYear(), genre: 'Cinema', synopsis: '', posterUrl: '' }]);
   };
 
   const handleRemoveOptionField = (index: number) => {
@@ -132,10 +132,22 @@ export default function PollsSection({
     }
 
     // Validate date/times
+    if (!startsAtDate || !startsAtTime || !closesAtDate || !closesAtTime) {
+      setErrorMsg('Please specify both valid start and closing dates and times.');
+      return;
+    }
+
     const startIso = `${startsAtDate}T${startsAtTime}:00`;
     const closeIso = `${closesAtDate}T${closesAtTime}:00`;
+    const startDate = new Date(startIso);
+    const closeDate = new Date(closeIso);
 
-    if (new Date(closeIso) <= new Date(startIso)) {
+    if (isNaN(startDate.getTime()) || isNaN(closeDate.getTime())) {
+      setErrorMsg('The specified date or time format is invalid.');
+      return;
+    }
+
+    if (closeDate <= startDate) {
       setErrorMsg('Closing schedule must be strictly after the start milestone.');
       return;
     }
@@ -157,6 +169,7 @@ export default function PollsSection({
     const pollId = `poll-${Date.now()}`;
     const finalizedOptions: PollMovieOption[] = options.map((opt, i) => ({
       ...opt,
+      year: Number(opt.year) || new Date().getFullYear(),
       id: `opt-${i}-${Date.now()}`,
       votes: []
     }));
@@ -187,8 +200,8 @@ export default function PollsSection({
         setPollQuestion('');
         setPollDescription('');
         setOptions([
-          { title: '', director: '', year: 2024, genre: 'Drama', synopsis: '', posterUrl: '' },
-          { title: '', director: '', year: 2024, genre: 'Sci-Fi/Action', synopsis: '', posterUrl: '' }
+          { title: '', director: '', year: new Date().getFullYear(), genre: 'Drama', synopsis: '', posterUrl: '' },
+          { title: '', director: '', year: new Date().getFullYear(), genre: 'Sci-Fi/Action', synopsis: '', posterUrl: '' }
         ]);
       }, 2000);
     } catch (err: any) {
@@ -200,8 +213,8 @@ export default function PollsSection({
           setPollQuestion('');
           setPollDescription('');
           setOptions([
-            { title: '', director: '', year: 2024, genre: 'Drama', synopsis: '', posterUrl: '' },
-            { title: '', director: '', year: 2024, genre: 'Sci-Fi/Action', synopsis: '', posterUrl: '' }
+            { title: '', director: '', year: new Date().getFullYear(), genre: 'Drama', synopsis: '', posterUrl: '' },
+            { title: '', director: '', year: new Date().getFullYear(), genre: 'Sci-Fi/Action', synopsis: '', posterUrl: '' }
           ]);
         }, 2500);
       } else {
@@ -708,12 +721,29 @@ export default function PollsSection({
                   </h3>
                 </div>
                 <button
+                  type="button"
                   onClick={() => setShowCreateModal(false)}
                   className="text-zinc-500 hover:text-zinc-300 font-mono text-sm cursor-pointer border border-zinc-900 p-2 rounded-full hover:bg-zinc-900"
                 >
                   ✕
                 </button>
               </div>
+
+              {/* Modal level notifications */}
+              {errorMsg && (
+                <div role="alert" className="flex items-center gap-3 bg-red-950/70 border border-red-800 text-red-200 px-4 py-3 rounded-xl text-xs font-mono">
+                  <AlertCircle className="h-4 w-4 shrink-0 text-red-400" />
+                  <div className="flex-1">{errorMsg}</div>
+                  <button type="button" onClick={() => setErrorMsg('')} className="text-red-400 hover:text-red-200 font-mono text-xs ml-2 cursor-pointer">dismiss</button>
+                </div>
+              )}
+
+              {successMsg && (
+                <div role="status" className="flex items-center gap-3 bg-emerald-950/70 border border-emerald-900 text-emerald-200 px-4 py-3 rounded-xl text-xs font-mono animate-pulse">
+                  <Check className="h-4 w-4 shrink-0 text-emerald-400" />
+                  <div className="flex-1">{successMsg}</div>
+                </div>
+              )}
 
               {/* Form implementation */}
               <form onSubmit={handlePublishPoll} className="space-y-6 text-sm text-zinc-300">
