@@ -470,18 +470,12 @@ export default function Recommendations({
                       </button>
                     </div>
 
-                    {/* Submission note explaining reason */}
-                    <div 
-                      onClick={() => setExpandedNotes(p => ({ ...p, [rec.id]: !p[rec.id] }))}
-                      className="mt-4 bg-zinc-900/40 p-3 rounded-xl border border-zinc-900 text-xs text-zinc-300 cursor-pointer select-none hover:bg-zinc-900/60 hover:border-amber-500/15 transition-all font-sans"
-                    >
+                     {/* Submission note explaining reason */}
+                    <div className="mt-4 bg-zinc-900/40 p-3.5 rounded-xl border border-zinc-900 text-xs text-zinc-300 font-sans">
                       <div className="flex items-center justify-between text-[10px] font-mono font-medium text-zinc-500 uppercase tracking-widest mb-1.5">
                         <span>Why Screen This?</span>
-                        <span className="text-amber-500 hover:text-amber-400">
-                          {expandedNotes[rec.id] ? "▲ Collapse" : "▼ Expand"}
-                        </span>
                       </div>
-                      <p className={expandedNotes[rec.id] ? "text-zinc-350 leading-relaxed italic" : "text-zinc-350 leading-relaxed italic line-clamp-2"}>
+                      <p className="text-zinc-300 leading-relaxed italic">
                         "{rec.notes}"
                       </p>
                     </div>

@@ -474,7 +474,7 @@ export function parseLetterboxdUrlToMovie(url: string): { title: string; slug: s
 export function getPolishedPosterUrl(title: string, currentPosterUrl?: string): string {
   const fallbackUnsplash = 'https://images.unsplash.com/photo-1489599849927-2ee91cede3ba?q=80&w=300';
   const url = currentPosterUrl?.trim() || '';
-  const isPlaceholder = !url || url.includes('images.unsplash.com');
+  const isPlaceholder = !url || url.includes('images.unsplash.com') || url.includes('wikipedia.org') || url.includes('wikimedia.org');
 
   if (isPlaceholder && title) {
     const cleanTitle = title.toLowerCase().trim();
@@ -483,7 +483,7 @@ export function getPolishedPosterUrl(title: string, currentPosterUrl?: string): 
       m.title.toLowerCase().trim() === cleanTitle ||
       m.title.toLowerCase().trim().replace(/[^a-z0-9]/g, '') === cleanTitle.replace(/[^a-z0-9]/g, '')
     );
-    if (match && match.posterUrl && !match.posterUrl.includes('images.unsplash.com')) {
+    if (match && match.posterUrl && !match.posterUrl.includes('images.unsplash.com') && !match.posterUrl.includes('wikipedia.org') && !match.posterUrl.includes('wikimedia.org')) {
       return match.posterUrl;
     }
   }

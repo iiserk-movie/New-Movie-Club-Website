@@ -525,16 +525,10 @@ export default function PollsSection({
                             </div>
 
                             {winner.synopsis && (
-                              <div 
-                                onClick={() => setExpandedPollSynopses(prev => ({ ...prev, [winner.id || winner.title]: !prev[winner.id || winner.title] }))}
-                                className="cursor-pointer select-none"
-                              >
-                                <p className={expandedPollSynopses[winner.id || winner.title] ? "text-xs leading-relaxed text-zinc-350" : "text-xs leading-relaxed text-zinc-400 line-clamp-1 truncate"}>
+                              <div className="mt-1">
+                                <p className="text-xs leading-relaxed text-zinc-350">
                                   {winner.synopsis}
                                 </p>
-                                <span className="inline-block text-[9px] font-mono font-semibold text-amber-500 hover:text-amber-400 mt-0.5">
-                                  {expandedPollSynopses[winner.id || winner.title] ? "▲ Collapse details" : "▼ Expand details"}
-                                </span>
                               </div>
                             )}
 
@@ -647,16 +641,10 @@ export default function PollsSection({
                                   Dir: {option.director} • {option.genre}
                                 </p>
                                 {option.synopsis && (
-                                  <div 
-                                    onClick={() => setExpandedPollSynopses(prev => ({ ...prev, [option.id]: !prev[option.id] }))}
-                                    className="cursor-pointer select-none"
-                                  >
-                                    <p className={expandedPollSynopses[option.id] ? "text-[11px] leading-relaxed text-zinc-350 font-sans pt-0.5" : "text-[11px] leading-relaxed text-zinc-400 line-clamp-1 truncate font-sans pt-0.5"}>
+                                  <div className="pt-1">
+                                    <p className="text-[11px] leading-relaxed text-zinc-350 font-sans">
                                       {option.synopsis}
                                     </p>
-                                    <span className="inline-block text-[9px] font-mono font-semibold text-amber-500 hover:text-amber-400 mt-0.5">
-                                      {expandedPollSynopses[option.id] ? "▲ Collapse synopsis" : "▼ Expand synopsis"}
-                                    </span>
                                   </div>
                                 )}
                               </div>

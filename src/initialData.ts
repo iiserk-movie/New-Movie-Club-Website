@@ -43,7 +43,7 @@ export const initialScreenings: Screening[] = [
     time: '18:00',
     venue: 'LHC G-02 Lecture Room',
     description: 'Hirayama seems utterly content with his simple life as a cleaner of toilets in Tokyo. Outside of his very structured everyday routine he enjoys his passion for music and for books. And he loves trees and takes photos of them.',
-    posterUrl: 'https://upload.wikimedia.org/wikipedia/en/4/4b/Perfect_Days_poster.jpeg', // Perfect Days official poster
+    posterUrl: 'https://images.unsplash.com/photo-1503899036084-c55cdd92da26?q=80&w=600&auto=format&fit=crop', // Perfect Days official poster fallback
     backdropUrl: 'https://images.unsplash.com/photo-1540959733332-eab4deceeaf7?q=80&w=1200&auto=format&fit=crop',
     runtime: '124 min',
     genre: ['Drama'],

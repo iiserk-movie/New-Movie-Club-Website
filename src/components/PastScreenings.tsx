@@ -461,14 +461,11 @@ export default function PastScreenings({
                 <div className="border-t border-zinc-900 bg-zinc-950/80 p-5 space-y-4">
                   
                   {/* Synopsis snippet */}
-                  <div 
-                    onClick={() => setExpandedPastSynopses(prev => ({ ...prev, [movie.id]: !prev[movie.id] }))}
-                    className="text-xs text-zinc-400 bg-zinc-900/60 p-3 rounded-lg border border-zinc-900 italic cursor-pointer select-none hover:bg-zinc-900/80 hover:border-amber-500/20 transition-all font-sans"
-                  >
+                  <div className="text-xs text-zinc-400 bg-zinc-900/40 p-3.5 rounded-lg border border-zinc-900 italic font-sans">
                     <span className="text-[10px] uppercase font-mono font-bold text-zinc-500 not-italic block mb-1">
-                      Synopsis {expandedPastSynopses[movie.id] ? "▲ Click to collapse" : "▼ Click to expand"}
+                      Synopsis
                     </span>
-                    <p className={expandedPastSynopses[movie.id] ? "" : "line-clamp-1 truncate"}>
+                    <p className="text-zinc-300 leading-relaxed">
                       "{movie.synopsis}"
                     </p>
                   </div>

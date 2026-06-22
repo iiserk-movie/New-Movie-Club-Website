@@ -573,16 +573,10 @@ export default function ScreeningSchedule({
                     Director: <span className="text-zinc-300 font-medium">{screening.director}</span>
                   </p>
 
-                  <div 
-                    onClick={() => setExpandedIds(prev => ({ ...prev, [screening.id]: !prev[screening.id] }))}
-                    className="text-zinc-300 text-sm mt-4 leading-relaxed cursor-pointer select-none"
-                  >
-                    <p className={expandedIds[screening.id] ? "text-zinc-300 text-sm" : "text-zinc-300 text-sm line-clamp-1 truncate"}>
+                  <div className="text-zinc-300 text-sm mt-4 leading-relaxed">
+                    <p className="text-zinc-300 text-sm">
                       {screening.description}
                     </p>
-                    <span className="inline-block text-xs font-mono font-bold text-amber-500 hover:text-amber-400 mt-1">
-                      {expandedIds[screening.id] ? "Show less details ▲" : "Read screening details ▼"}
-                    </span>
                   </div>
 
                   <div className="mt-6 grid grid-cols-2 sm:grid-cols-3 gap-4 border-t border-b border-zinc-900/80 py-4 font-mono text-xs">
