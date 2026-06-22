@@ -46,6 +46,7 @@ export default function Recommendations({
   const [editingId, setEditingId] = useState<string | null>(null);
   const [screeningToMark, setScreeningToMark] = useState<Recommendation | null>(null);
   const [screenDate, setScreenDate] = useState(new Date().toISOString().split('T')[0]);
+  const [expandedNotes, setExpandedNotes] = useState<Record<string, boolean>>({});
   const [screenRating, setScreenRating] = useState<number>(4.5);
 
   // Poster image file upload
@@ -325,9 +326,6 @@ export default function Recommendations({
           <h2 className="font-serif text-3xl font-bold text-zinc-100 tracking-tight sm:text-4xl mt-1">
             Student Wishlist
           </h2>
-          <p className="text-xs text-zinc-500 mt-1 max-w-xl">
-            Recommend specialized masterpieces, indie gems, or local features you want the club to screen next. Upvote submissions with high peer potential.
-          </p>
         </div>
 
         <div>
@@ -473,11 +471,19 @@ export default function Recommendations({
                     </div>
 
                     {/* Submission note explaining reason */}
-                    <div className="mt-4 bg-zinc-900/50 p-3.5 rounded-xl border border-zinc-900/60 text-xs italic text-zinc-300 relative">
-                      <span className="absolute -top-1.5 left-3 bg-zinc-950 px-1 font-mono text-[9px] text-zinc-500 uppercase not-italic font-bold tracking-wider">
-                        Why Screen This?
-                      </span>
-                      "{rec.notes}"
+                    <div 
+                      onClick={() => setExpandedNotes(p => ({ ...p, [rec.id]: !p[rec.id] }))}
+                      className="mt-4 bg-zinc-900/40 p-3 rounded-xl border border-zinc-900 text-xs text-zinc-300 cursor-pointer select-none hover:bg-zinc-900/60 hover:border-amber-500/15 transition-all font-sans"
+                    >
+                      <div className="flex items-center justify-between text-[10px] font-mono font-medium text-zinc-500 uppercase tracking-widest mb-1.5">
+                        <span>Why Screen This?</span>
+                        <span className="text-amber-500 hover:text-amber-400">
+                          {expandedNotes[rec.id] ? "▲ Collapse" : "▼ Expand"}
+                        </span>
+                      </div>
+                      <p className={expandedNotes[rec.id] ? "text-zinc-350 leading-relaxed italic" : "text-zinc-350 leading-relaxed italic line-clamp-2"}>
+                        "{rec.notes}"
+                      </p>
                     </div>
                   </div>
 
@@ -538,16 +544,7 @@ export default function Recommendations({
         </div>
       )}
 
-      {/* Informative Tip Box on film screening selection criteria */}
-      <div className="rounded-xl border border-zinc-900 bg-zinc-950/20 p-5 flex gap-3.5">
-        <AlertCircle className="h-5 w-5 text-amber-500 shrink-0 mt-0.5" />
-        <div className="text-xs space-y-1">
-          <h4 className="font-semibold text-zinc-300">How do student requests get screened?</h4>
-          <p className="text-zinc-500 leading-relaxed">
-            We review the community wishlist together. Upvote your favorite recommendations or add new ones! Films with more interest get scheduled for upcoming screenings. Let's make every movie night count!
-          </p>
-        </div>
-      </div>
+
 
       {/* Submit Recommendation Modal */}
       {showSubmitModal && (

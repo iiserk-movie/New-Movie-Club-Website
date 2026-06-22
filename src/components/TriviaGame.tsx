@@ -77,9 +77,6 @@ export default function TriviaGame() {
         <h2 className="font-serif text-3xl font-bold text-zinc-100 tracking-tight sm:text-4xl mt-1">
           CineQuiz Arena
         </h2>
-        <p className="text-xs text-zinc-500 mt-1 max-w-xl">
-          Weekly film trivia for the Movie Club! Test your knowledge on modern hits, classics, indie favorites, and directorship.
-        </p>
       </div>
 
       {/* Main Container cards */}

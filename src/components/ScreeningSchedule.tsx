@@ -47,6 +47,7 @@ export default function ScreeningSchedule({
   const [language, setLanguage] = useState('English (with Subs)');
   const [trailerUrl, setTrailerUrl] = useState('');
   const [feedbackMsg, setFeedbackMsg] = useState('');
+  const [expandedIds, setExpandedIds] = useState<Record<string, boolean>>({});
 
   // Letterboxd integration states
   const [letterboxdInput, setLetterboxdInput] = useState('');
@@ -435,22 +436,14 @@ export default function ScreeningSchedule({
       )}
 
       {/* Header Info */}
-      <div className="flex flex-col md:flex-row md:items-start justify-between border-b border-zinc-900 pb-6 gap-6">
-        <div className="flex flex-col sm:flex-row gap-5 items-start">
-          <div className="bg-zinc-900 ring-1 ring-zinc-800 p-2.5 rounded-2xl shrink-0">
-            <MovieClubLogo className="h-16 w-16" />
-          </div>
-          <div>
-            <span className="text-amber-500 font-mono text-xs uppercase tracking-widest font-semibold flex items-center gap-1.5">
-              <Sparkles className="h-3.5 w-3.5" /> Upcoming Screenings
-            </span>
-            <h2 className="font-serif text-3xl font-bold text-zinc-100 tracking-tight sm:text-4xl mt-1">
-              Now Screening
-            </h2>
-            <p className="text-sm text-zinc-400 mt-2 max-w-2xl leading-relaxed">
-              The Movie Club brings specialized film curator choices to IISER Kolkata. Screenings are open to all students, faculties, fellowship researchers, and staff. Join us for discussion sessions after each show!
-            </p>
-          </div>
+      <div className="flex flex-col md:flex-row md:items-end justify-between border-b border-zinc-900 pb-6 gap-6">
+        <div>
+          <span className="text-amber-500 font-mono text-xs uppercase tracking-widest font-semibold flex items-center gap-1.5">
+            <Calendar className="h-4 w-4" /> Theatre Calendar
+          </span>
+          <h2 className="font-serif text-3xl font-bold text-zinc-100 tracking-tight sm:text-4xl mt-1">
+            Upcoming Screenings
+          </h2>
         </div>
         
         {adminMode && (
@@ -580,9 +573,17 @@ export default function ScreeningSchedule({
                     Director: <span className="text-zinc-300 font-medium">{screening.director}</span>
                   </p>
 
-                  <p className="text-zinc-300 text-sm mt-4 leading-relaxed line-clamp-3">
-                    {screening.description}
-                  </p>
+                  <div 
+                    onClick={() => setExpandedIds(prev => ({ ...prev, [screening.id]: !prev[screening.id] }))}
+                    className="text-zinc-300 text-sm mt-4 leading-relaxed cursor-pointer select-none"
+                  >
+                    <p className={expandedIds[screening.id] ? "text-zinc-300 text-sm" : "text-zinc-300 text-sm line-clamp-1 truncate"}>
+                      {screening.description}
+                    </p>
+                    <span className="inline-block text-xs font-mono font-bold text-amber-500 hover:text-amber-400 mt-1">
+                      {expandedIds[screening.id] ? "Show less details ▲" : "Read screening details ▼"}
+                    </span>
+                  </div>
 
                   <div className="mt-6 grid grid-cols-2 sm:grid-cols-3 gap-4 border-t border-b border-zinc-900/80 py-4 font-mono text-xs">
                     <div className="space-y-1">
@@ -659,23 +660,7 @@ export default function ScreeningSchedule({
         })}
       </div>
 
-      {/* Footer Info Box */}
-      <div className="rounded-2xl border border-zinc-900 bg-zinc-950/40 p-6 flex flex-col sm:flex-row items-center justify-between gap-4">
-        <div className="flex items-center space-x-3 text-center sm:text-left">
-          <div className="p-3 rounded-xl bg-amber-500/5 border border-amber-500/10 text-amber-500">
-            <Clock3 className="h-5 w-5" />
-          </div>
-          <div>
-            <h4 className="text-sm font-semibold text-zinc-200">Have a venue preference?</h4>
-            <p className="text-xs text-zinc-500 mt-0.5">
-              Normally screenings occur at M.N. Saha Auditorium (TRC Building), or MND Auditorium. Check specific events for gate details.
-            </p>
-          </div>
-        </div>
-        <p className="text-xs font-mono text-zinc-500 text-center sm:text-right">
-          Movie Club Coordinate • IISER Kolkata
-        </p>
-      </div>
+
 
       {/* Unified Add/Edit Screening Modal */}
       {showFormModal && (

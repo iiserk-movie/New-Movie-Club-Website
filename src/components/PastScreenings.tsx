@@ -32,6 +32,7 @@ export default function PastScreenings({
   onDeletePastMovie
 }: PastScreeningsProps) {
   const [selectedMovieId, setSelectedMovieId] = useState<string | null>(null);
+  const [expandedPastSynopses, setExpandedPastSynopses] = useState<Record<string, boolean>>({});
   const [isSyncing, setIsSyncing] = useState(false);
   const [syncSuccess, setSyncSuccess] = useState(false);
   
@@ -315,9 +316,6 @@ export default function PastScreenings({
           <h2 className="font-serif text-3xl font-bold text-zinc-100 tracking-tight sm:text-4xl mt-1">
             Past Screenings
           </h2>
-          <p className="text-xs text-zinc-500 mt-1 max-w-xl">
-            A comprehensive history of cinema masterpieces screened at the IISER K Movie Club, sourced directly from our curated Letterboxd profile.
-          </p>
         </div>
 
         <div className="flex items-center space-x-3">
@@ -463,9 +461,16 @@ export default function PastScreenings({
                 <div className="border-t border-zinc-900 bg-zinc-950/80 p-5 space-y-4">
                   
                   {/* Synopsis snippet */}
-                  <div className="text-xs text-zinc-400 bg-zinc-900/60 p-3 rounded-lg border border-zinc-900 italic">
-                    <span className="text-[10px] uppercase font-mono font-bold text-zinc-500 not-italic block mb-1">Synopsis:</span>
-                    "{movie.synopsis}"
+                  <div 
+                    onClick={() => setExpandedPastSynopses(prev => ({ ...prev, [movie.id]: !prev[movie.id] }))}
+                    className="text-xs text-zinc-400 bg-zinc-900/60 p-3 rounded-lg border border-zinc-900 italic cursor-pointer select-none hover:bg-zinc-900/80 hover:border-amber-500/20 transition-all font-sans"
+                  >
+                    <span className="text-[10px] uppercase font-mono font-bold text-zinc-500 not-italic block mb-1">
+                      Synopsis {expandedPastSynopses[movie.id] ? "▲ Click to collapse" : "▼ Click to expand"}
+                    </span>
+                    <p className={expandedPastSynopses[movie.id] ? "" : "line-clamp-1 truncate"}>
+                      "{movie.synopsis}"
+                    </p>
                   </div>
 
                   {/* Reviews lists */}

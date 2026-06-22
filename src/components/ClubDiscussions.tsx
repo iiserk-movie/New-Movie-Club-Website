@@ -428,9 +428,6 @@ export default function ClubDiscussions({
               <h2 className="font-serif text-3xl font-bold text-zinc-100 tracking-tight sm:text-4xl mt-1">
                 Reviews & Discussions
               </h2>
-              <p className="text-xs text-zinc-500 mt-1 max-w-xl">
-                The academic film forum of IISER Kolkata. Write elaborate film critiques, exchange scene theories, or post general questions.
-              </p>
             </div>
 
             <button

@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Film, User as UserIcon, LogOut, Shield, ShieldCheck, HelpCircle, GraduationCap, Camera, UploadCloud, Image as ImageIcon, Settings, Key, Eye, EyeOff, RefreshCw } from 'lucide-react';
+import { Film, User as UserIcon, LogOut, Shield, ShieldCheck, HelpCircle, GraduationCap, Camera, UploadCloud, Image as ImageIcon, Settings, Key, Eye, EyeOff, RefreshCw, Menu, X } from 'lucide-react';
 import { User, PastMovie } from '../types';
 import { auth, googleProvider } from '../firebase';
 import MovieClubLogo from './MovieClubLogo';
@@ -29,6 +29,7 @@ export default function Navbar({
   setAdminMode,
   onImportPastMovies,
 }: NavbarProps) {
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [showLoginModal, setShowLoginModal] = useState(false);
   const [emailInput, setEmailInput] = useState('');
   const [nameInput, setNameInput] = useState('');
@@ -405,7 +406,7 @@ export default function Navbar({
 
   return (
     <>
-      <header className="sticky top-0 z-40 w-full border-b border-zinc-800 bg-zinc-950/80 backdrop-blur-md">
+      <header className="sticky top-0 z-40 w-full border-b border-[#1b1e36]/50 bg-[#0c0d19]/90 backdrop-blur-md shadow-lg shadow-indigo-950/10">
         <div className="mx-auto flex max-w-7xl h-20 items-center justify-between px-4 sm:px-6 lg:px-8">
           {/* Logo Brand */}
           <div className="flex items-center space-x-3 cursor-pointer" onClick={() => setActiveTab('schedule')}>
@@ -596,30 +597,117 @@ export default function Navbar({
                 <span>Institute Login</span>
               </button>
             )}
+
+            {/* Mobile Hamburger toggle button */}
+            <button
+              onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+              className="md:hidden flex items-center justify-center p-2 rounded-xl text-zinc-400 hover:text-white hover:bg-zinc-900 border border-zinc-800 focus:outline-none focus:ring-1 focus:ring-amber-500 cursor-pointer transition-all"
+              title="Toggle Menu"
+            >
+              {isMobileMenuOpen ? (
+                <X className="h-5 w-5 stroke-[2.5]" />
+              ) : (
+                <Menu className="h-5 w-5 stroke-[2.5]" />
+              )}
+            </button>
           </div>
         </div>
 
-        {/* Mobile quick submenu */}
-        <div className="flex md:hidden items-center justify-around h-11 border-t border-zinc-900 bg-zinc-950 overflow-x-auto gap-1 scrollbar-none px-2">
-          {[
-            { id: 'schedule', label: 'Schedule' },
-            { id: 'past', label: 'Past' },
-            { id: 'discussions', label: 'Discuss' },
-            { id: 'recommendations', label: 'Recs' },
-            { id: 'polls', label: 'Polls' },
-            ...(currentUser ? [{ id: 'profile', label: 'Profile' }] : [])
-          ].map((tab) => (
-            <button
-              key={tab.id}
-              onClick={() => setActiveTab(tab.id)}
-              className={`text-xs font-semibold px-3 py-1.5 rounded-md transition-all ${
-                activeTab === tab.id ? 'text-amber-400 bg-zinc-900/80' : 'text-zinc-400'
-              }`}
-            >
-              {tab.label}
-            </button>
-          ))}
-        </div>
+        {/* Mobile Beautiful Side Menu Bar Drawer */}
+        {isMobileMenuOpen && (
+          <div className="fixed inset-0 z-55 md:hidden">
+            {/* Dark Glass Overlay */}
+            <div 
+              className="fixed inset-0 bg-black/80 backdrop-blur-sm transition-opacity duration-300"
+              onClick={() => setIsMobileMenuOpen(false)}
+            />
+            {/* Side Drawer Body */}
+            <div className="fixed right-0 top-0 bottom-0 w-72 max-w-xs bg-[#0e0f1e]/95 backdrop-blur-md border-l border-[#24294d]/45 p-6 flex flex-col space-y-6 shadow-2xl transition-all duration-300 ease-out z-50">
+              <div className="flex items-center justify-between border-b border-zinc-900 pb-4">
+                <div className="flex items-center space-x-2">
+                  <div className="relative flex h-8 w-8 items-center justify-center rounded-lg">
+                    <MovieClubLogo className="h-8 w-8" />
+                  </div>
+                  <div>
+                    <span className="font-serif text-sm font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-zinc-100 to-amber-400 uppercase tracking-wide block">
+                      Movie Club
+                    </span>
+                    <span className="font-mono text-[9px] text-amber-500/80 block uppercase">
+                      IISER Kolkata
+                    </span>
+                  </div>
+                </div>
+                <button
+                  onClick={() => setIsMobileMenuOpen(false)}
+                  className="p-1.5 text-zinc-500 hover:text-zinc-200 rounded-lg cursor-pointer"
+                >
+                  <X className="h-5 w-5" />
+                </button>
+              </div>
+
+              {/* Navigation Tabs List */}
+              <div className="flex flex-col space-y-2 flex-grow">
+                {[
+                  { id: 'schedule', label: 'Upcoming Screenings' },
+                  { id: 'past', label: 'Past Screenings' },
+                  { id: 'discussions', label: 'Club Discussions' },
+                  { id: 'recommendations', label: 'Recommendations' },
+                  { id: 'polls', label: 'Interactive Polls' },
+                  ...(currentUser ? [{ id: 'profile', label: 'My Member Profile' }] : [])
+                ].map((tab) => (
+                  <button
+                    key={tab.id}
+                    onClick={() => {
+                      setActiveTab(tab.id);
+                      setIsMobileMenuOpen(false);
+                    }}
+                    className={`w-full text-left px-4 py-3 rounded-xl text-sm font-semibold transition-all flex items-center space-x-3 ${
+                      activeTab === tab.id
+                        ? 'text-amber-400 bg-amber-500/10 border-l-[3px] border-amber-500 pl-3.5'
+                        : 'text-zinc-200 hover:text-zinc-100 hover:bg-zinc-900/50'
+                    }`}
+                  >
+                    <span>{tab.label}</span>
+                  </button>
+                ))}
+              </div>
+
+              {/* Profile snapshot in Drawer */}
+              {currentUser && (
+                <div className="border-t border-zinc-900 pt-4 flex flex-col space-y-3">
+                  <div className="flex items-center space-x-3">
+                    <div className="h-9 w-9 rounded-full bg-zinc-800 border border-zinc-700 overflow-hidden shrink-0">
+                      {currentUser.photoURL ? (
+                        <img 
+                          src={currentUser.photoURL} 
+                          alt={currentUser.name} 
+                          className="h-full w-full object-cover" 
+                        />
+                      ) : (
+                        <div className="h-full w-full flex items-center justify-center font-bold text-amber-500 text-sm">
+                          {currentUser.name.charAt(0).toUpperCase()}
+                        </div>
+                      )}
+                    </div>
+                    <div className="min-w-0">
+                      <p className="text-xs font-bold text-zinc-200 truncate">{currentUser.name}</p>
+                      <p className="text-[10px] text-zinc-500 truncate font-mono">{currentUser.role === 'admin' ? 'Coordinator' : 'IISER-K Member'}</p>
+                    </div>
+                  </div>
+                  <button
+                    onClick={() => {
+                      handleSignOut();
+                      setIsMobileMenuOpen(false);
+                    }}
+                    className="w-full py-2.5 rounded-lg text-xs font-mono font-bold text-center border border-red-500/20 text-red-400 hover:bg-red-500/5 transition-colors cursor-pointer"
+                  >
+                    Sign Out
+                  </button>
+                </div>
+              )}
+            </div>
+          </div>
+        )}
       </header>
 
       {/* Login Modal */}

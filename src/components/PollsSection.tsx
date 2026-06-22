@@ -22,6 +22,7 @@ export default function PollsSection({
 }: PollsSectionProps) {
   const [activeTab, setActiveTab] = useState<'active' | 'closed' | 'upcoming'>('active');
   const [showCreateModal, setShowCreateModal] = useState(false);
+  const [expandedPollSynopses, setExpandedPollSynopses] = useState<Record<string, boolean>>({});
   const [errorMsg, setErrorMsg] = useState('');
   const [successMsg, setSuccessMsg] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -343,9 +344,6 @@ export default function PollsSection({
           <h2 className="font-serif text-2xl font-bold tracking-tight text-zinc-100 mt-2 sm:text-3xl">
             Movie Selection Polls
           </h2>
-          <p className="text-zinc-400 text-xs sm:text-sm mt-1 max-w-2xl">
-            Cast your vote for curated cinema screenings! Multiple options can be selected. The ultimate winner is scheduled automatically after closure.
-          </p>
         </div>
 
         {adminMode && (
@@ -527,9 +525,17 @@ export default function PollsSection({
                             </div>
 
                             {winner.synopsis && (
-                              <p className="text-xs leading-relaxed text-zinc-400 line-clamp-3">
-                                {winner.synopsis}
-                              </p>
+                              <div 
+                                onClick={() => setExpandedPollSynopses(prev => ({ ...prev, [winner.id || winner.title]: !prev[winner.id || winner.title] }))}
+                                className="cursor-pointer select-none"
+                              >
+                                <p className={expandedPollSynopses[winner.id || winner.title] ? "text-xs leading-relaxed text-zinc-350" : "text-xs leading-relaxed text-zinc-400 line-clamp-1 truncate"}>
+                                  {winner.synopsis}
+                                </p>
+                                <span className="inline-block text-[9px] font-mono font-semibold text-amber-500 hover:text-amber-400 mt-0.5">
+                                  {expandedPollSynopses[winner.id || winner.title] ? "▲ Collapse details" : "▼ Expand details"}
+                                </span>
+                              </div>
                             )}
 
                             {/* Vote Gauge Progress bar */}
@@ -608,7 +614,7 @@ export default function PollsSection({
                   /* ACTIVE VOTING VIEW */
                   <div className="space-y-4">
                     <p className="text-[10px] font-mono tracking-wider text-amber-500 border border-amber-500/10 bg-amber-500/5 px-2.5 py-1.5 rounded-lg max-w-max font-semibold">
-                      💡 MULTIPLE ACTION MODE (You are allowed to vote for as many movie screenings down below as you wish!)
+                      💡 Multiple choices allowed
                     </p>
 
                     <div className="grid gap-4 md:grid-cols-2">
@@ -641,9 +647,17 @@ export default function PollsSection({
                                   Dir: {option.director} • {option.genre}
                                 </p>
                                 {option.synopsis && (
-                                  <p className="text-[11px] leading-relaxed text-zinc-400 line-clamp-3 font-sans pt-0.5">
-                                    {option.synopsis}
-                                  </p>
+                                  <div 
+                                    onClick={() => setExpandedPollSynopses(prev => ({ ...prev, [option.id]: !prev[option.id] }))}
+                                    className="cursor-pointer select-none"
+                                  >
+                                    <p className={expandedPollSynopses[option.id] ? "text-[11px] leading-relaxed text-zinc-350 font-sans pt-0.5" : "text-[11px] leading-relaxed text-zinc-400 line-clamp-1 truncate font-sans pt-0.5"}>
+                                      {option.synopsis}
+                                    </p>
+                                    <span className="inline-block text-[9px] font-mono font-semibold text-amber-500 hover:text-amber-400 mt-0.5">
+                                      {expandedPollSynopses[option.id] ? "▲ Collapse synopsis" : "▼ Expand synopsis"}
+                                    </span>
+                                  </div>
                                 )}
                               </div>
                             </div>

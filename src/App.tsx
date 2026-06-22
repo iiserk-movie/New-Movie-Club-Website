@@ -839,7 +839,7 @@ export default function App() {
   };
 
   return (
-    <div className="min-h-screen bg-zinc-950 text-zinc-100 flex flex-col font-sans selection:bg-amber-400 selection:text-zinc-950">
+    <div className="min-h-screen bg-gradient-to-b from-[#0e0f1e] via-[#090b14] to-[#04050a] text-zinc-100 flex flex-col font-sans selection:bg-amber-400 selection:text-zinc-950">
       {/* Upper Navigation Row */}
       <Navbar
         currentUser={currentUser}
@@ -854,44 +854,38 @@ export default function App() {
       />
 
       {/* Main Feature Cinematic Hero Segment */}
-      <div className="relative border-b border-zinc-900 bg-zinc-950 py-16 sm:py-24 overflow-hidden">
-        {/* Decorative backdrop gradients representing theatrical lighting effects */}
-        <div className="absolute top-0 left-1/4 h-72 w-96 bg-amber-500/5 rounded-full blur-[120px] pointer-events-none"></div>
-        <div className="absolute bottom-0 right-1/4 h-72 w-96 bg-zinc-800/10 rounded-full blur-[120px] pointer-events-none"></div>
+      {activeTab === 'schedule' && (
+        <div className="relative border-b border-indigo-950/40 bg-gradient-to-r from-[#12142e]/30 via-[#0c0d1b]/80 to-[#04050a] py-16 sm:py-24 overflow-hidden">
+          {/* Decorative backdrop gradients representing theatrical lighting effects */}
+          <div className="absolute top-0 left-1/4 h-72 w-96 bg-amber-500/10 rounded-full blur-[120px] pointer-events-none"></div>
+          <div className="absolute bottom-0 right-1/4 h-72 w-96 bg-indigo-500/10 rounded-full blur-[120px] pointer-events-none"></div>
 
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 relative">
-          <div className="max-w-3xl">
-            <div className="inline-flex items-center space-x-1.5 bg-zinc-900/80 border border-zinc-800 px-3 py-1 rounded-full text-xs font-mono text-amber-500 mb-6">
-              <span className="h-1.5 w-1.5 rounded-full bg-amber-500 animate-ping"></span>
-              <span>MOVIE CLUB • IISER KOLKATA</span>
-            </div>
-
-            <h2 className="font-serif text-4xl sm:text-6xl font-extrabold text-zinc-100 tracking-tight leading-[1.1] animate-glow">
-              Explore the Language of Cinema.
-            </h2>
-            
-            <p className="mt-4 text-sm sm:text-base text-zinc-400 max-w-2xl leading-relaxed">
-              We look beyond blockbuster boundaries to discover avant-garde scripts, acoustic masterpieces, and historic movements. The Movie Club brings the best index of international world cinema directly to the M.N. Saha Auditorium, Ground Floor, TRC building.
-            </p>
-
-            {/* Quick stats board */}
-            <div className="mt-8 flex flex-wrap gap-x-8 gap-y-4 text-xs font-mono text-zinc-500">
-              <div className="flex items-center space-x-2">
-                <Clapperboard className="h-4.5 w-4.5 text-amber-500/70" />
-                <span>Screened: <b className="text-zinc-300">142+ Films</b></span>
+          <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 relative">
+            <div className="max-w-3xl">
+              <div className="inline-flex items-center space-x-1.5 bg-zinc-900/80 border border-zinc-800 px-3 py-1 rounded-full text-xs font-mono text-amber-500 mb-6 font-semibold">
+                <span className="h-1.5 w-1.5 rounded-full bg-amber-500 animate-ping"></span>
+                <span>MOVIE CLUB • IISER KOLKATA</span>
               </div>
-              <div className="flex items-center space-x-2">
-                <Users className="h-4.5 w-4.5 text-amber-500/70" />
-                <span>Patrons: <b className="text-zinc-300">2000+ Students</b></span>
-              </div>
-              <div className="flex items-center space-x-2">
-                <MapPin className="h-4.5 w-4.5 text-amber-500/70" />
-                <span>Regular Base: <b className="text-zinc-300">M.N. Saha Auditorium, Ground Floor, TRC building</b></span>
+
+              <h2 className="font-serif text-4xl sm:text-6xl font-extrabold text-zinc-100 tracking-tight leading-[1.1] animate-glow">
+                Explore the Language of Cinema.
+              </h2>
+              
+              <p className="mt-4 text-sm sm:text-base text-zinc-400 max-w-2xl leading-relaxed">
+                We look beyond blockbuster boundaries to discover avant-garde scripts, acoustic masterpieces, and historic movements. The Movie Club brings the best index of international world cinema directly to the M.N. Saha Auditorium, Ground Floor, TRC building.
+              </p>
+
+              {/* Quick stats board */}
+              <div className="mt-8 flex flex-wrap gap-x-8 gap-y-4 text-xs font-mono text-zinc-500">
+                <div className="flex items-center space-x-2">
+                  <MapPin className="h-4.5 w-4.5 text-amber-500/70" />
+                  <span>Regular Base: <b className="text-zinc-300">M.N. Saha Auditorium</b></span>
+                </div>
               </div>
             </div>
           </div>
         </div>
-      </div>
+      )}
 
       {/* Main tab panel layout */}
       <main className="flex-grow mx-auto max-w-7xl w-full px-4 sm:px-6 lg:px-8 py-10">
