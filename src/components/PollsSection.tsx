@@ -97,6 +97,10 @@ export default function PollsSection({
   };
 
   const handleAddOptionField = () => {
+    if (options.length >= 10) {
+      setErrorMsg('A maximum of 10 movie candidates are allowed in a single poll.');
+      return;
+    }
     setOptions([...options, { title: '', director: '', year: 2024, genre: 'Cinema', synopsis: '', posterUrl: '' }]);
   };
 
@@ -137,6 +141,11 @@ export default function PollsSection({
     }
 
     // Validate options
+    if (options.length > 10) {
+      setErrorMsg('A maximum of 10 movie candidates are allowed in single poll.');
+      return;
+    }
+
     const invalidOpt = options.some(opt => !opt.title.trim() || !opt.director.trim());
     if (invalidOpt) {
       setErrorMsg('Make sure all cinema choices have at least a Title and Director specified.');
@@ -791,14 +800,20 @@ export default function PollsSection({
                       <span className="text-xs font-mono text-zinc-400 uppercase font-bold tracking-wider">
                         🎬 MOVIE CANDIDATES ({options.length})
                       </span>
-                      <button
-                        type="button"
-                        onClick={handleAddOptionField}
-                        className="flex items-center gap-1 text-[11px] font-mono text-amber-500 hover:text-amber-400 border border-amber-500/20 bg-amber-500/5 px-2.5 py-1 rounded cursor-pointer"
-                      >
-                        <Plus className="h-3 w-3 stroke-[2.5]" />
-                        ADD OPTION
-                      </button>
+                      {options.length < 10 ? (
+                        <button
+                          type="button"
+                          onClick={handleAddOptionField}
+                          className="flex items-center gap-1 text-[11px] font-mono text-amber-500 hover:text-amber-400 border border-amber-500/20 bg-amber-500/5 px-2.5 py-1 rounded cursor-pointer transition-colors"
+                        >
+                          <Plus className="h-3 w-3 stroke-[2.5]" />
+                          ADD OPTION
+                        </button>
+                      ) : (
+                        <span className="text-[10.5px] font-mono text-zinc-500 bg-zinc-900/30 border border-zinc-850 px-2.5 py-1 rounded select-none uppercase tracking-wider">
+                          Max 10 Candidates Reached
+                        </span>
+                      )}
                     </div>
 
                     {autofillLoading && autofillIndex !== null && (
