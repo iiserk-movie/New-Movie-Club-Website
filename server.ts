@@ -22,6 +22,21 @@ async function startServer() {
     }
   });
 
+// Helper to extract content from meta tags with single, double or no quotes and arbitrary attribute ordering
+function extractMetaContent(html: string, name: string): string {
+  const regexes = [
+    new RegExp(`<meta[^>]*?(?:property|name)=["']?${name}["']?[^>]*?content=["']([^"']*)["']`, 'i'),
+    new RegExp(`<meta[^>]*?content=["']([^"']*)["'][^>]*?(?:property|name)=["']?${name}["']?`, 'i')
+  ];
+  for (const regex of regexes) {
+    const match = html.match(regex);
+    if (match && match[1]) {
+      return match[1].trim();
+    }
+  }
+  return '';
+}
+
 // Helper to request metadata directly from IMDb or Letterboxd pages
 async function fetchUrlMetadata(url: string) {
   try {
@@ -31,21 +46,9 @@ async function fetchUrlMetadata(url: string) {
     const rawImdbIdMatch = cleanUrl.match(/\b(tt\d{7,10})\b/i);
     const hasImdbDomain = /imdb\.com/i.test(cleanUrl);
 
-    let isImdb = false;
-    let isLetterboxd = false;
-
     if (rawImdbIdMatch && !hasImdbDomain) {
       // User entered a raw IMDb ID! Turn it into a full URL.
       cleanUrl = `https://www.imdb.com/title/${rawImdbIdMatch[1]}/`;
-      isImdb = true;
-    } else {
-      isImdb = /imdb\.com\/title\/(tt\d+)/i.test(cleanUrl);
-      isLetterboxd = /letterboxd\.com\/film\/([a-zA-Z0-9\-_]+)/i.test(cleanUrl);
-    }
-
-    if (!isImdb && !isLetterboxd) {
-      console.log(`[Metadata Scraper] URL does not match IMDb or Letterboxd signatures: ${cleanUrl}`);
-      return null;
     }
 
     let targetUrl = cleanUrl;
@@ -67,20 +70,27 @@ async function fetchUrlMetadata(url: string) {
       return null;
     }
 
+    const finalUrl = response.url || targetUrl;
+    const isImdb = /imdb\.com\/title\/(tt\d+)/i.test(finalUrl);
+    const isLetterboxd = /letterboxd\.com\/film\/([a-zA-Z0-9\-_]+)/i.test(finalUrl) || /boxd\.it/i.test(finalUrl) || /letterboxd\.com/i.test(finalUrl);
+
+    if (!isImdb && !isLetterboxd) {
+      console.log(`[Metadata Scraper] URL does not match IMDb or Letterboxd signatures: ${finalUrl}`);
+      return null;
+    }
+
     const html = await response.text();
     if (!html) return null;
 
-    // Extract basic OG properties
-    const titleMatch = html.match(/<meta\s+property="og:title"\s+content="([^"]+)"/i) 
-                    || html.match(/<title>([^<]+)<\/title>/i);
-    const descMatch = html.match(/<meta\s+property="og:description"\s+content="([^"]+)"/i)
-                   || html.match(/<meta\s+name="description"\s+content="([^"]+)"/i);
-    const imageMatch = html.match(/<meta\s+property="og:image"\s+content="([^"]+)"/i)
-                    || html.match(/<meta\s+name="twitter:image"\s+content="([^"]+)"/i);
+    // Extract basic OG properties using robust helper
+    let title = extractMetaContent(html, 'og:title') || extractMetaContent(html, 'twitter:title');
+    if (!title) {
+      const match = html.match(/<title>([^<]+)<\/title>/i);
+      title = match ? match[1].trim() : '';
+    }
 
-    let title = titleMatch ? titleMatch[1].trim() : '';
-    let description = descMatch ? descMatch[1].trim() : '';
-    let posterUrl = imageMatch ? imageMatch[1].trim() : '';
+    let description = extractMetaContent(html, 'og:description') || extractMetaContent(html, 'twitter:description') || extractMetaContent(html, 'description');
+    let posterUrl = extractMetaContent(html, 'og:image') || extractMetaContent(html, 'twitter:image');
 
     // Decode HTML entities if any
     const decodeHtml = (str: string) => {
@@ -108,7 +118,7 @@ async function fetchUrlMetadata(url: string) {
       description = description.replace(/^Directed by [^.]+\.\s*With [^.]+\.\s*/i, '');
       description = description.replace(/^[^:]+:\s*/, ''); // strip "Title (Year):" prefix if present
       
-      const idMatch = targetUrl.match(/(tt\d+)/);
+      const idMatch = finalUrl.match(/(tt\d+)/);
       const imdbId = idMatch ? idMatch[1] : '';
 
       return {
@@ -126,7 +136,7 @@ async function fetchUrlMetadata(url: string) {
       const year = yearMatch ? parseInt(yearMatch[1], 10) : null;
       title = title.replace(/\s*\(\d{4}\)/, '').trim();
 
-      const slugMatch = targetUrl.match(/letterboxd\.com\/film\/([a-zA-Z0-9\-_]+)/i);
+      const slugMatch = finalUrl.match(/letterboxd\.com\/film\/([a-zA-Z0-9\-_]+)/i);
       const letterboxdSlug = slugMatch ? slugMatch[1] : '';
 
       return {

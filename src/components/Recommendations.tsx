@@ -551,17 +551,18 @@ export default function Recommendations({
 
       {/* Submit Recommendation Modal */}
       {showSubmitModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/85 backdrop-blur-sm p-4 overflow-y-auto">
-          <div className="w-full max-w-lg rounded-2xl border border-zinc-850 bg-zinc-950 p-6 shadow-2xl relative my-8">
-            <button
-              onClick={() => {
-                setShowSubmitModal(false);
-                setErrorMsg('');
-              }}
-              className="absolute top-4 right-4 p-2 text-zinc-500 hover:text-zinc-200 rounded-lg cursor-pointer"
-            >
-              <Plus className="h-5 w-5 rotate-45" />
-            </button>
+        <div className="fixed inset-0 z-50 overflow-y-auto bg-black/85 backdrop-blur-sm p-4">
+          <div className="flex min-h-full items-center justify-center py-4 sm:py-8">
+            <div className="w-full max-w-lg rounded-2xl border border-zinc-850 bg-zinc-950 p-6 shadow-2xl relative">
+              <button
+                onClick={() => {
+                  setShowSubmitModal(false);
+                  setErrorMsg('');
+                }}
+                className="absolute top-4 right-4 p-2 text-zinc-500 hover:text-zinc-200 rounded-lg cursor-pointer"
+              >
+                <Plus className="h-5 w-5 rotate-45" />
+              </button>
 
             <div className="mb-4">
               <span className="text-xs font-mono text-amber-500 uppercase tracking-widest font-semibold flex items-center gap-1">
@@ -839,18 +840,20 @@ export default function Recommendations({
             </form>
           </div>
         </div>
+      </div>
       )}
 
       {/* Mark Screened Modal */}
       {screeningToMark && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/85 backdrop-blur-sm p-4 overflow-y-auto">
-          <div className="w-full max-w-md rounded-2xl border border-zinc-850 bg-zinc-950 p-6 shadow-2xl relative">
-            <button
-              onClick={() => setScreeningToMark(null)}
-              className="absolute top-4 right-4 p-2 text-zinc-500 hover:text-zinc-200 rounded-lg cursor-pointer"
-            >
-              <Plus className="h-5 w-5 rotate-45" />
-            </button>
+        <div className="fixed inset-0 z-50 overflow-y-auto bg-black/85 backdrop-blur-sm p-4">
+          <div className="flex min-h-full items-center justify-center py-4 sm:py-8">
+            <div className="w-full max-w-md rounded-2xl border border-zinc-850 bg-zinc-950 p-6 shadow-2xl relative">
+              <button
+                onClick={() => setScreeningToMark(null)}
+                className="absolute top-4 right-4 p-2 text-zinc-500 hover:text-zinc-200 rounded-lg cursor-pointer"
+              >
+                <Plus className="h-5 w-5 rotate-45" />
+              </button>
 
             <div className="mb-4">
               <span className="text-xs font-mono text-amber-500 uppercase tracking-widest font-semibold flex items-center gap-1.5">
@@ -921,6 +924,7 @@ export default function Recommendations({
             </div>
           </div>
         </div>
+      </div>
       )}
     </div>
   );

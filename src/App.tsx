@@ -95,7 +95,7 @@ export default function App() {
   });
 
   // Sort past movies descending by screening date
-  computedPastMovies.sort((a, b) => b.screenedDate.localeCompare(a.screenedDate));
+  computedPastMovies.sort((a, b) => (b.screenedDate || '').localeCompare(a.screenedDate || ''));
 
   // Automatic database auto-archive for past screenings when an administrative user is logged in
   useEffect(() => {
@@ -278,8 +278,8 @@ export default function App() {
       });
       // Sort by date/time order
       list.sort((a, b) => {
-        const dateTimeA = `${a.date}T${a.time}`;
-        const dateTimeB = `${b.date}T${b.time}`;
+        const dateTimeA = `${a.date || ''}T${a.time || ''}`;
+        const dateTimeB = `${b.date || ''}T${b.time || ''}`;
         return dateTimeA.localeCompare(dateTimeB);
       });
       setScreenings(list);
@@ -316,7 +316,7 @@ export default function App() {
         list.push(docSnap.data() as PastMovie);
       });
       // Sort past movies descending by screening date
-      list.sort((a, b) => b.screenedDate.localeCompare(a.screenedDate));
+      list.sort((a, b) => (b.screenedDate || '').localeCompare(a.screenedDate || ''));
       setPastMovies(list);
     }, (error) => {
       const errInfo = {
@@ -350,7 +350,7 @@ export default function App() {
         list.push(docSnap.data() as Recommendation);
       });
       // Sort by proposed date descending
-      list.sort((a, b) => b.suggestedAt.localeCompare(a.suggestedAt));
+      list.sort((a, b) => (b.suggestedAt || '').localeCompare(a.suggestedAt || ''));
       setRecommendations(list);
     }, (error) => {
       const errInfo = {
@@ -384,7 +384,7 @@ export default function App() {
         list.push(docSnap.data() as ClubDiscussion);
       });
       // Sort by createdAt descending
-      list.sort((a, b) => b.createdAt.localeCompare(a.createdAt));
+      list.sort((a, b) => (b.createdAt || '').localeCompare(a.createdAt || ''));
       setDiscussions(list);
     }, (error) => {
       console.warn('[Firebase] Discussions onSnapshot error (handled gracefully):', error);
@@ -402,7 +402,7 @@ export default function App() {
         list.push(docSnap.data() as Poll);
       });
       // Sort by createdAt descending
-      list.sort((a, b) => b.createdAt.localeCompare(a.createdAt));
+      list.sort((a, b) => (b.createdAt || '').localeCompare(a.createdAt || ''));
       setPolls(list);
     }, (error) => {
       console.warn('[Firebase] Polls onSnapshot error (handled gracefully):', error);
@@ -670,6 +670,9 @@ export default function App() {
       if (!existing.votes.includes(currentUser.email)) {
         try {
           const updatedVotes = [...existing.votes, currentUser.email];
+          // Eager state update to avoid stale layout
+          setRecommendations(prev => prev.map(r => r.id === existing.id ? { ...r, votes: updatedVotes } : r));
+
           await updateDoc(doc(db, 'recommendations', existing.id), {
             votes: updatedVotes
           });
@@ -693,6 +696,9 @@ export default function App() {
       votes: [currentUser.email] // core authors auto-upvote their entries
     };
 
+    // Eager state update to avoid stale layout
+    setRecommendations(prev => [newRec, ...prev]);
+
     try {
       await setDoc(doc(db, 'recommendations', id), sanitizeDoc(newRec));
       return 'added';
@@ -703,6 +709,8 @@ export default function App() {
   };
 
   const handleUpdateRecommendation = async (id: string, updatedFields: Partial<Recommendation>) => {
+    // Eager update
+    setRecommendations(prev => prev.map(r => r.id === id ? { ...r, ...updatedFields } : r));
     try {
       await updateDoc(doc(db, 'recommendations', id), sanitizeDoc(updatedFields));
     } catch (error) {
@@ -748,6 +756,9 @@ export default function App() {
     const newVotes = hasVoted 
       ? rec.votes.filter(email => email !== userEmail) // revoke upvote
       : [...rec.votes, userEmail]; // add upvote
+
+    // Local state eager update
+    setRecommendations(prev => prev.map(r => r.id === id ? { ...r, votes: newVotes } : r));
 
     try {
       await updateDoc(doc(db, 'recommendations', id), {

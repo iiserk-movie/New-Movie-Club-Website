@@ -679,14 +679,15 @@ export default function ScreeningSchedule({
 
       {/* Unified Add/Edit Screening Modal */}
       {showFormModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/85 backdrop-blur-sm p-4 overflow-y-auto">
-          <div className="w-full max-w-2xl rounded-2xl border border-zinc-850 bg-zinc-950 p-6 shadow-2xl relative my-8">
-            <button
-              onClick={() => setShowFormModal(false)}
-              className="absolute top-4 right-4 p-2 text-zinc-500 hover:text-zinc-200 rounded-lg cursor-pointer"
-            >
-              <X className="h-5 w-5" />
-            </button>
+        <div className="fixed inset-0 z-50 overflow-y-auto bg-black/85 backdrop-blur-sm p-4">
+          <div className="flex min-h-full items-center justify-center py-4 sm:py-8">
+            <div className="w-full max-w-2xl rounded-2xl border border-zinc-850 bg-zinc-950 p-6 shadow-2xl relative">
+              <button
+                onClick={() => setShowFormModal(false)}
+                className="absolute top-4 right-4 p-2 text-zinc-500 hover:text-zinc-200 rounded-lg cursor-pointer"
+              >
+                <X className="h-5 w-5" />
+              </button>
 
             <div className="mb-5">
               <span className="text-xs font-mono text-amber-500 uppercase tracking-widest font-semibold">
@@ -1115,6 +1116,7 @@ export default function ScreeningSchedule({
             </form>
           </div>
         </div>
+      </div>
       )}
     </div>
   );

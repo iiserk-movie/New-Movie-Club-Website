@@ -568,8 +568,9 @@ export default function ClubDiscussions({
 
           {/* CREATE MODAL SCREEN */}
           {showCreateModal && (
-            <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/85 backdrop-blur-sm p-4 animate-fade-in">
-              <div className="w-full max-w-2xl rounded-2xl border border-zinc-c800 bg-zinc-950 p-6 shadow-2xl relative max-h-[90vh] overflow-y-auto no-scrollbar">
+            <div className="fixed inset-0 z-50 overflow-y-auto bg-black/85 backdrop-blur-sm p-4">
+              <div className="flex min-h-full items-center justify-center py-4 sm:py-8">
+                <div className="w-full max-w-2xl rounded-2xl border border-zinc-c800 bg-zinc-950 p-6 shadow-2xl relative max-h-[90vh] overflow-y-auto no-scrollbar">
                 
                 {/* Close Button */}
                 <button
@@ -751,6 +752,7 @@ export default function ClubDiscussions({
                 </form>
               </div>
             </div>
+          </div>
           )}
         </div>
       )}

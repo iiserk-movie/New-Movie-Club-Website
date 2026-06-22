@@ -706,13 +706,14 @@ export default function PollsSection({
       {/* Admin CREATE POLL Modal / Pane */}
       <AnimatePresence>
         {showCreateModal && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-zinc-980/90 backdrop-blur-sm overflow-y-auto">
-            <motion.div
-              initial={{ scale: 0.95, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              exit={{ scale: 0.95, opacity: 0 }}
-              className="bg-zinc-950 border border-zinc-800 rounded-3xl p-6 w-full max-w-4xl max-h-[90vh] overflow-y-auto shadow-2xl relative space-y-6"
-            >
+          <div className="fixed inset-0 z-50 overflow-y-auto bg-zinc-980/90 backdrop-blur-sm p-4">
+            <div className="flex min-h-full items-center justify-center py-4 sm:py-8">
+              <motion.div
+                initial={{ scale: 0.95, opacity: 0 }}
+                animate={{ scale: 1, opacity: 1 }}
+                exit={{ scale: 0.95, opacity: 0 }}
+                className="bg-zinc-950 border border-zinc-800 rounded-3xl p-6 w-full max-w-4xl shadow-2xl relative space-y-6"
+              >
               <div className="flex justify-between items-center border-b border-zinc-900 pb-4">
                 <div className="flex items-center gap-2">
                   <Vote className="h-5 w-5 text-amber-500" />
@@ -1007,6 +1008,7 @@ export default function PollsSection({
               </form>
             </motion.div>
           </div>
+        </div>
         )}
       </AnimatePresence>
 

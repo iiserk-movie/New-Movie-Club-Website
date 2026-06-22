@@ -661,9 +661,9 @@ export default function PastScreenings({
 
       {/* Sync Dialog modal for Admins */}
       {showSyncModal && (
-        <div className="fixed inset-0 bg-black/85 backdrop-blur-md z-[99]" id="letterboxd-sync-modal">
-          <div className="fixed inset-0 flex items-center justify-center p-4">
-            <div className="bg-zinc-950 border border-zinc-900 rounded-3xl w-full max-w-xl overflow-hidden shadow-2xl flex flex-col max-h-[85vh]">
+        <div className="fixed inset-0 bg-black/85 backdrop-blur-md z-[99] overflow-y-auto" id="letterboxd-sync-modal">
+          <div className="flex min-h-full items-center justify-center p-4">
+            <div className="bg-zinc-950 border border-zinc-900 rounded-3xl w-full max-w-xl overflow-hidden shadow-2xl flex flex-col my-4">
               
               {/* Modal Header */}
               <div className="p-6 border-b border-zinc-900 flex justify-between items-center bg-zinc-950">
@@ -862,9 +862,9 @@ export default function PastScreenings({
       )}
       {/* Edit Movie Dialog Modal for Admins */}
       {editingMovie && (
-        <div className="fixed inset-0 bg-black/85 backdrop-blur-md z-[99]" id="edit-past-movie-modal">
-          <div className="fixed inset-0 flex items-center justify-center p-4">
-            <div className="bg-zinc-950 border border-zinc-900 rounded-3xl w-full max-w-xl overflow-hidden shadow-2xl flex flex-col max-h-[90vh]">
+        <div className="fixed inset-0 bg-black/85 backdrop-blur-md z-[99] overflow-y-auto" id="edit-past-movie-modal">
+          <div className="flex min-h-full items-center justify-center p-4">
+            <div className="bg-zinc-950 border border-zinc-900 rounded-3xl w-full max-w-xl overflow-hidden shadow-2xl flex flex-col my-4">
               
               {/* Modal Header */}
               <div className="p-6 border-b border-zinc-900 flex justify-between items-center bg-zinc-950">
