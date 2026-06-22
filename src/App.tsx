@@ -839,6 +839,7 @@ export default function App() {
         setActiveTab={setActiveTab}
         adminMode={adminMode}
         setAdminMode={setAdminMode}
+        onImportPastMovies={handleImportPastMovies}
       />
 
       {/* Main Feature Cinematic Hero Segment */}
