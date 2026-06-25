@@ -263,38 +263,56 @@ export default function Recommendations({
       recPayload.posterUrl = posterUrl.trim();
     }
 
-    if (editingId) {
-      if (onUpdateRecommendation) {
-        onUpdateRecommendation(editingId, recPayload);
-      }
-      setSuccessMsg(`✨ Recommendation for "${title}" updated successfully!`);
-      setTimeout(() => setSuccessMsg(''), 4000);
-      setEditingId(null);
-    } else {
-      const result = await onAddRecommendation(recPayload);
-      if (result === 'voted') {
-        setSuccessMsg(`✨ "${title}" has already been recommended! We auto-incremented its upvote count for you.`);
-        setTimeout(() => setSuccessMsg(''), 5500);
-      } else if (result === 'already_voted') {
-        setSuccessMsg(`ℹ️ "${title}" has already been recommended, and you've already upvoted it!`);
-        setTimeout(() => setSuccessMsg(''), 5500);
-      } else {
-        setSuccessMsg('Film recommendation logged successfully!');
+    try {
+      if (editingId) {
+        if (onUpdateRecommendation) {
+          await onUpdateRecommendation(editingId, recPayload);
+        }
+        setSuccessMsg(`✨ Recommendation for "${title}" updated successfully!`);
         setTimeout(() => setSuccessMsg(''), 4000);
+        setEditingId(null);
+      } else {
+        const result = await onAddRecommendation(recPayload);
+        if (result === 'voted') {
+          setSuccessMsg(`✨ "${title}" has already been recommended! We auto-incremented its upvote count for you.`);
+          setTimeout(() => setSuccessMsg(''), 5500);
+        } else if (result === 'already_voted') {
+          setSuccessMsg(`ℹ️ "${title}" has already been recommended, and you've already upvoted it!`);
+          setTimeout(() => setSuccessMsg(''), 5500);
+        } else {
+          setSuccessMsg('Film recommendation logged successfully!');
+          setTimeout(() => setSuccessMsg(''), 4000);
+        }
       }
-    }
 
-    // Reset states
-    setTitle('');
-    setDirector('');
-    setYear(2024);
-    setGenre('Sci-Fi/Drama');
-    setNotes('');
-    setPosterUrl('');
-    setLetterboxdInput('');
-    setSelectedMovie(null);
-    setErrorMsg('');
-    setShowSubmitModal(false);
+      // Reset states only on success
+      setTitle('');
+      setDirector('');
+      setYear(2024);
+      setGenre('Sci-Fi/Drama');
+      setNotes('');
+      setPosterUrl('');
+      setLetterboxdInput('');
+      setSelectedMovie(null);
+      setErrorMsg('');
+      setShowSubmitModal(false);
+    } catch (error: any) {
+      console.error("Failed to submit/update recommendation:", error);
+      let friendlyMessage = 'Failed to submit recommendation. Please check your network connection or permissions.';
+      if (error && error.message) {
+        try {
+          const parsed = JSON.parse(error.message);
+          if (parsed && parsed.error) {
+            friendlyMessage = `Database Error: ${parsed.error}`;
+          } else {
+            friendlyMessage = error.message;
+          }
+        } catch {
+          friendlyMessage = error.message;
+        }
+      }
+      setErrorMsg(friendlyMessage);
+    }
   };
 
   // Filter & Search Recommendations
