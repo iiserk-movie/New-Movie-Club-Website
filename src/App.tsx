@@ -29,6 +29,7 @@ import Recommendations from './components/Recommendations';
 import ClubDiscussions from './components/ClubDiscussions';
 import UserProfile from './components/UserProfile';
 import PollsSection from './components/PollsSection';
+import { CINEMA_QUOTES } from './quotesData';
 import { letterboxdMovies } from './letterboxdDb';
 
 // Use database-level seeding markers to prevent unwanted re-seeding on fresh page load/hard refresh
@@ -57,6 +58,12 @@ export default function App() {
   const [activeTab, setActiveTab] = useState<string>('schedule');
   const [focusedDiscussionId, setFocusedDiscussionId] = useState<string | null>(null);
   const [adminMode, setAdminMode] = useState<boolean>(false);
+  const [randomQuote, setRandomQuote] = useState(() => CINEMA_QUOTES[Math.floor(Math.random() * CINEMA_QUOTES.length)]);
+
+  const randomizeQuote = () => {
+    const randomIndex = Math.floor(Math.random() * CINEMA_QUOTES.length);
+    setRandomQuote(CINEMA_QUOTES[randomIndex]);
+  };
 
   // Core schedules, past screenings, recommendations pools with initial local fallback
   const [screenings, setScreenings] = useState<Screening[]>(initialScreenings);
@@ -463,6 +470,7 @@ export default function App() {
           if (role === 'admin') {
             setAdminMode(true);
           }
+          randomizeQuote();
           // Sync to database
           syncUserToFirestore(userObj);
         }
@@ -529,6 +537,7 @@ export default function App() {
     if (role === 'admin') {
       setAdminMode(true);
     }
+    randomizeQuote();
     syncUserToFirestore(userObj);
   };
 
@@ -971,7 +980,7 @@ export default function App() {
               </h2>
               
               <p className="mt-4 text-sm sm:text-base text-zinc-350 max-w-2xl leading-relaxed italic font-serif">
-                "Once you overcome the one-inch tall barrier of subtitles, you will be introduced to so many more amazing films." — Bong Joon-ho
+                "{randomQuote.text}" — <span className="text-amber-400/90 font-mono font-medium tracking-wide uppercase text-xs">{randomQuote.author}</span>
               </p>
 
               {/* Quick stats board */}

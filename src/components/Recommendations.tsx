@@ -514,29 +514,27 @@ export default function Recommendations({
                     </span>
                   </div>
 
-                  {/* Action buttons (Edit for author/admin, Delete, Mark Screened for admin) */}
-                  {((currentUser && rec.suggestedBy === currentUser.email) || adminMode || (currentUser?.role === 'admin')) && (
+                  {/* Action buttons (Edit, Delete, Mark Screened - Restricted to Movie Club Admin only) */}
+                  {(adminMode || (currentUser?.role === 'admin')) && (
                     <div className="mt-3 pt-2.5 border-t border-zinc-900/60 flex items-center justify-end gap-2 shrink-0 flex-wrap">
-                      {((currentUser && rec.suggestedBy === currentUser.email) || adminMode || (currentUser?.role === 'admin')) && (
-                        <button
-                          type="button"
-                          onClick={() => {
-                            setEditingId(rec.id);
-                            setTitle(rec.title);
-                            setDirector(rec.director);
-                            setYear(rec.year);
-                            setGenre(rec.genre);
-                            setNotes(rec.notes);
-                            setPosterUrl(rec.posterUrl || '');
-                            setShowSubmitModal(true);
-                          }}
-                          className="flex items-center gap-1 px-2.5 py-1 rounded bg-zinc-900 hover:bg-zinc-850 border border-zinc-800 hover:border-amber-500/30 text-[10px] font-bold text-zinc-300 hover:text-amber-400 transition-all cursor-pointer"
-                        >
-                          <Pencil className="h-3 w-3 text-amber-500/80" />
-                          <span>EDIT</span>
-                        </button>
-                      )}
-                      {((currentUser && rec.suggestedBy === currentUser.email) || adminMode || (currentUser?.role === 'admin')) && onDeleteRecommendation && (
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setEditingId(rec.id);
+                          setTitle(rec.title);
+                          setDirector(rec.director);
+                          setYear(rec.year);
+                          setGenre(rec.genre);
+                          setNotes(rec.notes);
+                          setPosterUrl(rec.posterUrl || '');
+                          setShowSubmitModal(true);
+                        }}
+                        className="flex items-center gap-1 px-2.5 py-1 rounded bg-zinc-900 hover:bg-zinc-850 border border-zinc-800 hover:border-amber-500/30 text-[10px] font-bold text-zinc-300 hover:text-amber-400 transition-all cursor-pointer"
+                      >
+                        <Pencil className="h-3 w-3 text-amber-500/80" />
+                        <span>EDIT</span>
+                      </button>
+                      {onDeleteRecommendation && (
                         <button
                           type="button"
                           onClick={() => {
@@ -550,20 +548,18 @@ export default function Recommendations({
                           <span>DELETE</span>
                         </button>
                       )}
-                      {(adminMode || currentUser?.role === 'admin') && (
-                        <button
-                          type="button"
-                          onClick={() => {
-                            setScreeningToMark(rec);
-                            setScreenDate(new Date().toISOString().split('T')[0]);
-                            setScreenRating(4.5);
-                          }}
-                          className="flex items-center gap-1 px-2.5 py-1 rounded bg-amber-500/5 hover:bg-amber-500/10 border border-amber-500/15 hover:border-amber-500/35 text-[10px] font-bold text-amber-400 hover:text-amber-300 transition-all cursor-pointer"
-                        >
-                          <Star className="h-3 w-3 fill-amber-400/80 text-amber-400" />
-                          <span>MARK SCREENED</span>
-                        </button>
-                      )}
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setScreeningToMark(rec);
+                          setScreenDate(new Date().toISOString().split('T')[0]);
+                          setScreenRating(4.5);
+                        }}
+                        className="flex items-center gap-1 px-2.5 py-1 rounded bg-amber-500/5 hover:bg-amber-500/10 border border-amber-500/15 hover:border-amber-500/35 text-[10px] font-bold text-amber-400 hover:text-amber-300 transition-all cursor-pointer"
+                      >
+                        <Star className="h-3 w-3 fill-amber-400/80 text-amber-400" />
+                        <span>MARK SCREENED</span>
+                      </button>
                     </div>
                   )}
                 </div>
