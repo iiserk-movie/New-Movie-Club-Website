@@ -589,13 +589,182 @@ export async function searchMovies(query: string): Promise<SearchMovieResult[]> 
   }
 }
 
+export function extractLetterboxdUsername(input: string): string {
+  let cleaned = input.trim();
+  // Strip trailing slashes or spaces
+  cleaned = cleaned.replace(/\/+$/, '');
+  
+  // Try matching standard URL formats
+  const match = cleaned.match(/(?:https?:\/\/)?(?:www\.)?letterboxd\.com\/([a-zA-Z0-9_-]+)/i);
+  if (match && match[1]) {
+    return match[1].toLowerCase();
+  }
+  
+  // Strip protocols if any
+  cleaned = cleaned.replace(/^(https?:\/\/)?(www\.)?/, '');
+  const parts = cleaned.split('/').filter(Boolean);
+  if (parts.length > 0) {
+    if (parts[0].toLowerCase() === 'letterboxd.com' && parts[1]) {
+      return parts[1].toLowerCase();
+    }
+    return parts[0].toLowerCase();
+  }
+  
+  return cleaned.toLowerCase();
+}
+
+/**
+ * Robust regex parser for Letterboxd RSS XML Feed.
+ * Extracts all relevant details deterministically without needing external API calls.
+ */
+export function parseLetterboxdXml(xmlText: string): LetterboxdWatchEntry[] {
+  const items: LetterboxdWatchEntry[] = [];
+  
+  // Use a regex that matches <item> tags
+  const itemRegex = /<item>([\s\S]*?)<\/item>/gi;
+  let match;
+  
+  while ((match = itemRegex.exec(xmlText)) !== null) {
+    const content = match[1];
+    
+    // Extract Title
+    let title = "";
+    const filmTitleMatch = content.match(/<letterboxd:filmTitle>([^<]+)<\/letterboxd:filmTitle>/i);
+    if (filmTitleMatch) {
+      title = filmTitleMatch[1].trim();
+    } else {
+      const titleMatch = content.match(/<title>([^<]+)<\/title>/i);
+      if (titleMatch) {
+        let rawTitle = titleMatch[1].trim();
+        rawTitle = rawTitle.replace(/\s*,\s*\d{4}\s*-\s*[★½☆]+\s*$/i, '');
+        rawTitle = rawTitle.replace(/\s*-\s*[★½☆]+\s*$/i, '');
+        rawTitle = rawTitle.replace(/\s*,\s*\d{4}\s*$/i, '');
+        title = rawTitle.trim();
+      }
+    }
+    if (!title) continue;
+    
+    // Extract Year
+    let year = 2026;
+    const filmYearMatch = content.match(/<letterboxd:filmYear>([^<]+)<\/letterboxd:filmYear>/i);
+    if (filmYearMatch) {
+      year = parseInt(filmYearMatch[1].trim(), 10) || 2026;
+    } else {
+      const titleYearMatch = content.match(/<title>[^<]*?,\s*(\d{4})/i);
+      if (titleYearMatch) {
+        year = parseInt(titleYearMatch[1].trim(), 10) || 2026;
+      }
+    }
+    
+    // Extract Letterboxd URL
+    let letterboxdUrl = "";
+    const linkMatch = content.match(/<link>([^<]+)<\/link>/i);
+    if (linkMatch) {
+      letterboxdUrl = linkMatch[1].trim();
+    } else {
+      letterboxdUrl = `https://letterboxd.com/film/${title.toLowerCase().replace(/[^a-z0-9]+/g, '-')}/`;
+    }
+    
+    // Extract Watched/Screened Date
+    let screenedDate = "";
+    const watchedDateMatch = content.match(/<letterboxd:watchedDate>([^<]+)<\/letterboxd:watchedDate>/i);
+    if (watchedDateMatch) {
+      screenedDate = watchedDateMatch[1].trim();
+    } else {
+      const pubDateMatch = content.match(/<pubDate>([^<]+)<\/pubDate>/i);
+      if (pubDateMatch) {
+        try {
+          const d = new Date(pubDateMatch[1].trim());
+          screenedDate = d.toISOString().split('T')[0];
+        } catch (e) {
+          screenedDate = new Date().toISOString().split('T')[0];
+        }
+      } else {
+        screenedDate = new Date().toISOString().split('T')[0];
+      }
+    }
+    
+    // Extract Rating
+    let rating = 4.0;
+    const memberRatingMatch = content.match(/<letterboxd:memberRating>([^<]+)<\/letterboxd:memberRating>/i);
+    if (memberRatingMatch) {
+      rating = parseFloat(memberRatingMatch[1].trim()) || 4.0;
+    } else {
+      const titleMatch = content.match(/<title>([^<]+)<\/title>/i);
+      if (titleMatch) {
+        const titleText = titleMatch[1];
+        const starsMatch = titleText.match(/([★½☆]+)\s*$/);
+        if (starsMatch) {
+          const starsStr = starsMatch[1];
+          let calculatedRating = 0;
+          for (const char of starsStr) {
+            if (char === '★') calculatedRating += 1.0;
+            if (char === '½') calculatedRating += 0.5;
+          }
+          if (calculatedRating > 0) rating = calculatedRating;
+        }
+      }
+    }
+    
+    // Extract Poster URL
+    let posterUrl = "";
+    const descriptionMatch = content.match(/<description>([\s\S]*?)<\/description>/i);
+    let descriptionText = descriptionMatch ? descriptionMatch[1] : "";
+    
+    const srcMatch = descriptionText.match(/src=["']([^"']+)["']/i);
+    if (srcMatch) {
+      posterUrl = srcMatch[1].trim();
+      posterUrl = posterUrl.replace('-0-150-0-225-crop.jpg', '-0-500-0-750-crop.jpg');
+    } else {
+      posterUrl = "https://images.unsplash.com/photo-1489599849927-2ee91cede3ba?q=80&w=300";
+    }
+    
+    // Extract Synopsis / Review Text
+    let synopsis = "";
+    if (descriptionText) {
+      descriptionText = descriptionText.replace(/<!\[CDATA\[([\s\S]*?)\]\]>/gi, '$1');
+      let noImg = descriptionText.replace(/<img[^>]*>/gi, '').trim();
+      let cleanText = noImg.replace(/<\/?[^>]+(>|$)/g, "").trim();
+      
+      cleanText = cleanText
+        .replace(/&amp;/g, '&')
+        .replace(/&lt;/g, '<')
+        .replace(/&gt;/g, '>')
+        .replace(/&quot;/g, '"')
+        .replace(/&#39;/g, "'")
+        .replace(/&apos;/g, "'");
+        
+      synopsis = cleanText || "IISER Kolkata Movie Club official screening event review.";
+    } else {
+      synopsis = "IISER Kolkata Movie Club official screening event review.";
+    }
+    
+    let director = "Unknown";
+    let genre = ["Cinema"];
+    
+    items.push({
+      title,
+      year,
+      letterboxdUrl,
+      screenedDate,
+      rating,
+      synopsis,
+      director,
+      genre,
+      posterUrl
+    });
+  }
+  
+  return items;
+}
+
 /**
  * Fetches and parses the Letterboxd RSS Diary feed.
  * On GitHub Pages, it utilizes "AllOrigins" CORS proxy to bypass cross-domain security,
- * and passes the raw XML snippet to Gemini for pristine parsing.
+ * and parses the raw XML snippet locally.
  */
 export async function syncLetterboxdRSS(username: string): Promise<LetterboxdWatchEntry[]> {
-  const cleanUsername = username.trim().toLowerCase();
+  const cleanUsername = extractLetterboxdUsername(username);
   if (!cleanUsername) return [];
 
   // 1. Try backend endpoint
@@ -613,19 +782,12 @@ export async function syncLetterboxdRSS(username: string): Promise<LetterboxdWat
       }
     }
   } catch (err) {
-    console.log('[Movie API] Backend /api/letterboxd-rss unreachable. Attempting CORS proxy proxying to Letterboxd feed...', err);
+    console.log('[Movie API] Backend /api/letterboxd-rss unreachable or returned error. Attempting CORS proxy...', err);
   }
 
   // 2. Fall back to Client-side fetch with CORS proxy
-  const apiKey = getLocalGeminiKey();
-  if (!apiKey) {
-    throw new Error('On GitHub Pages, fetching public RSS feeds requires configuring a Gemini API Key to enable client-side AI parsing.');
-  }
-
   try {
-    // Standard RSS feed on Letterboxd
     const feedUrl = `https://letterboxd.com/${encodeURIComponent(cleanUsername)}/rss/`;
-    // Use AllOrigins (a highly reputable free, anonymous CORS proxy)
     const proxyUrl = `https://api.allorigins.win/get?url=${encodeURIComponent(feedUrl)}`;
     
     const res = await fetch(proxyUrl);
@@ -640,7 +802,18 @@ export async function syncLetterboxdRSS(username: string): Promise<LetterboxdWat
       throw new Error("No diary entries were found or parsed from the Letterboxd profile.");
     }
 
-    // Truncate to save token limit
+    // Parse XML locally using robust regex
+    const parsedMovies = parseLetterboxdXml(xmlText);
+    if (parsedMovies.length > 0) {
+      return parsedMovies;
+    }
+
+    // Client-side fallback to Gemini only if regex parse was empty AND key exists
+    const apiKey = getLocalGeminiKey();
+    if (!apiKey) {
+      throw new Error('Local regex parser returned no items and no local Gemini API Key is configured for advanced client-side parsing.');
+    }
+
     const maxCharacterLimit = 25000;
     let truncatedXml = xmlText;
     if (truncatedXml.length > maxCharacterLimit) {

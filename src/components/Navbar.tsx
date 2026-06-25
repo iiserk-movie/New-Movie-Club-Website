@@ -4,7 +4,7 @@ import { User, PastMovie } from '../types';
 import { auth, googleProvider } from '../firebase';
 import MovieClubLogo from './MovieClubLogo';
 import { signInWithPopup, signInWithRedirect, signOut as fbSignOut, signInAnonymously } from 'firebase/auth';
-import { getLocalGeminiKey, setLocalGeminiKey, clearLocalGeminiKey, syncLetterboxdRSS } from '../utils/movieApi';
+import { getLocalGeminiKey, setLocalGeminiKey, clearLocalGeminiKey, syncLetterboxdRSS, extractLetterboxdUsername } from '../utils/movieApi';
 
 interface NavbarProps {
   currentUser: User | null;
@@ -55,7 +55,7 @@ export default function Navbar({
   const [adminTab, setAdminTab] = useState<'passcode' | 'letterboxd'>('passcode');
   const [isLetterboxdSyncing, setIsLetterboxdSyncing] = useState(false);
   const [letterboxdUserToSync, setLetterboxdUserToSync] = useState(() => {
-    return localStorage.getItem('last_letterboxd_sync_username') || 'iiserk_movie';
+    return localStorage.getItem('last_letterboxd_sync_username') || 'ikmc';
   });
   const [syncPhaseInfo, setSyncPhaseInfo] = useState('');
   const [letterboxdSuccessMsg, setLetterboxdSuccessMsg] = useState('');
@@ -935,10 +935,15 @@ export default function Navbar({
                     <input
                       type="text"
                       required
-                      placeholder="e.g. iiserk_movie"
+                      placeholder="e.g. ikmc"
                       value={letterboxdUserToSync}
                       onChange={(e) => {
-                        setLetterboxdUserToSync(e.target.value);
+                        const val = e.target.value;
+                        if (val.includes('letterboxd.com') || val.includes('/') || val.includes('http')) {
+                          setLetterboxdUserToSync(extractLetterboxdUsername(val));
+                        } else {
+                          setLetterboxdUserToSync(val);
+                        }
                         if (errorMsg) setErrorMsg('');
                       }}
                       disabled={isLetterboxdSyncing}

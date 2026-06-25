@@ -429,6 +429,169 @@ async function fetchUrlMetadata(url: string) {
     }
   });
 
+function extractLetterboxdUsername(input: string): string {
+  let cleaned = input.trim();
+  // Strip trailing slashes or spaces
+  cleaned = cleaned.replace(/\/+$/, '');
+  
+  // Try matching standard URL formats
+  const match = cleaned.match(/(?:https?:\/\/)?(?:www\.)?letterboxd\.com\/([a-zA-Z0-9_-]+)/i);
+  if (match && match[1]) {
+    return match[1].toLowerCase();
+  }
+  
+  // Strip protocols if any
+  cleaned = cleaned.replace(/^(https?:\/\/)?(www\.)?/, '');
+  const parts = cleaned.split('/').filter(Boolean);
+  if (parts.length > 0) {
+    if (parts[0].toLowerCase() === 'letterboxd.com' && parts[1]) {
+      return parts[1].toLowerCase();
+    }
+    return parts[0].toLowerCase();
+  }
+  
+  return cleaned.toLowerCase();
+}
+
+function parseLetterboxdXmlServer(xmlText: string): any[] {
+  const items: any[] = [];
+  const itemRegex = /<item>([\s\S]*?)<\/item>/gi;
+  let match;
+  
+  while ((match = itemRegex.exec(xmlText)) !== null) {
+    const content = match[1];
+    
+    // Extract Title
+    let title = "";
+    const filmTitleMatch = content.match(/<letterboxd:filmTitle>([^<]+)<\/letterboxd:filmTitle>/i);
+    if (filmTitleMatch) {
+      title = filmTitleMatch[1].trim();
+    } else {
+      const titleMatch = content.match(/<title>([^<]+)<\/title>/i);
+      if (titleMatch) {
+        let rawTitle = titleMatch[1].trim();
+        rawTitle = rawTitle.replace(/\s*,\s*\d{4}\s*-\s*[★½☆]+\s*$/i, '');
+        rawTitle = rawTitle.replace(/\s*-\s*[★½☆]+\s*$/i, '');
+        rawTitle = rawTitle.replace(/\s*,\s*\d{4}\s*$/i, '');
+        title = rawTitle.trim();
+      }
+    }
+    if (!title) continue;
+    
+    // Extract Year
+    let year = 2026;
+    const filmYearMatch = content.match(/<letterboxd:filmYear>([^<]+)<\/letterboxd:filmYear>/i);
+    if (filmYearMatch) {
+      year = parseInt(filmYearMatch[1].trim(), 10) || 2026;
+    } else {
+      const titleYearMatch = content.match(/<title>[^<]*?,\s*(\d{4})/i);
+      if (titleYearMatch) {
+        year = parseInt(titleYearMatch[1].trim(), 10) || 2026;
+      }
+    }
+    
+    // Extract Letterboxd URL
+    let letterboxdUrl = "";
+    const linkMatch = content.match(/<link>([^<]+)<\/link>/i);
+    if (linkMatch) {
+      letterboxdUrl = linkMatch[1].trim();
+    } else {
+      letterboxdUrl = `https://letterboxd.com/film/${title.toLowerCase().replace(/[^a-z0-9]+/g, '-')}/`;
+    }
+    
+    // Extract Watched/Screened Date
+    let screenedDate = "";
+    const watchedDateMatch = content.match(/<letterboxd:watchedDate>([^<]+)<\/letterboxd:watchedDate>/i);
+    if (watchedDateMatch) {
+      screenedDate = watchedDateMatch[1].trim();
+    } else {
+      const pubDateMatch = content.match(/<pubDate>([^<]+)<\/pubDate>/i);
+      if (pubDateMatch) {
+        try {
+          const d = new Date(pubDateMatch[1].trim());
+          screenedDate = d.toISOString().split('T')[0];
+        } catch (e) {
+          screenedDate = new Date().toISOString().split('T')[0];
+        }
+      } else {
+        screenedDate = new Date().toISOString().split('T')[0];
+      }
+    }
+    
+    // Extract Rating
+    let rating = 4.0;
+    const memberRatingMatch = content.match(/<letterboxd:memberRating>([^<]+)<\/letterboxd:memberRating>/i);
+    if (memberRatingMatch) {
+      rating = parseFloat(memberRatingMatch[1].trim()) || 4.0;
+    } else {
+      const titleMatch = content.match(/<title>([^<]+)<\/title>/i);
+      if (titleMatch) {
+        const titleText = titleMatch[1];
+        const starsMatch = titleText.match(/([★½☆]+)\s*$/);
+        if (starsMatch) {
+          const starsStr = starsMatch[1];
+          let calculatedRating = 0;
+          for (const char of starsStr) {
+            if (char === '★') calculatedRating += 1.0;
+            if (char === '½') calculatedRating += 0.5;
+          }
+          if (calculatedRating > 0) rating = calculatedRating;
+        }
+      }
+    }
+    
+    // Extract Poster URL
+    let posterUrl = "";
+    const descriptionMatch = content.match(/<description>([\s\S]*?)<\/description>/i);
+    let descriptionText = descriptionMatch ? descriptionMatch[1] : "";
+    
+    const srcMatch = descriptionText.match(/src=["']([^"']+)["']/i);
+    if (srcMatch) {
+      posterUrl = srcMatch[1].trim();
+      posterUrl = posterUrl.replace('-0-150-0-225-crop.jpg', '-0-500-0-750-crop.jpg');
+    } else {
+      posterUrl = "https://images.unsplash.com/photo-1489599849927-2ee91cede3ba?q=80&w=300";
+    }
+    
+    // Extract Synopsis / Review Text
+    let synopsis = "";
+    if (descriptionText) {
+      descriptionText = descriptionText.replace(/<!\[CDATA\[([\s\S]*?)\]\]>/gi, '$1');
+      let noImg = descriptionText.replace(/<img[^>]*>/gi, '').trim();
+      let cleanText = noImg.replace(/<\/?[^>]+(>|$)/g, "").trim();
+      
+      cleanText = cleanText
+        .replace(/&amp;/g, '&')
+        .replace(/&lt;/g, '<')
+        .replace(/&gt;/g, '>')
+        .replace(/&quot;/g, '"')
+        .replace(/&#39;/g, "'")
+        .replace(/&apos;/g, "'");
+        
+      synopsis = cleanText || "IISER Kolkata Movie Club official screening event review.";
+    } else {
+      synopsis = "IISER Kolkata Movie Club official screening event review.";
+    }
+    
+    let director = "Unknown";
+    let genre = ["Cinema"];
+    
+    items.push({
+      title,
+      year,
+      letterboxdUrl,
+      screenedDate,
+      rating,
+      synopsis,
+      director,
+      genre,
+      posterUrl
+    });
+  }
+  
+  return items;
+}
+
   // API Endpoint to fetch and parse the public Letterboxd RSS Feed for Admin Diary updates
   app.post("/api/letterboxd-rss", async (req, res) => {
     const { username } = req.body;
@@ -436,10 +599,11 @@ async function fetchUrlMetadata(url: string) {
       return res.status(400).json({ error: "username is required" });
     }
 
-    console.log(`[Server] Syncing Letterboxd diary RSS for user: "${username}"`);
+    const cleanUsername = extractLetterboxdUsername(username);
+    console.log(`[Server] Syncing Letterboxd diary RSS for user: "${cleanUsername}" (original raw input: "${username}")`);
 
     try {
-      const feedUrl = `https://letterboxd.com/${encodeURIComponent(username.trim().toLowerCase())}/rss/`;
+      const feedUrl = `https://letterboxd.com/${encodeURIComponent(cleanUsername)}/rss/`;
       const response = await fetch(feedUrl, {
         headers: {
           'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/115.0.0.0 Safari/537.36',
@@ -454,6 +618,13 @@ async function fetchUrlMetadata(url: string) {
       const xmlText = await response.text();
       if (!xmlText || !xmlText.includes("<item>")) {
         throw new Error("No recent diary entries found in Letterboxd RSS feed.");
+      }
+
+      // Try local regex parser FIRST
+      const parsedMovies = parseLetterboxdXmlServer(xmlText);
+      if (parsedMovies.length > 0) {
+        console.log(`[Server] Successfully parsed ${parsedMovies.length} movies locally via regex parser.`);
+        return res.json({ success: true, username, movies: parsedMovies });
       }
 
       // Limit XML length to fit safely in model token window while capturing up to 12 recent entries

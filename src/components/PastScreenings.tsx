@@ -2,11 +2,11 @@ import React, { useState } from 'react';
 import { 
   Star, MessageSquare, ExternalLink, RefreshCw, Calendar, 
   ChevronDown, ChevronUp, User, Clock, Send, MessageCircleCode, CheckCircle2,
-  Edit3, Trash2, Plus, Search, X, AlertCircle
+  Edit3, Trash2, Plus, Search, X, AlertCircle, FileSpreadsheet, Upload
 } from 'lucide-react';
 import { PastMovie, UserReview } from '../types';
 import { getPolishedPosterUrl } from '../letterboxdDb';
-import { syncLetterboxdRSS } from '../utils/movieApi';
+import { syncLetterboxdRSS, extractLetterboxdUsername } from '../utils/movieApi';
 
 interface PastScreeningsProps {
   pastMovies: PastMovie[];
@@ -50,13 +50,169 @@ export default function PastScreenings({
   // New States for Letterboxd sync
   const [showSyncModal, setShowSyncModal] = useState(false);
   const [letterboxdUsername, setLetterboxdUsername] = useState(() => {
-    return localStorage.getItem('last_letterboxd_sync_username') || '';
+    return localStorage.getItem('last_letterboxd_sync_username') || 'ikmc';
   });
   const [syncedMovies, setSyncedMovies] = useState<Omit<PastMovie, 'reviews'>[] | null>(null);
   const [selectedImportIds, setSelectedImportIds] = useState<Record<string, boolean>>({});
   const [syncStatusMsg, setSyncStatusMsg] = useState('');
   const [syncError, setSyncError] = useState<string | null>(null);
   const [isImporting, setIsImporting] = useState(false);
+  const [syncSource, setSyncSource] = useState<'rss' | 'csv'>('rss');
+
+  const handleCsvUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setSyncError(null);
+    setSyncedMovies(null);
+    setSyncStatusMsg('Reading and parsing uploaded Letterboxd diary.csv file...');
+
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      try {
+        const text = event.target?.result as string;
+        if (!text) {
+          throw new Error('Could not read file content.');
+        }
+
+        const lines: string[] = [];
+        let currentLine = '';
+        let inQuotes = false;
+        
+        for (let i = 0; i < text.length; i++) {
+          const char = text[i];
+          if (char === '"') {
+            inQuotes = !inQuotes;
+            currentLine += char;
+          } else if (char === '\n' && !inQuotes) {
+            lines.push(currentLine);
+            currentLine = '';
+          } else {
+            currentLine += char;
+          }
+        }
+        if (currentLine) {
+          lines.push(currentLine);
+        }
+
+        if (lines.length < 2) {
+          throw new Error('The uploaded CSV file does not contain enough data.');
+        }
+
+        // Helper to parse a single row of CSV respects quotes
+        const parseRow = (rowText: string): string[] => {
+          const cols: string[] = [];
+          let currentVal = '';
+          let insideQuotes = false;
+          
+          for (let i = 0; i < rowText.length; i++) {
+            const char = rowText[i];
+            if (char === '"') {
+              insideQuotes = !insideQuotes;
+            } else if (char === ',' && !insideQuotes) {
+              cols.push(currentVal.trim());
+              currentVal = '';
+            } else {
+              currentVal += char;
+            }
+          }
+          cols.push(currentVal.trim());
+          return cols;
+        };
+
+        const headers = parseRow(lines[0]).map(h => h.replace(/^"|"$/g, '').toLowerCase().trim());
+        
+        const dateIdx = headers.indexOf('date');
+        const nameIdx = headers.indexOf('name');
+        const yearIdx = headers.indexOf('year');
+        const urlIdx = headers.indexOf('letterboxd uri');
+        const ratingIdx = headers.indexOf('rating');
+        const watchedDateIdx = headers.indexOf('watched date');
+
+        if (nameIdx === -1) {
+          throw new Error('Invalid Letterboxd diary CSV format. Make sure it contains at least a "Name" column.');
+        }
+
+        const getVal = (cols: string[], idx: number, fallbackIdx: number): string => {
+          const finalIdx = idx !== -1 ? idx : fallbackIdx;
+          if (finalIdx < cols.length) {
+            return cols[finalIdx].replace(/^"|"$/g, '').trim();
+          }
+          return '';
+        };
+
+        const moviesList: Omit<PastMovie, 'reviews'>[] = [];
+
+        for (let i = 1; i < lines.length; i++) {
+          const line = lines[i].trim();
+          if (!line) continue;
+          
+          const cols = parseRow(line);
+          const title = getVal(cols, nameIdx, 1);
+          if (!title) continue;
+
+          const rawYear = getVal(cols, yearIdx, 2);
+          const year = parseInt(rawYear, 10) || 2025;
+
+          const rawDate = getVal(cols, watchedDateIdx, 7) || getVal(cols, dateIdx, 0);
+          let screenedDate = rawDate;
+          if (!screenedDate) {
+            screenedDate = new Date().toISOString().split('T')[0];
+          }
+
+          const letterboxdUrl = getVal(cols, urlIdx, 3) || `https://letterboxd.com/film/${title.toLowerCase().replace(/[^a-z0-9]+/g, '-')}/`;
+
+          const rawRating = getVal(cols, ratingIdx, 4);
+          const rating = parseFloat(rawRating) || 4.0;
+
+          const slug = title.toLowerCase().replace(/[^a-z0-9]+/g, '-');
+          const id = `pm-${slug}-${year}-${Math.random().toString(36).substring(2, 6)}`;
+
+          moviesList.push({
+            id,
+            title,
+            year,
+            director: 'Unknown Director',
+            screenedDate,
+            rating,
+            letterboxdUrl,
+            posterUrl: 'https://images.unsplash.com/photo-1489599849927-2ee91cede3ba?q=80&w=300',
+            synopsis: 'Cinema screening curated and imported from the Movie Club Letterboxd feed.',
+            genre: ['Cinema']
+          });
+        }
+
+        if (moviesList.length === 0) {
+          throw new Error('No movies could be parsed from the CSV file.');
+        }
+
+        // Sort movies by screenedDate descending to show newest first
+        moviesList.sort((a, b) => new Date(b.screenedDate).getTime() - new Date(a.screenedDate).getTime());
+
+        setSyncedMovies(moviesList);
+
+        // Pre-select items that are NOT currently in the pastMovies list
+        const initialSelection: Record<string, boolean> = {};
+        moviesList.forEach(m => {
+          const exists = pastMovies.some(existing => 
+            existing.title.toLowerCase().trim() === m.title.toLowerCase().trim()
+          );
+          initialSelection[m.title] = !exists;
+        });
+        setSelectedImportIds(initialSelection);
+        setSyncStatusMsg('');
+      } catch (err: any) {
+        console.error(err);
+        setSyncError(err.message || 'Failed to parse CSV file.');
+        setSyncStatusMsg('');
+      }
+    };
+    reader.onerror = () => {
+      setSyncError('Failed to read the file.');
+      setSyncStatusMsg('');
+    };
+    reader.readAsText(file);
+  };
 
   // New States for Editing Past Movie (Administrators)
   const [editingMovie, setEditingMovie] = useState<PastMovie | null>(null);
@@ -90,6 +246,7 @@ export default function PastScreenings({
     setSyncError(null);
     setSyncedMovies(null);
     setSyncStatusMsg('');
+    setSyncSource('rss');
   };
 
   const handleFetchDiary = async () => {
@@ -693,50 +850,119 @@ export default function PastScreenings({
               {/* Modal Body */}
               <div className="p-6 overflow-y-auto space-y-5 flex-1">
                 
-                {/* Input section */}
-                <div className="bg-zinc-900/30 border border-zinc-900 rounded-2xl p-4 space-y-3">
-                  <label className="block text-[10px] font-mono font-semibold tracking-wider text-zinc-400">
-                    LETTERBOXD ADMIN ACCOUNT NAME
-                  </label>
-                  <div className="flex gap-2">
-                    <div className="relative flex-1">
-                      <span className="absolute left-3 top-1/2 -translate-y-1/2 text-zinc-600 text-xs font-mono">
-                        letterboxd.com/
-                      </span>
-                      <input
-                        type="text"
-                        value={letterboxdUsername}
-                        onChange={(e) => setLetterboxdUsername(e.target.value)}
-                        placeholder="your_letterboxd_user"
-                        className="w-full bg-zinc-950 text-zinc-100 border border-zinc-900 rounded-xl pl-28 pr-4 py-2.5 text-xs font-mono focus:outline-none focus:border-amber-500/50 transition-colors"
-                        disabled={isSyncing}
-                        onKeyDown={(e) => {
-                          if (e.key === "Enter") handleFetchDiary();
-                        }}
-                      />
-                    </div>
-                    <button
-                      onClick={handleFetchDiary}
-                      disabled={isSyncing}
-                      className="bg-amber-500 hover:bg-amber-400 text-zinc-950 px-5 rounded-xl text-xs font-mono transition-colors font-bold flex items-center justify-center space-x-1 shrink-0 cursor-pointer disabled:opacity-50"
-                    >
-                      {isSyncing ? (
-                        <>
-                          <RefreshCw className="h-3.5 w-3.5 animate-spin" />
-                          <span>Fetching...</span>
-                        </>
-                      ) : (
-                        <>
-                          <Search className="h-3.5 w-3.5" />
-                          <span>Fetch Diary</span>
-                        </>
-                      )}
-                    </button>
-                  </div>
-                  <p className="text-[10px] text-zinc-500 leading-normal">
-                    The account must be set to public. This fetches your recent diary events.
-                  </p>
+                {/* Sync source toggle */}
+                <div className="flex border-b border-zinc-900 bg-zinc-950/40 p-1 rounded-xl">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setSyncSource('rss');
+                      setSyncedMovies(null);
+                      setSyncError(null);
+                    }}
+                    className={`flex-1 py-2 text-xs font-mono font-bold transition-all rounded-lg cursor-pointer ${syncSource === 'rss' ? 'bg-zinc-900 text-amber-500' : 'text-zinc-500 hover:text-zinc-400'}`}
+                  >
+                    Fetch RSS Feed
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setSyncSource('csv');
+                      setSyncedMovies(null);
+                      setSyncError(null);
+                    }}
+                    className={`flex-1 py-2 text-xs font-mono font-bold transition-all rounded-lg cursor-pointer ${syncSource === 'csv' ? 'bg-zinc-900 text-amber-500' : 'text-zinc-500 hover:text-zinc-400'}`}
+                  >
+                    Upload diary.csv
+                  </button>
                 </div>
+
+                {syncSource === 'rss' ? (
+                  /* Input section */
+                  <div className="bg-zinc-900/30 border border-zinc-900 rounded-2xl p-4 space-y-3">
+                    <label className="block text-[10px] font-mono font-semibold tracking-wider text-zinc-400">
+                      LETTERBOXD ADMIN ACCOUNT NAME
+                    </label>
+                    <div className="flex gap-2">
+                      <div className="relative flex-1">
+                        <span className="absolute left-3 top-1/2 -translate-y-1/2 text-zinc-600 text-xs font-mono">
+                          letterboxd.com/
+                        </span>
+                        <input
+                          type="text"
+                          value={letterboxdUsername}
+                          onChange={(e) => {
+                            const val = e.target.value;
+                            if (val.includes('letterboxd.com') || val.includes('/') || val.includes('http')) {
+                              setLetterboxdUsername(extractLetterboxdUsername(val));
+                            } else {
+                              setLetterboxdUsername(val);
+                            }
+                          }}
+                          placeholder="your_letterboxd_user"
+                          className="w-full bg-zinc-950 text-zinc-100 border border-zinc-900 rounded-xl pl-28 pr-4 py-2.5 text-xs font-mono focus:outline-none focus:border-amber-500/50 transition-colors"
+                          disabled={isSyncing}
+                          onKeyDown={(e) => {
+                            if (e.key === "Enter") handleFetchDiary();
+                          }}
+                        />
+                      </div>
+                      <button
+                        onClick={handleFetchDiary}
+                        disabled={isSyncing}
+                        className="bg-amber-500 hover:bg-amber-400 text-zinc-950 px-5 rounded-xl text-xs font-mono transition-colors font-bold flex items-center justify-center space-x-1 shrink-0 cursor-pointer disabled:opacity-50"
+                      >
+                        {isSyncing ? (
+                          <>
+                            <RefreshCw className="h-3.5 w-3.5 animate-spin" />
+                            <span>Fetching...</span>
+                          </>
+                        ) : (
+                          <>
+                            <Search className="h-3.5 w-3.5" />
+                            <span>Fetch Diary</span>
+                          </>
+                        )}
+                      </button>
+                    </div>
+                    <p className="text-[10px] text-zinc-500 leading-normal">
+                      The account must be set to public. Letterboxd RSS feed provides the 50 most recent events. Use "Upload diary.csv" to import all historic items!
+                    </p>
+                  </div>
+                ) : (
+                  /* CSV Upload section */
+                  <div className="bg-zinc-900/30 border border-zinc-900 rounded-2xl p-5 space-y-4 text-center">
+                    <div className="flex flex-col items-center justify-center space-y-2 border border-dashed border-zinc-800 rounded-xl py-6 px-4 bg-zinc-950/20 hover:bg-zinc-950/40 transition-all group relative cursor-pointer">
+                      <input
+                        type="file"
+                        accept=".csv"
+                        onChange={handleCsvUpload}
+                        className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
+                      />
+                      <div className="h-10 w-10 bg-amber-500/10 text-amber-500 rounded-xl flex items-center justify-center border border-amber-500/20 group-hover:scale-110 transition-transform duration-150">
+                        <Upload className="h-5 w-5" />
+                      </div>
+                      <div className="space-y-1">
+                        <p className="text-xs font-semibold text-zinc-200">
+                          Click to upload your Letterboxd diary.csv file
+                        </p>
+                        <p className="text-[10px] text-zinc-500">
+                          Drag and drop your exported diary.csv here
+                        </p>
+                      </div>
+                    </div>
+                    <div className="bg-zinc-950/40 border border-zinc-900/80 rounded-xl p-3.5 text-left space-y-1.5">
+                      <h4 className="text-[10px] font-mono font-bold text-amber-500/90 uppercase tracking-wider flex items-center gap-1">
+                        <FileSpreadsheet className="h-3.5 w-3.5" /> How to get your diary.csv:
+                      </h4>
+                      <ol className="list-decimal list-inside text-[10px] text-zinc-400 space-y-1 leading-normal pl-0.5">
+                        <li>Log into Letterboxd and open <b className="text-zinc-300">Settings</b></li>
+                        <li>Navigate to the <b className="text-zinc-300">Import & Export</b> tab</li>
+                        <li>Click <b className="text-zinc-300">Export Your Data</b> to download the ZIP file</li>
+                        <li>Extract the ZIP and upload the <b className="text-zinc-300">diary.csv</b> file here!</li>
+                      </ol>
+                    </div>
+                  </div>
+                )}
 
                 {/* Status or error container */}
                 {syncStatusMsg && (
@@ -757,9 +983,37 @@ export default function PastScreenings({
                 {syncedMovies && (
                   <div className="space-y-3">
                     <div className="flex items-center justify-between">
-                      <h4 className="text-[10px] font-mono font-bold text-zinc-400 uppercase tracking-wider">
-                        EXTRACTED WIDGETS & DIARY ITEMS
-                      </h4>
+                      <div className="flex items-center space-x-3">
+                        <h4 className="text-[10px] font-mono font-bold text-zinc-400 uppercase tracking-wider">
+                          EXTRACTED WIDGETS & DIARY ITEMS
+                        </h4>
+                        <div className="flex items-center space-x-1">
+                          <button
+                            type="button"
+                            onClick={() => {
+                              const selectAll: Record<string, boolean> = {};
+                              syncedMovies.forEach(m => {
+                                const exists = pastMovies.some(existing => 
+                                  existing.title.toLowerCase().trim() === m.title.toLowerCase().trim()
+                                );
+                                if (!exists) selectAll[m.title] = true;
+                              });
+                              setSelectedImportIds(selectAll);
+                            }}
+                            className="text-[9px] font-mono font-bold text-amber-500/80 hover:text-amber-400 cursor-pointer"
+                          >
+                            Select All
+                          </button>
+                          <span className="text-zinc-700 font-mono text-[9px]">•</span>
+                          <button
+                            type="button"
+                            onClick={() => setSelectedImportIds({})}
+                            className="text-[9px] font-mono font-bold text-zinc-500 hover:text-zinc-400 cursor-pointer"
+                          >
+                            Clear All
+                          </button>
+                        </div>
+                      </div>
                       <span className="text-[10px] font-mono text-zinc-500 bg-zinc-900 px-2.25 py-0.5 rounded">
                         {syncedMovies.length} found
                       </span>

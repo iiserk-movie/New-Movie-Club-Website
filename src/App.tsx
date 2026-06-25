@@ -173,94 +173,109 @@ export default function App() {
           console.warn('[Firebase] Seed marker check warning, checking collection states next:', e);
         }
 
-        // Secondary bulletproof check: If the screenings collection has any documents,
-        // do not seed. This prevents overwriting of any added details or deletions on refresh.
-        let hasExistingScreenings = false;
+        // Check if each collection is empty independently to guarantee perfect backfill seeding
+        let screeningsEmpty = false;
         try {
-          const screeningsCol = collection(db, 'screenings');
-          const testSnap = await getDocs(query(screeningsCol, limit(1)));
-          hasExistingScreenings = !testSnap.empty;
+          const testSnap = await getDocs(query(collection(db, 'screenings'), limit(1)));
+          screeningsEmpty = testSnap.empty;
         } catch (e) {
-          console.warn('[Firebase] Screenings collection check failed:', e);
+          console.warn('[Firebase] screenings empty check failed:', e);
         }
 
-        if (markerExists) {
-          console.log('[Firebase] Database already seeded. Direct stream active.');
-          return;
+        let pastMoviesEmpty = false;
+        try {
+          const testSnap = await getDocs(query(collection(db, 'pastMovies'), limit(1)));
+          pastMoviesEmpty = testSnap.empty;
+        } catch (e) {
+          console.warn('[Firebase] pastMovies empty check failed:', e);
         }
 
-        if (hasExistingScreenings) {
-          console.log('[Firebase] Active database detected. Backfilling master seed marker to prevent future re-seeding...');
+        let recommendationsEmpty = false;
+        try {
+          const testSnap = await getDocs(query(collection(db, 'recommendations'), limit(1)));
+          recommendationsEmpty = testSnap.empty;
+        } catch (e) {
+          console.warn('[Firebase] recommendations empty check failed:', e);
+        }
+
+        let discussionsEmpty = false;
+        try {
+          const testSnap = await getDocs(query(collection(db, 'discussions'), limit(1)));
+          discussionsEmpty = testSnap.empty;
+        } catch (e) {
+          console.warn('[Firebase] discussions empty check failed:', e);
+        }
+
+        if (screeningsEmpty) {
+          console.log('[Firebase] Seeding screenings...');
+          try {
+            const batch = writeBatch(db);
+            initialScreenings.forEach((s) => {
+              batch.set(doc(db, 'screenings', s.id), sanitizeDoc(s));
+            });
+            await batch.commit();
+            console.log('[Firebase] Successfully seeded screenings.');
+          } catch (e) {
+            console.warn('[Firebase] Screenings seeding error:', e);
+          }
+        }
+
+        if (pastMoviesEmpty) {
+          console.log('[Firebase] Seeding past movies...');
+          try {
+            const batch = writeBatch(db);
+            initialPastMovies.forEach((m) => {
+              batch.set(doc(db, 'pastMovies', m.id), sanitizeDoc(m));
+            });
+            await batch.commit();
+            console.log('[Firebase] Successfully seeded past movies.');
+          } catch (e) {
+            console.warn('[Firebase] Past movies seeding error:', e);
+          }
+        }
+
+        if (recommendationsEmpty) {
+          console.log('[Firebase] Seeding recommendations...');
+          try {
+            const batch = writeBatch(db);
+            const userEmail = auth.currentUser?.email || null;
+            initialRecommendations.forEach((r) => {
+              const adjustedRec = {
+                ...r,
+                suggestedBy: userEmail || r.suggestedBy,
+                votes: userEmail ? [userEmail] : r.votes
+              };
+              batch.set(doc(db, 'recommendations', r.id), sanitizeDoc(adjustedRec));
+            });
+            await batch.commit();
+            console.log('[Firebase] Successfully seeded recommendations.');
+          } catch (e) {
+            console.warn('[Firebase] Recommendations seeding error:', e);
+          }
+        }
+
+        if (discussionsEmpty) {
+          console.log('[Firebase] Seeding discussions...');
+          try {
+            const batch = writeBatch(db);
+            initialDiscussions.forEach((d) => {
+              batch.set(doc(db, 'discussions', d.id), sanitizeDoc(d));
+            });
+            await batch.commit();
+            console.log('[Firebase] Successfully seeded discussions.');
+          } catch (e) {
+            console.warn('[Firebase] Discussions seeding error:', e);
+          }
+        }
+
+        // Always ensure the master marker is written if not exists or if collections were empty
+        if (!markerExists) {
           try {
             await setDoc(seedMarkerRef, { seeded: true, seededAt: new Date().toISOString() });
+            console.log('[Firebase] Master seed marker written successfully.');
           } catch (e) {
-            console.warn('[Firebase] Failed to write backfilled master seed marker:', e);
+            console.warn('[Firebase] Failed to write master seed marker:', e);
           }
-          return;
-        }
-
-        console.log('[Firebase] Master seed marker not found and screenings are empty. Seeding initial datasets...');
-
-        // 1. Seed Screenings
-        try {
-          const batch = writeBatch(db);
-          initialScreenings.forEach((s) => {
-            batch.set(doc(db, 'screenings', s.id), sanitizeDoc(s));
-          });
-          await batch.commit();
-          console.log('[Firebase] Seeded screenings.');
-        } catch (e) {
-          console.warn('[Firebase] Screenings seeding error:', e);
-        }
-
-        // 2. Seed Past Movies
-        try {
-          const batch = writeBatch(db);
-          initialPastMovies.forEach((m) => {
-            batch.set(doc(db, 'pastMovies', m.id), sanitizeDoc(m));
-          });
-          await batch.commit();
-          console.log('[Firebase] Seeded past movies.');
-        } catch (e) {
-          console.warn('[Firebase] Past movies seeding error:', e);
-        }
-
-        // 3. Seed Recommendations (using current user email if signed in to bypass rules)
-        try {
-          const batch = writeBatch(db);
-          const userEmail = auth.currentUser?.email || null;
-          initialRecommendations.forEach((r) => {
-            const adjustedRec = {
-              ...r,
-              suggestedBy: userEmail || r.suggestedBy,
-              votes: userEmail ? [userEmail] : r.votes
-            };
-            batch.set(doc(db, 'recommendations', r.id), sanitizeDoc(adjustedRec));
-          });
-          await batch.commit();
-          console.log('[Firebase] Seeded recommendations.');
-        } catch (e) {
-          console.warn('[Firebase] Recommendations seeding error:', e);
-        }
-
-        // 4. Seed Discussions
-        try {
-          const batch = writeBatch(db);
-          initialDiscussions.forEach((d) => {
-            batch.set(doc(db, 'discussions', d.id), sanitizeDoc(d));
-          });
-          await batch.commit();
-          console.log('[Firebase] Seeded discussions.');
-        } catch (e) {
-          console.warn('[Firebase] Discussions seeding error:', e);
-        }
-
-        // 5. Write Seed status marker
-        try {
-          await setDoc(seedMarkerRef, { seeded: true, seededAt: new Date().toISOString() });
-          console.log('[Firebase] Master seed marker written successfully.');
-        } catch (e) {
-          console.warn('[Firebase] Failed to write master seed marker:', e);
         }
       } catch (err) {
         console.warn('[Firebase] Master database seeding check bypassed or failed:', err);
@@ -716,6 +731,10 @@ export default function App() {
   const handleUpdatePastMovie = async (updatedMovie: PastMovie) => {
     try {
       await setDoc(doc(db, 'pastMovies', updatedMovie.id), sanitizeDoc(updatedMovie));
+      
+      // Also delete corresponding screening if it exists so that it resides purely in pastMovies and is not duplicated
+      const screeningId = updatedMovie.id.startsWith('pm-') ? updatedMovie.id.replace('pm-', '') : updatedMovie.id;
+      await deleteDoc(doc(db, 'screenings', screeningId));
     } catch (error) {
       handleFirestoreError(error, OperationType.UPDATE, `pastMovies/${updatedMovie.id}`);
       throw error;
@@ -725,6 +744,10 @@ export default function App() {
   const handleDeletePastMovie = async (movieId: string) => {
     try {
       await deleteDoc(doc(db, 'pastMovies', movieId));
+      
+      // Also delete corresponding screening if it exists so that it doesn't keep regenerating
+      const screeningId = movieId.startsWith('pm-') ? movieId.replace('pm-', '') : movieId;
+      await deleteDoc(doc(db, 'screenings', screeningId));
     } catch (error) {
       handleFirestoreError(error, OperationType.DELETE, `pastMovies/${movieId}`);
       throw error;
