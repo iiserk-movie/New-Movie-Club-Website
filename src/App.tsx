@@ -839,7 +839,7 @@ export default function App() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-[#0e0f1e] via-[#090b14] to-[#04050a] text-zinc-100 flex flex-col font-sans selection:bg-amber-400 selection:text-zinc-950">
+    <div className="min-h-screen bg-gradient-to-b from-[#13121a] via-[#0f0e14] to-[#0b0a0e] text-zinc-100 flex flex-col font-sans selection:bg-amber-400 selection:text-zinc-950">
       {/* Upper Navigation Row */}
       <Navbar
         currentUser={currentUser}
@@ -855,24 +855,24 @@ export default function App() {
 
       {/* Main Feature Cinematic Hero Segment */}
       {activeTab === 'schedule' && (
-        <div className="relative border-b border-indigo-950/40 bg-gradient-to-r from-[#12142e]/30 via-[#0c0d1b]/80 to-[#04050a] py-16 sm:py-24 overflow-hidden">
+        <div className="relative border-b border-amber-500/10 bg-gradient-to-r from-[#211a28]/45 via-[#131119] to-[#0b0a0e] py-16 sm:py-24 overflow-hidden">
           {/* Decorative backdrop gradients representing theatrical lighting effects */}
-          <div className="absolute top-0 left-1/4 h-72 w-96 bg-amber-500/10 rounded-full blur-[120px] pointer-events-none"></div>
-          <div className="absolute bottom-0 right-1/4 h-72 w-96 bg-indigo-500/10 rounded-full blur-[120px] pointer-events-none"></div>
+          <div className="absolute top-0 left-1/4 h-72 w-96 bg-amber-500/12 rounded-full blur-[120px] pointer-events-none"></div>
+          <div className="absolute bottom-0 right-1/4 h-72 w-96 bg-rose-500/10 rounded-full blur-[120px] pointer-events-none"></div>
 
           <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 relative">
             <div className="max-w-3xl">
-              <div className="inline-flex items-center space-x-1.5 bg-zinc-900/80 border border-zinc-800 px-3 py-1 rounded-full text-xs font-mono text-amber-500 mb-6 font-semibold">
+              <div className="inline-flex items-center space-x-1.5 bg-zinc-900/90 border border-zinc-800/80 px-3.5 py-1.5 rounded-full text-xs font-mono text-amber-500 mb-6 font-semibold shadow-inner shadow-amber-500/5">
                 <span className="h-1.5 w-1.5 rounded-full bg-amber-500 animate-ping"></span>
                 <span>MOVIE CLUB • IISER KOLKATA</span>
               </div>
 
-              <h2 className="font-serif text-4xl sm:text-6xl font-extrabold text-zinc-100 tracking-tight leading-[1.1] animate-glow">
+              <h2 className="font-serif text-4xl sm:text-6xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-zinc-100 via-amber-200 to-amber-300 tracking-tight leading-[1.1] animate-glow">
                 Explore the Language of Cinema.
               </h2>
               
-              <p className="mt-4 text-sm sm:text-base text-zinc-400 max-w-2xl leading-relaxed">
-                We look beyond blockbuster boundaries to discover avant-garde scripts, acoustic masterpieces, and historic movements. The Movie Club brings the best index of international world cinema directly to the M.N. Saha Auditorium, Ground Floor, TRC building.
+              <p className="mt-4 text-sm sm:text-base text-zinc-350 max-w-2xl leading-relaxed italic font-serif">
+                "Once you overcome the one-inch tall barrier of subtitles, you will be introduced to so many more amazing films." — Bong Joon-ho
               </p>
 
               {/* Quick stats board */}

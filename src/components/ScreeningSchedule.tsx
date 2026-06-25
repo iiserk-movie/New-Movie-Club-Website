@@ -485,10 +485,10 @@ export default function ScreeningSchedule({
           return (
             <div 
               key={screening.id}
-              className="group relative flex flex-col lg:flex-row rounded-3xl border border-zinc-900/60 bg-zinc-950 overflow-hidden shadow-2xl transition-all duration-300 hover:border-zinc-800/80 hover:shadow-amber-500/[0.02]"
+              className="group relative flex flex-col lg:flex-row rounded-3xl border border-zinc-800/80 bg-[#161521]/90 overflow-hidden shadow-xl transition-all duration-300 hover:border-amber-500/30 hover:shadow-amber-500/[0.04]"
             >
               {adminMode && (
-                <div className="absolute top-4 right-4 z-20 flex items-center space-x-1.5 bg-zinc-900/90 border border-zinc-800 p-1.5 rounded-xl">
+                <div className="absolute top-4 right-4 z-20 flex items-center space-x-1.5 bg-zinc-900/95 border border-zinc-800/80 p-1.5 rounded-xl shadow-lg">
                   <button
                     onClick={() => openEditForm(screening)}
                     className="p-2 text-zinc-400 hover:text-amber-400 hover:bg-zinc-800 rounded-lg transition-colors cursor-pointer"
@@ -535,15 +535,15 @@ export default function ScreeningSchedule({
                   src={getPolishedPosterUrl(screening.title, screening.posterUrl)} 
                   alt={screening.title} 
                   referrerPolicy="no-referrer"
-                  className="w-full h-full object-cover object-center transition-transform duration-700 group-hover:scale-105"
+                  className="w-full h-full object-cover object-center transition-transform duration-700 group-hover:scale-103"
                   onError={(e) => {
                     e.currentTarget.src = 'https://images.unsplash.com/photo-1489599849927-2ee91cede3ba?q=80&w=600';
                   }}
                 />
-                <div className="absolute inset-0 bg-gradient-to-t lg:bg-gradient-to-r from-zinc-950 via-zinc-950/40 to-transparent"></div>
+                <div className="absolute inset-0 bg-gradient-to-t lg:bg-gradient-to-r from-[#161521] via-[#161521]/40 to-transparent"></div>
 
-                <div className="absolute bottom-4 left-4 flex flex-col space-y-1 bg-zinc-950/80 backdrop-blur-md px-3.5 py-2.5 rounded-xl border border-zinc-800/80">
-                  <span className="font-mono text-amber-500 font-bold text-xs uppercase tracking-wider">
+                <div className="absolute bottom-4 left-4 flex flex-col space-y-1 bg-[#100f18]/90 backdrop-blur-md px-3.5 py-2 rounded-xl border border-zinc-800/70">
+                  <span className="font-mono text-amber-400 font-bold text-xs uppercase tracking-wider">
                     {countdown}
                   </span>
                   <span className="text-zinc-500 text-[10px] uppercase font-mono">
@@ -557,51 +557,81 @@ export default function ScreeningSchedule({
                 <div>
                   <div className="flex flex-wrap items-center gap-2 mb-3">
                     {screening.genre.map((g, i) => (
-                      <span key={i} className="flex items-center text-[10px] font-semibold font-mono tracking-wider text-zinc-400 bg-zinc-900 border border-zinc-850 px-2 py-0.5 rounded-md uppercase">
+                      <span key={i} className="flex items-center text-[10px] font-semibold font-mono tracking-wider text-amber-400/80 bg-amber-500/5 border border-amber-500/10 px-2 py-0.5 rounded-md uppercase">
                         {g}
                       </span>
                     ))}
-                    <span className="text-zinc-500 text-xs">•</span>
+                    <span className="text-zinc-600 text-xs">•</span>
                     <span className="text-zinc-400 text-xs font-semibold">{screening.runtime}</span>
                   </div>
 
-                  <h3 className="font-serif text-2xl sm:text-3xl font-bold text-zinc-100 tracking-tight group-hover:text-amber-400 transition-colors">
-                    {screening.title} <span className="text-zinc-500 font-normal text-lg">({screening.year})</span>
+                  <h3 className="font-serif text-2xl sm:text-3xl font-bold text-zinc-100 tracking-tight group-hover:text-amber-300 transition-colors">
+                    {screening.title} <span className="text-zinc-400 font-normal text-lg font-sans">({screening.year})</span>
                   </h3>
                   
-                  <p className="text-zinc-400 text-xs mt-1">
-                    Director: <span className="text-zinc-300 font-medium">{screening.director}</span>
+                  <p className="text-zinc-400 text-xs mt-1.5 font-medium">
+                    Director: <span className="text-zinc-200 font-semibold">{screening.director}</span>
                   </p>
 
-                  <div className="text-zinc-300 text-sm mt-4 leading-relaxed">
-                    <p className="text-zinc-300 text-sm">
-                      {screening.description}
+                  <div className="text-zinc-350 text-sm mt-4 leading-relaxed font-sans">
+                    <p className="text-zinc-350 text-sm">
+                      {screening.description.length > 180 && !expandedIds[screening.id] ? (
+                        <>
+                          {screening.description.slice(0, 180)}...{' '}
+                          <button
+                            onClick={() => setExpandedIds(prev => ({ ...prev, [screening.id]: true }))}
+                            className="text-amber-400 font-bold hover:text-amber-300 hover:underline text-xs inline-flex items-center cursor-pointer ml-1"
+                          >
+                            Read More
+                          </button>
+                        </>
+                      ) : (
+                        <>
+                          {screening.description}{' '}
+                          {screening.description.length > 180 && (
+                            <button
+                              onClick={() => setExpandedIds(prev => ({ ...prev, [screening.id]: false }))}
+                              className="text-amber-400 font-bold hover:text-amber-300 hover:underline text-xs inline-flex items-center cursor-pointer ml-1"
+                            >
+                              Show Less
+                            </button>
+                          )}
+                        </>
+                      )}
                     </p>
                   </div>
 
-                  <div className="mt-6 grid grid-cols-2 sm:grid-cols-3 gap-4 border-t border-b border-zinc-900/80 py-4 font-mono text-xs">
-                    <div className="space-y-1">
-                      <span className="text-zinc-500 block uppercase text-[10px]">Screening Date</span>
-                      <span className="text-zinc-200 flex items-center font-semibold gap-1.5">
-                        <Calendar className="h-3.5 w-3.5 text-amber-500/80" />
-                        {formatPrettyDate(screening.date)}
-                      </span>
+                  <div className="mt-5 grid grid-cols-1 sm:grid-cols-3 gap-3 border-t border-b border-zinc-800/40 py-3.5 font-sans text-xs">
+                    <div className="flex items-center space-x-2.5 bg-zinc-900/45 px-3 py-2 rounded-xl border border-zinc-800/30">
+                      <div className="p-1.5 rounded-lg bg-amber-500/10 text-amber-400">
+                        <Calendar className="h-4 w-4" />
+                      </div>
+                      <div>
+                        <span className="text-zinc-500 block text-[9px] uppercase tracking-wider font-mono">Date</span>
+                        <span className="text-zinc-200 font-semibold text-xs">{formatPrettyDate(screening.date)}</span>
+                      </div>
                     </div>
 
-                    <div className="space-y-1">
-                      <span className="text-zinc-500 block uppercase text-[10px]">Showtime</span>
-                      <span className="text-zinc-200 flex items-center font-semibold gap-1.5">
-                        <Clock className="h-3.5 w-3.5 text-amber-500/80" />
-                        {screening.time} IST
-                      </span>
+                    <div className="flex items-center space-x-2.5 bg-zinc-900/45 px-3 py-2 rounded-xl border border-zinc-800/30">
+                      <div className="p-1.5 rounded-lg bg-rose-500/10 text-rose-400">
+                        <Clock className="h-4 w-4" />
+                      </div>
+                      <div>
+                        <span className="text-zinc-500 block text-[9px] uppercase tracking-wider font-mono">Showtime</span>
+                        <span className="text-zinc-200 font-semibold text-xs">{screening.time} IST</span>
+                      </div>
                     </div>
 
-                    <div className="space-y-1 col-span-2 sm:col-span-1">
-                      <span className="text-zinc-500 block uppercase text-[10px]">IISER Venue</span>
-                      <span className="text-zinc-200 flex items-center font-semibold gap-1.5 truncate" title={screening.venue}>
-                        <MapPin className="h-3.5 w-3.5 text-amber-500/80" />
-                        {screening.venue}
-                      </span>
+                    <div className="flex items-center space-x-2.5 bg-zinc-900/45 px-3 py-2 rounded-xl border border-zinc-800/30 col-span-1">
+                      <div className="p-1.5 rounded-lg bg-emerald-500/10 text-emerald-400">
+                        <MapPin className="h-4 w-4" />
+                      </div>
+                      <div className="min-w-0 flex-1">
+                        <span className="text-zinc-500 block text-[9px] uppercase tracking-wider font-mono">Venue</span>
+                        <span className="text-zinc-200 font-semibold text-xs block truncate" title={screening.venue}>
+                          {screening.venue.split(',')[0]}
+                        </span>
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -619,7 +649,7 @@ export default function ScreeningSchedule({
                         href={screening.trailerUrl} 
                         target="_blank" 
                         rel="noreferrer"
-                        className="flex items-center space-x-1 border border-zinc-800 hover:border-zinc-700 text-zinc-400 hover:text-zinc-200 px-4 py-2 rounded-xl text-xs font-medium bg-zinc-950/60 transition-colors"
+                        className="flex items-center space-x-1.5 border border-zinc-800/80 hover:border-zinc-700 text-zinc-400 hover:text-zinc-200 px-4 py-2 rounded-xl text-xs font-medium bg-zinc-900/20 transition-all shadow-sm"
                       >
                         <span>Trailer</span>
                         <ExternalLink className="h-3 w-3" />
@@ -628,9 +658,9 @@ export default function ScreeningSchedule({
 
                     <button
                       onClick={() => toggleReminder(screening.id, screening.title)}
-                      className={`flex items-center space-x-1.5 px-4 py-2 rounded-xl text-xs font-semibold transition-all cursor-pointer ${
+                      className={`flex items-center space-x-1.5 px-4 py-2 rounded-xl text-xs font-semibold transition-all cursor-pointer shadow-sm ${
                         reminders[screening.id]
-                          ? 'bg-amber-500 text-zinc-950'
+                          ? 'bg-amber-400 hover:bg-amber-300 text-zinc-950 font-bold'
                           : 'bg-zinc-900 border border-zinc-800 hover:border-amber-500/30 text-zinc-300'
                       }`}
                     >

@@ -406,7 +406,7 @@ export default function Navbar({
 
   return (
     <>
-      <header className="sticky top-0 z-40 w-full border-b border-[#1b1e36]/50 bg-[#0c0d19]/90 backdrop-blur-md shadow-lg shadow-indigo-950/10">
+      <header className="sticky top-0 z-40 w-full border-b border-zinc-900/80 bg-[#12111a]/95 backdrop-blur-md shadow-lg shadow-black/30">
         <div className="mx-auto flex max-w-7xl h-20 items-center justify-between px-4 sm:px-6 lg:px-8">
           {/* Logo Brand */}
           <div className="flex items-center space-x-3 cursor-pointer" onClick={() => setActiveTab('schedule')}>
@@ -455,7 +455,7 @@ export default function Navbar({
           {/* User Session Auth Actions */}
           <div className="flex items-center space-x-4">
             {/* Quick Admin Toggler for ease of editing schedules */}
-            {adminMode ? (
+            {adminMode && (
               <div className="flex items-center space-x-2">
                 <div className="flex items-center space-x-1.5 bg-amber-500/10 text-amber-400 border border-amber-500/20 px-2.5 py-1.5 rounded-lg text-xs font-mono">
                   <ShieldCheck className="h-4 w-4 text-amber-500" />
@@ -485,15 +485,6 @@ export default function Navbar({
                   <Settings className="h-3.5 w-3.5" />
                 </button>
               </div>
-            ) : (
-              <button
-                onClick={() => setShowAdminVerify(true)}
-                className="flex items-center space-x-1 text-zinc-400 hover:text-amber-400 border border-zinc-800 hover:border-amber-500/30 px-3 py-1.5 rounded-lg text-xs font-mono transition-colors"
-                title="Schedules can be edited by Admin. Code: admin123"
-              >
-                <Shield className="h-3.5 w-3.5" />
-                <span className="hidden sm:inline">Admin Access</span>
-              </button>
             )}
 
             {currentUser ? (
@@ -594,7 +585,7 @@ export default function Navbar({
                 className="flex items-center space-x-2 bg-amber-500 hover:bg-amber-600 text-zinc-950 px-4 py-2 h-10 rounded-lg text-sm font-semibold transition-colors shadow-lg shadow-amber-500/10 cursor-pointer"
               >
                 <UserIcon className="h-4 w-4" />
-                <span>Institute Login</span>
+                <span>Login</span>
               </button>
             )}
 
@@ -854,7 +845,7 @@ export default function Navbar({
                   </button>
                 </div>
 
-                <div className="border-t border-zinc-900 pt-4 flex items-center justify-between text-xs text-zinc-500">
+                <div className="border-t border-zinc-900/80 pt-4.5 mt-2 flex items-center justify-between text-xs text-zinc-500">
                   <span className="font-mono text-[9px] uppercase tracking-wider text-zinc-600">iiserkol.ac.in SSO auth</span>
                   <button
                     type="button"
@@ -862,9 +853,11 @@ export default function Navbar({
                       setShowLoginModal(false);
                       setShowAdminVerify(true);
                     }}
-                    className="text-amber-500/80 hover:text-amber-400 font-mono text-[10.5px] hover:underline"
+                    className="flex items-center space-x-1 text-zinc-400 hover:text-amber-400 border border-zinc-800 hover:border-amber-500/30 px-2.5 py-1 rounded-lg text-xs font-mono transition-colors cursor-pointer animate-fade-in"
+                    title="Schedules can be edited by Admin. Code: admin123"
                   >
-                    Coordinator Console
+                    <Shield className="h-3.5 w-3.5 text-amber-500 shrink-0" />
+                    <span>Admin Access</span>
                   </button>
                 </div>
               </div>

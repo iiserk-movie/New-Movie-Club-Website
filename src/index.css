@@ -1,18 +1,22 @@
-@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Playfair+Display:ital,wght@0,400;0,500;0,600;0,700;1,400&family=JetBrains+Mono:wght@400;500;600&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&family=Playfair+Display:ital,wght@0,400;0,500;0,600;0,700;1,400&family=JetBrains+Mono:wght@400;500;600&display=swap');
 @import "tailwindcss";
 
 @theme {
-  --font-sans: "Plus Jakarta Sans", "Inter", ui-sans-serif, system-ui, sans-serif;
+  --font-sans: "Outfit", "Plus Jakarta Sans", "Inter", ui-sans-serif, system-ui, sans-serif;
   --font-serif: "Playfair Display", "Georgia", serif;
   --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, monospace;
 
-  --color-zinc-250: #dadade;
-  --color-zinc-350: #bcbcc2;
-  --color-zinc-450: #878790;
-  --color-zinc-550: #61616a;
-  --color-zinc-650: #48484e;
-  --color-zinc-750: #333338;
-  --color-zinc-850: #1f1f23;
+  --color-zinc-50: #fafafc;
+  --color-zinc-100: #f4f4f7;
+  --color-zinc-200: #e4e4ed;
+  --color-zinc-300: #d2d2e1;
+  --color-zinc-400: #a0a0bd;
+  --color-zinc-500: #7a7a9a;
+  --color-zinc-600: #5d5d7a;
+  --color-zinc-750: #3b3a51;
+  --color-zinc-850: #252436;
+  --color-zinc-900: #1b1a29;
+  --color-zinc-950: #111019;
 }
 
 /* Custom gorgeous cinematic animations */
