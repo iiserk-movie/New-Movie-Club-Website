@@ -17,6 +17,7 @@ interface ScreeningScheduleProps {
   onUpdateScreening: (screening: Screening) => void | Promise<any>;
   onDeleteScreening: (id: string) => void | Promise<any>;
   currentUserEmail?: string;
+  onMarkScreeningAsScreened?: (screening: Screening, date: string, rating: number) => void | Promise<any>;
 }
 
 export default function ScreeningSchedule({
@@ -25,9 +26,13 @@ export default function ScreeningSchedule({
   onAddScreening,
   onUpdateScreening,
   onDeleteScreening,
-  currentUserEmail
+  currentUserEmail,
+  onMarkScreeningAsScreened
 }: ScreeningScheduleProps) {
   const [showFormModal, setShowFormModal] = useState(false);
+  const [screeningToMark, setScreeningToMark] = useState<Screening | null>(null);
+  const [screenDate, setScreenDate] = useState('');
+  const [screenRating, setScreenRating] = useState(4.5);
   const [editingScreening, setEditingScreening] = useState<Screening | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState('');
@@ -489,6 +494,17 @@ export default function ScreeningSchedule({
             >
               {adminMode && (
                 <div className="absolute top-4 right-4 z-20 flex items-center space-x-1.5 bg-zinc-900/95 border border-zinc-800/80 p-1.5 rounded-xl shadow-lg">
+                  <button
+                    onClick={() => {
+                      setScreeningToMark(screening);
+                      setScreenDate(screening.date || new Date().toISOString().split('T')[0]);
+                      setScreenRating(4.5);
+                    }}
+                    className="p-2 text-zinc-400 hover:text-green-400 hover:bg-zinc-800 rounded-lg transition-colors cursor-pointer"
+                    title="Mark screened"
+                  >
+                    <Check className="h-4 w-4" />
+                  </button>
                   <button
                     onClick={() => openEditForm(screening)}
                     className="p-2 text-zinc-400 hover:text-amber-400 hover:bg-zinc-800 rounded-lg transition-colors cursor-pointer"
@@ -1126,6 +1142,87 @@ export default function ScreeningSchedule({
           </div>
         </div>
       </div>
+      )}
+
+      {/* Mark Screened Modal */}
+      {screeningToMark && (
+        <div className="fixed inset-0 z-50 overflow-y-auto bg-black/85 backdrop-blur-sm p-4 flex items-center justify-center">
+          <div className="w-full max-w-md rounded-2xl border border-zinc-850 bg-zinc-950 p-6 shadow-2xl">
+            <h3 className="font-serif text-lg font-bold text-zinc-100 flex items-center gap-1.5 mb-1.5">
+              <Star className="h-5 w-5 fill-amber-400 text-amber-400" />
+              Mark "{screeningToMark.title}" as Screened
+            </h3>
+            <p className="text-zinc-400 text-xs leading-relaxed mb-4">
+              Archiving this scheduled screening will remove it from the active upcoming schedule and move it under the <strong>Past Screenings</strong> tab.
+            </p>
+
+            <div className="space-y-4">
+              <div>
+                <label className="block text-xs font-mono text-zinc-400 mb-1">
+                  SCREENING DATE
+                </label>
+                <input
+                  type="date"
+                  value={screenDate}
+                  onChange={(e) => setScreenDate(e.target.value)}
+                  className="w-full rounded-lg border border-zinc-800 bg-zinc-900/60 px-3 py-2 text-sm text-zinc-100 focus:border-amber-500/50 focus:outline-none"
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-mono text-zinc-400 mb-1 flex justify-between">
+                  <span>CLUB RATING</span>
+                  <span className="text-amber-400 font-bold">{screenRating} / 5</span>
+                </label>
+                <input
+                  type="range"
+                  min="1"
+                  max="5"
+                  step="0.1"
+                  value={screenRating}
+                  onChange={(e) => setScreenRating(parseFloat(e.target.value))}
+                  className="w-full accent-amber-500 bg-zinc-800 rounded-lg appearance-none h-1.5 cursor-pointer"
+                />
+                <div className="flex justify-between text-[10px] text-zinc-500 font-mono mt-1">
+                  <span>1.0 (Poor)</span>
+                  <span>3.0 (Good)</span>
+                  <span>5.0 (Masterpiece)</span>
+                </div>
+              </div>
+            </div>
+
+            <div className="flex justify-end gap-3 mt-6 pt-4 border-t border-zinc-900">
+              <button
+                type="button"
+                onClick={() => setScreeningToMark(null)}
+                className="px-4 py-2 text-xs font-mono font-bold text-zinc-400 hover:text-zinc-200 cursor-pointer"
+              >
+                CANCEL
+              </button>
+              <button
+                type="button"
+                onClick={async () => {
+                  try {
+                    if (onMarkScreeningAsScreened) {
+                      await onMarkScreeningAsScreened(screeningToMark, screenDate, screenRating);
+                    }
+                    setFeedbackMsg(`✨ "${screeningToMark.title}" successfully moved to Past Screenings!`);
+                    setTimeout(() => setFeedbackMsg(''), 4500);
+                  } catch (err: any) {
+                    console.error("Failed to mark screened:", err);
+                    setFeedbackMsg(`❌ Failed to archive: ${err.message || err}`);
+                    setTimeout(() => setFeedbackMsg(''), 6000);
+                  } finally {
+                    setScreeningToMark(null);
+                  }
+                }}
+                className="px-4 py-2 text-xs font-mono font-bold rounded-lg bg-amber-500 text-zinc-950 hover:bg-amber-400 transition-colors cursor-pointer"
+              >
+                CONFIRM ARCHIVE
+              </button>
+            </div>
+          </div>
+        </div>
       )}
     </div>
   );

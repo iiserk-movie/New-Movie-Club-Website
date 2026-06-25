@@ -146,11 +146,12 @@ export default function Navbar({
         .join(' ');
     }
 
-    // Default role is student unless authenticated, or we can check simple passcode
-    let role: 'admin' | 'student' = 'student';
+    // Default role is student. Manual simulation of the administrator email is blocked for safety.
     if (trimmedEmail === 'movie.activity@iiserkol.ac.in') {
-      role = 'admin';
+      setErrorMsg('For safety, custom simulation of movie.activity@iiserkol.ac.in is blocked. Please use the Admin Access passcode instead.');
+      return;
     }
+    const role: 'admin' | 'student' = 'student';
 
     // Authenticate with Firebase anonymously to grant authorized database session
     signInAnonymously(auth).catch((err) => {
@@ -262,7 +263,7 @@ export default function Navbar({
     } catch (err: any) {
       console.error('Google Admin Sign-In Error:', err);
       if (err.message && err.message.includes('cross-origin')) {
-        setErrorMsg('Embedded login error. Please use the experimental passcode validation below: admin123');
+        setErrorMsg('Embedded login error. Please use the secure passcode validation tab below.');
       } else {
         setErrorMsg(err.message || 'An error occurred during Google Admin Sign-In.');
       }
@@ -270,6 +271,10 @@ export default function Navbar({
   };
 
   const handleGoogleAccountClick = (email: string, name: string) => {
+    if (email === 'movie.activity@iiserkol.ac.in') {
+      setErrorMsg('For safety, simulating movie.activity@iiserkol.ac.in requires the coordinator passcode. Please click "Admin Access" below instead.');
+      return;
+    }
     // Authenticate with Firebase anonymously to grant authorized database session
     signInAnonymously(auth).catch((err) => {
       console.warn("[Firebase] Anonymous session click-init failed:", err);
@@ -286,7 +291,7 @@ export default function Navbar({
 
   const handleAdminAuthSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (passwordInput === 'admin123') {
+    if (passwordInput === 'movie@2026') {
       try {
         // Sign out from any student/coordinated Google session to avoid sending a student auth token to Firestore rules
         if (auth.currentUser) {
@@ -314,7 +319,7 @@ export default function Navbar({
         setErrorMsg('Failed to establish administration database session.');
       }
     } else {
-      setErrorMsg('Incorrect passcode. Use experimental password: admin123');
+      setErrorMsg('Incorrect passcode. Please enter the secure administrator passcode.');
     }
   };
 
@@ -323,6 +328,13 @@ export default function Navbar({
     const username = letterboxdUserToSync.trim();
     if (!username) {
       setErrorMsg('Please enter a valid Letterboxd username.');
+      return;
+    }
+
+    // Require the correct passcode for sync authorization if not already logged in as admin
+    const hasAdminSession = currentUser?.email === 'movie.activity@iiserkol.ac.in';
+    if (!hasAdminSession && passwordInput !== 'movie@2026') {
+      setErrorMsg('Incorrect secure admin passcode. Please check and try again.');
       return;
     }
 
@@ -854,7 +866,7 @@ export default function Navbar({
                       setShowAdminVerify(true);
                     }}
                     className="flex items-center space-x-1 text-zinc-400 hover:text-amber-400 border border-zinc-800 hover:border-amber-500/30 px-2.5 py-1 rounded-lg text-xs font-mono transition-colors cursor-pointer animate-fade-in"
-                    title="Schedules can be edited by Admin. Code: admin123"
+                    title="Schedules and screenings can be managed by the Admin Console."
                   >
                     <Shield className="h-3.5 w-3.5 text-amber-500 shrink-0" />
                     <span>Admin Access</span>
@@ -1034,7 +1046,7 @@ export default function Navbar({
                       className="w-full rounded-lg border border-zinc-800 bg-zinc-900/60 px-4 py-2.5 text-sm text-zinc-100 placeholder-zinc-650 focus:border-amber-500/50 focus:outline-none focus:ring-1 focus:ring-amber-500/50 text-center"
                     />
                     <span className="text-[10px] text-zinc-550 block text-center mt-2 font-mono">
-                      Default test passcode: <code className="text-amber-500 font-bold">admin123</code>
+                      Please enter the secure coordinator passcode.
                     </span>
                   </div>
 
@@ -1096,6 +1108,26 @@ export default function Navbar({
                     Connecting using public Letterboxd logs automatically downloads watched diaries directly to the <b>Past Screenings</b> db!
                   </span>
                 </div>
+
+                {currentUser?.email !== 'movie.activity@iiserkol.ac.in' && (
+                  <div>
+                    <label className="block text-xs font-mono text-zinc-400 mb-1.5 uppercase tracking-wider">
+                      Coordinator Passcode
+                    </label>
+                    <input
+                      type="password"
+                      required
+                      placeholder="Enter admin passcode to authorize"
+                      value={passwordInput}
+                      onChange={(e) => {
+                        setPasswordInput(e.target.value);
+                        if (errorMsg) setErrorMsg('');
+                      }}
+                      disabled={isLetterboxdSyncing}
+                      className="w-full rounded-lg border border-zinc-800 bg-zinc-900/60 px-4 py-2.5 text-sm text-zinc-100 placeholder-zinc-650 focus:border-amber-500/50 focus:outline-none focus:ring-1 focus:ring-amber-500/50 text-center"
+                    />
+                  </div>
+                )}
 
                 {syncPhaseInfo && (
                   <div className="rounded-lg bg-zinc-900/65 border border-zinc-800 p-3 text-[10.5px] text-zinc-350 font-mono flex items-center gap-2.5 leading-normal">

@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
 import { 
   Plus, MessageSquareHeart, Search, ArrowUp, ThumbsUp, Calendar, 
-  Filter, Sparkles, User, HelpCircle, Film, BookOpen, AlertCircle, Link2, Upload, Pencil, Star
+  Filter, Sparkles, User, HelpCircle, Film, BookOpen, AlertCircle, Link2, Upload, Pencil, Star,
+  Trash2
 } from 'lucide-react';
 import { motion } from 'motion/react';
 import { Recommendation } from '../types';
@@ -17,6 +18,7 @@ interface RecommendationsProps {
   onVoteRecommendation: (id: string, userEmail: string) => void;
   onUpdateRecommendation?: (id: string, updatedFields: Partial<Recommendation>) => void;
   onMarkScreened?: (rec: Recommendation, date: string, rating: number) => void;
+  onDeleteRecommendation?: (id: string) => void;
 }
 
 export default function Recommendations({
@@ -26,7 +28,8 @@ export default function Recommendations({
   onAddRecommendation,
   onVoteRecommendation,
   onUpdateRecommendation,
-  onMarkScreened
+  onMarkScreened,
+  onDeleteRecommendation
 }: RecommendationsProps) {
   const [showSubmitModal, setShowSubmitModal] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
@@ -511,10 +514,10 @@ export default function Recommendations({
                     </span>
                   </div>
 
-                  {/* Action buttons (Edit for author, Mark Screened for admin) */}
+                  {/* Action buttons (Edit for author/admin, Delete, Mark Screened for admin) */}
                   {((currentUser && rec.suggestedBy === currentUser.email) || adminMode || (currentUser?.role === 'admin')) && (
-                    <div className="mt-3 pt-2.5 border-t border-zinc-900/60 flex items-center justify-end gap-2 shrink-0">
-                      {currentUser && rec.suggestedBy === currentUser.email && (
+                    <div className="mt-3 pt-2.5 border-t border-zinc-900/60 flex items-center justify-end gap-2 shrink-0 flex-wrap">
+                      {((currentUser && rec.suggestedBy === currentUser.email) || adminMode || (currentUser?.role === 'admin')) && (
                         <button
                           type="button"
                           onClick={() => {
@@ -531,6 +534,20 @@ export default function Recommendations({
                         >
                           <Pencil className="h-3 w-3 text-amber-500/80" />
                           <span>EDIT</span>
+                        </button>
+                      )}
+                      {((currentUser && rec.suggestedBy === currentUser.email) || adminMode || (currentUser?.role === 'admin')) && onDeleteRecommendation && (
+                        <button
+                          type="button"
+                          onClick={() => {
+                            if (window.confirm(`Are you sure you want to delete the recommendation for "${rec.title}"?`)) {
+                              onDeleteRecommendation(rec.id);
+                            }
+                          }}
+                          className="flex items-center gap-1 px-2.5 py-1 rounded bg-red-500/5 hover:bg-red-500/10 border border-red-500/15 hover:border-red-500/35 text-[10px] font-bold text-red-400 hover:text-red-300 transition-all cursor-pointer"
+                        >
+                          <Trash2 className="h-3 w-3 text-red-500" />
+                          <span>DELETE</span>
                         </button>
                       )}
                       {(adminMode || currentUser?.role === 'admin') && (

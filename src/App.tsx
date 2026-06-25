@@ -431,18 +431,32 @@ export default function App() {
 
   // Listen to real Firebase auth status changes and auto-login if authenticated
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, (firebaseUser) => {
+    const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
       if (firebaseUser) {
         const email = firebaseUser.email ? firebaseUser.email.toLowerCase() : '';
         const extMatch = email.endsWith('@iiserkol.ac.in');
 
         if (extMatch) {
           const name = firebaseUser.displayName || 'IISER-K Member';
-          const photoURL = firebaseUser.photoURL || undefined;
+          let photoURL = firebaseUser.photoURL || undefined;
           let role: 'admin' | 'student' = 'student';
           if (email === 'movie.activity@iiserkol.ac.in') {
             role = 'admin';
           }
+
+          // Check if there is an existing custom profile picture already in the database to prevent overwriting
+          try {
+            const userDocSnap = await getDoc(doc(db, 'users', firebaseUser.uid));
+            if (userDocSnap.exists()) {
+              const dbData = userDocSnap.data();
+              if (dbData.photoURL) {
+                photoURL = dbData.photoURL;
+              }
+            }
+          } catch (e) {
+            console.warn('[Firebase] Failed to fetch custom user profile on auth change:', e);
+          }
+
           const userObj: User = { uid: firebaseUser.uid, email, name, role, photoURL, lastActive: new Date().toISOString() };
           setCurrentUser(userObj);
           localStorage.setItem('iiser_movie_user', JSON.stringify(userObj));
@@ -458,9 +472,58 @@ export default function App() {
     return () => unsubscribe();
   }, []);
 
+  // Synchronize currentUser with Firestore custom fields (like photoURL, name, etc.)
+  useEffect(() => {
+    if (!currentUser?.uid || !db) return;
+
+    const userDocRef = doc(db, 'users', currentUser.uid);
+    const unsubscribe = onSnapshot(userDocRef, (docSnap) => {
+      if (docSnap.exists()) {
+        const data = docSnap.data();
+        setCurrentUser(prev => {
+          if (!prev) return null;
+          if (
+            data.photoURL !== prev.photoURL ||
+            data.name !== prev.name ||
+            data.role !== prev.role
+          ) {
+            const updated = {
+              ...prev,
+              name: data.name || prev.name,
+              role: data.role || prev.role,
+              photoURL: data.photoURL || prev.photoURL
+            };
+            localStorage.setItem('iiser_movie_user', JSON.stringify(updated));
+            return updated;
+          }
+          return prev;
+        });
+      }
+    }, (err) => {
+      console.warn('[Firebase] User profile synchronization error:', err);
+    });
+
+    return () => unsubscribe();
+  }, [currentUser?.uid, db]);
+
   // Auth Callbacks
-  const handleLogin = (email: string, name: string, role: 'admin' | 'student', photoURL?: string) => {
-    const userObj: User = { uid: auth.currentUser?.uid, email, name, role, photoURL, lastActive: new Date().toISOString() };
+  const handleLogin = async (email: string, name: string, role: 'admin' | 'student', photoURL?: string) => {
+    const activeUid = auth.currentUser?.uid;
+    let finalPhotoURL = photoURL;
+    if (activeUid) {
+      try {
+        const userDocSnap = await getDoc(doc(db, 'users', activeUid));
+        if (userDocSnap.exists()) {
+          const dbData = userDocSnap.data();
+          if (dbData.photoURL) {
+            finalPhotoURL = dbData.photoURL;
+          }
+        }
+      } catch (e) {
+        console.warn('[Firebase] Failed to fetch custom user profile during handleLogin:', e);
+      }
+    }
+    const userObj: User = { uid: activeUid, email, name, role, photoURL: finalPhotoURL, lastActive: new Date().toISOString() };
     setCurrentUser(userObj);
     localStorage.setItem('iiser_movie_user', JSON.stringify(userObj));
     if (role === 'admin') {
@@ -718,6 +781,42 @@ export default function App() {
     }
   };
 
+  const handleDeleteRecommendation = async (id: string) => {
+    // Eager update
+    setRecommendations(prev => prev.filter(r => r.id !== id));
+    try {
+      await deleteDoc(doc(db, 'recommendations', id));
+    } catch (error) {
+      handleFirestoreError(error, OperationType.DELETE, `recommendations/${id}`);
+    }
+  };
+
+  const handleMarkScreeningAsScreened = async (screening: Screening, date: string, rating: number) => {
+    const pastId = `pm-${Date.now()}`;
+    const newPastMovie: PastMovie = {
+      id: pastId,
+      title: screening.title,
+      director: screening.director,
+      year: screening.year,
+      screenedDate: date || new Date().toISOString().split('T')[0],
+      rating: rating || 4.5,
+      letterboxdUrl: `https://letterboxd.com/film/${screening.title.toLowerCase().replace(/[^a-z0-9]+/g, '-')}/`,
+      posterUrl: screening.posterUrl || 'https://images.unsplash.com/photo-1489599849927-2ee91cede3ba?q=80&w=300',
+      synopsis: screening.description || '',
+      genre: screening.genre || ['Cinema'],
+      reviews: []
+    };
+
+    try {
+      // 1. Add to pastMovies collection
+      await setDoc(doc(db, 'pastMovies', pastId), sanitizeDoc(newPastMovie));
+      // 2. Delete from screenings collection
+      await deleteDoc(doc(db, 'screenings', screening.id));
+    } catch (error) {
+      handleFirestoreError(error, OperationType.WRITE, `pastMovies/${pastId}`);
+    }
+  };
+
   const handleMarkScreened = async (rec: Recommendation, date: string, rating: number) => {
     const pastId = `pm-${Date.now()}`;
     const genreArray = rec.genre
@@ -905,6 +1004,7 @@ export default function App() {
                 onUpdateScreening={handleUpdateScreening}
                 onDeleteScreening={handleDeleteScreening}
                 currentUserEmail={currentUser?.email}
+                onMarkScreeningAsScreened={handleMarkScreeningAsScreened}
               />
             )}
 
@@ -945,6 +1045,7 @@ export default function App() {
                 onVoteRecommendation={handleVoteRecommendation}
                 onUpdateRecommendation={handleUpdateRecommendation}
                 onMarkScreened={handleMarkScreened}
+                onDeleteRecommendation={handleDeleteRecommendation}
               />
             )}
 
