@@ -446,7 +446,7 @@ export default function Recommendations({
             return (
               <div
                 key={rec.id}
-                className="group flex flex-col sm:flex-row gap-4 justify-between rounded-xl border border-zinc-900 bg-zinc-950 p-5 shadow-lg hover:border-zinc-800 transition-all duration-300 animate-fadeIn"
+                className="group flex flex-col sm:flex-row gap-4 justify-between rounded-3xl border border-zinc-900/60 bg-[#121019]/65 backdrop-blur-md p-5 shadow-2xl card-hover animate-fadeIn"
               >
                 {rec.posterUrl && (
                   <div className="w-24 h-36 shrink-0 rounded-lg overflow-hidden border border-zinc-900 bg-zinc-900 shadow-md self-center sm:self-start">

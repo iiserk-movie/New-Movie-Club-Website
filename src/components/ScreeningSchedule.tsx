@@ -490,7 +490,7 @@ export default function ScreeningSchedule({
           return (
             <div 
               key={screening.id}
-              className="group relative flex flex-col lg:flex-row rounded-3xl border border-zinc-800/80 bg-[#161521]/90 overflow-hidden shadow-xl transition-all duration-300 hover:border-amber-500/30 hover:shadow-amber-500/[0.04]"
+              className="group relative flex flex-col lg:flex-row rounded-3xl border border-zinc-900/60 bg-[#121019]/65 backdrop-blur-md overflow-hidden shadow-2xl card-hover"
             >
               {adminMode && (
                 <div className="absolute top-4 right-4 z-20 flex items-center space-x-1.5 bg-zinc-900/95 border border-zinc-800/80 p-1.5 rounded-xl shadow-lg">
@@ -556,9 +556,9 @@ export default function ScreeningSchedule({
                     e.currentTarget.src = 'https://images.unsplash.com/photo-1489599849927-2ee91cede3ba?q=80&w=600';
                   }}
                 />
-                <div className="absolute inset-0 bg-gradient-to-t lg:bg-gradient-to-r from-[#161521] via-[#161521]/40 to-transparent"></div>
+                <div className="absolute inset-0 bg-gradient-to-t lg:bg-gradient-to-r from-[#121019] via-[#121019]/40 to-transparent"></div>
 
-                <div className="absolute bottom-4 left-4 flex flex-col space-y-1 bg-[#100f18]/90 backdrop-blur-md px-3.5 py-2 rounded-xl border border-zinc-800/70">
+                <div className="absolute bottom-4 left-4 flex flex-col space-y-1 bg-[#0a090d]/90 backdrop-blur-md px-3.5 py-2 rounded-xl border border-zinc-900/60 shadow-lg">
                   <span className="font-mono text-amber-400 font-bold text-xs uppercase tracking-wider">
                     {countdown}
                   </span>

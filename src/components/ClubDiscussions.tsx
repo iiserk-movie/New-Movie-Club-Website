@@ -504,7 +504,7 @@ export default function ClubDiscussions({
                 <div
                   key={disc.id}
                   onClick={() => handleSetSelectedDiscId(disc.id)}
-                  className="group flex flex-col justify-between rounded-2xl border border-zinc-900 bg-zinc-950 p-5 shadow-lg hover:border-zinc-800 transition-all duration-300 cursor-pointer"
+                  className="group flex flex-col justify-between rounded-3xl border border-zinc-900/60 bg-[#121019]/65 backdrop-blur-md p-5 shadow-2xl card-hover cursor-pointer"
                 >
                   <div className="space-y-3.5">
                     {/* Header line: Category tag & rating info */}

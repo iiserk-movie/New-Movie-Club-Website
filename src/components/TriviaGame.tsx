@@ -80,7 +80,7 @@ export default function TriviaGame() {
       </div>
 
       {/* Main Container cards */}
-      <div className="w-full max-w-2xl mx-auto rounded-3xl border border-zinc-900 bg-zinc-950 p-6 sm:p-8 shadow-2xl relative overflow-hidden">
+      <div className="w-full max-w-2xl mx-auto rounded-3xl border border-zinc-900/60 bg-[#121019]/65 backdrop-blur-md p-6 sm:p-8 shadow-2xl relative overflow-hidden card-hover">
         {/* Subtle background glow */}
         <div className="absolute top-0 right-0 h-40 w-40 bg-amber-500/5 rounded-full blur-3xl pointer-events-none"></div>
 

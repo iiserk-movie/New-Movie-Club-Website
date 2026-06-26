@@ -535,7 +535,7 @@ export default function PastScreenings({
           return (
             <div
               key={movie.id}
-              className="group flex flex-col rounded-2xl border border-zinc-900 bg-zinc-950 overflow-hidden shadow-xl hover:border-zinc-800 transition-all duration-300"
+              className="group flex flex-col rounded-3xl border border-zinc-900/60 bg-[#121019]/65 backdrop-blur-md overflow-hidden shadow-2xl card-hover"
             >
               <div className="flex gap-4 p-5">
                 {/* Poster Box */}

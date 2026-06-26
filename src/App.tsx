@@ -970,27 +970,33 @@ export default function App() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-[#13121a] via-[#0f0e14] to-[#0b0a0e] text-zinc-100 flex flex-col font-sans selection:bg-amber-400 selection:text-zinc-950">
+    <div className="min-h-screen bg-[#0a090d] bg-gradient-to-br from-[#1b1424] via-[#0d0c11] to-[#060608] text-zinc-100 flex flex-col font-sans selection:bg-amber-400 selection:text-zinc-950 relative overflow-x-hidden">
+      {/* Decorative backdrop gradients representing theatrical lighting effects applied globally behind all content */}
+      <div className="fixed inset-0 pointer-events-none overflow-hidden z-0">
+        <div className="absolute top-[-10%] left-1/4 h-[500px] w-[500px] bg-amber-500/8 rounded-full blur-[130px]"></div>
+        <div className="absolute top-[30%] right-[10%] h-[600px] w-[600px] bg-purple-600/5 rounded-full blur-[140px]"></div>
+        <div className="absolute bottom-[10%] left-[-10%] h-[600px] w-[600px] bg-rose-500/6 rounded-full blur-[140px]"></div>
+        <div className="absolute bottom-[-10%] right-[-10%] h-[500px] w-[500px] bg-amber-500/5 rounded-full blur-[130px]"></div>
+      </div>
+
       {/* Upper Navigation Row */}
-      <Navbar
-        currentUser={currentUser}
-        onLogin={handleLogin}
-        onLogout={handleLogout}
-        onUpdateProfile={handleUpdateProfile}
-        activeTab={activeTab}
-        setActiveTab={setActiveTab}
-        adminMode={adminMode}
-        setAdminMode={setAdminMode}
-        onImportPastMovies={handleImportPastMovies}
-      />
+      <div className="relative z-10">
+        <Navbar
+          currentUser={currentUser}
+          onLogin={handleLogin}
+          onLogout={handleLogout}
+          onUpdateProfile={handleUpdateProfile}
+          activeTab={activeTab}
+          setActiveTab={setActiveTab}
+          adminMode={adminMode}
+          setAdminMode={setAdminMode}
+          onImportPastMovies={handleImportPastMovies}
+        />
+      </div>
 
       {/* Main Feature Cinematic Hero Segment */}
       {activeTab === 'schedule' && (
-        <div className="relative border-b border-amber-500/10 bg-gradient-to-r from-[#211a28]/45 via-[#131119] to-[#0b0a0e] py-16 sm:py-24 overflow-hidden">
-          {/* Decorative backdrop gradients representing theatrical lighting effects */}
-          <div className="absolute top-0 left-1/4 h-72 w-96 bg-amber-500/12 rounded-full blur-[120px] pointer-events-none"></div>
-          <div className="absolute bottom-0 right-1/4 h-72 w-96 bg-rose-500/10 rounded-full blur-[120px] pointer-events-none"></div>
-
+        <div className="relative border-b border-amber-500/10 py-16 sm:py-24 overflow-hidden z-10">
           <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 relative">
             <div className="max-w-3xl">
               <div className="inline-flex items-center space-x-1.5 bg-zinc-900/90 border border-zinc-800/80 px-3.5 py-1.5 rounded-full text-xs font-mono text-amber-500 mb-6 font-semibold shadow-inner shadow-amber-500/5">
@@ -1019,7 +1025,7 @@ export default function App() {
       )}
 
       {/* Main tab panel layout */}
-      <main className="flex-grow mx-auto max-w-7xl w-full px-4 sm:px-6 lg:px-8 py-10">
+      <main className="flex-grow mx-auto max-w-7xl w-full px-4 sm:px-6 lg:px-8 py-10 relative z-10">
         <AnimatePresence mode="wait">
           <motion.div
             key={activeTab}
@@ -1109,7 +1115,7 @@ export default function App() {
       </main>
 
       {/* Primary Footer Section adhering to strict branding limits */}
-      <footer className="border-t border-zinc-900 bg-zinc-980 py-12">
+      <footer className="border-t border-zinc-900 bg-zinc-980/80 backdrop-blur-md py-12 relative z-10">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 flex flex-col md:flex-row items-center justify-between gap-6">
           <div className="text-center md:text-left space-y-1">
             <h3 className="font-serif text-sm font-semibold tracking-wide text-zinc-300 uppercase">

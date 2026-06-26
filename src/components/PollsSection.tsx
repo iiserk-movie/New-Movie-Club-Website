@@ -430,7 +430,7 @@ export default function PollsSection({
               <motion.div
                 key={poll.id}
                 layoutId={`poll-card-${poll.id}`}
-                className="bg-zinc-950 p-6 rounded-2xl border border-zinc-900 hover:border-zinc-800/80 transition-all duration-300 space-y-6 shadow-xl"
+                className="bg-[#121019]/65 backdrop-blur-md p-6 rounded-3xl border border-zinc-900/60 shadow-2xl card-hover space-y-6"
               >
                 {/* Header: Dates + Title */}
                 <div className="flex flex-col gap-3 border-b border-zinc-900 pb-5 md:flex-row md:items-start md:justify-between">

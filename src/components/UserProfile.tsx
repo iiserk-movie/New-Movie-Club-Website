@@ -170,7 +170,7 @@ export default function UserProfile({
   return (
     <div className="space-y-8">
       {/* Profile Header Cards */}
-      <div className="rounded-2xl border border-zinc-900 bg-zinc-950 p-6 md:p-8 shadow-xl">
+      <div className="rounded-3xl border border-zinc-900/60 bg-[#121019]/65 backdrop-blur-md p-6 md:p-8 shadow-2xl card-hover">
         <div className="flex flex-col md:flex-row items-center gap-6 justify-between">
           <div className="flex flex-col sm:flex-row items-center gap-5 text-center sm:text-left">
             <div className="relative h-20 w-20 rounded-full border-2 border-amber-500/20 bg-zinc-900 flex items-center justify-center text-amber-500 font-extrabold text-3xl overflow-hidden shadow-lg shadow-amber-500/5">
