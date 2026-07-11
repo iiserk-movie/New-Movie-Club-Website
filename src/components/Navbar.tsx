@@ -177,11 +177,12 @@ export default function Navbar({
         console.warn('Google Popup Sign-In blocked/failed. Trying redirect flow...', popupErr);
         if (
           popupErr.code === 'auth/popup-blocked' || 
+          popupErr.code === 'auth/popup-closed-by-user' ||
           popupErr.code === 'auth/operation-not-supported-in-this-environment' ||
           /iPhone|iPad|iPod|Android/i.test(navigator.userAgent)
         ) {
-          setErrorMsg('Popup blocked. Attempting Google Secure Sign-In Redirect...');
-          await signInWithRedirect(auth, googleProvider);
+          // Instead of failing blindly, let the user know they can use the direct redirect or the built-in simulator
+          setErrorMsg('Popup was blocked, closed, or not supported. You can try again, use the secure Student Simulator form below, or open the app in a new tab.');
           return;
         } else {
           throw popupErr;
@@ -214,9 +215,10 @@ export default function Navbar({
       setIsGoogleCustom(false);
     } catch (err: any) {
       console.error('Google Sign-In Error:', err);
-      // Give custom friendly help for embedded/sandbox/mobile environments
-      if (err.message && err.message.includes('cross-origin')) {
-        setErrorMsg('Embedded browser error. Please try clicking "Use another Google Account" below or select a Sandbox Simulator account to bypass.');
+      if (err.code === 'auth/popup-closed-by-user') {
+        setErrorMsg('Google login popup was closed. Please try again, open the app in a new tab, or use the Student Simulator bypass below.');
+      } else if (err.message && err.message.includes('cross-origin')) {
+        setErrorMsg('Embedded browser iframe restriction. Please try clicking "Open in New Tab" or use the built-in Student Simulator bypass below.');
       } else {
         setErrorMsg(err.message || 'An error occurred during Google Sign-In.');
       }
@@ -233,11 +235,11 @@ export default function Navbar({
         console.warn('Google Admin Popup Sign-In blocked/failed. Trying redirect flow...', popupErr);
         if (
           popupErr.code === 'auth/popup-blocked' || 
+          popupErr.code === 'auth/popup-closed-by-user' ||
           popupErr.code === 'auth/operation-not-supported-in-this-environment' ||
           /iPhone|iPad|iPod|Android/i.test(navigator.userAgent)
         ) {
-          setErrorMsg('Popup blocked. Attempting Google Admin Sign-In Redirect...');
-          await signInWithRedirect(auth, googleProvider);
+          setErrorMsg('Popup was blocked, closed, or not supported. Please try again or use the secure passcode validation below.');
           return;
         } else {
           throw popupErr;
@@ -262,7 +264,9 @@ export default function Navbar({
       setErrorMsg('');
     } catch (err: any) {
       console.error('Google Admin Sign-In Error:', err);
-      if (err.message && err.message.includes('cross-origin')) {
+      if (err.code === 'auth/popup-closed-by-user') {
+        setErrorMsg('Google Admin popup was closed. Please try again or use the secure passcode validation below.');
+      } else if (err.message && err.message.includes('cross-origin')) {
         setErrorMsg('Embedded login error. Please use the secure passcode validation tab below.');
       } else {
         setErrorMsg(err.message || 'An error occurred during Google Admin Sign-In.');
@@ -766,7 +770,7 @@ export default function Navbar({
               <button
                 type="button"
                 onClick={handleRealGoogleSignIn}
-                className="w-full mb-6 flex items-center justify-center space-x-3 p-3.5 rounded-xl border border-zinc-800 bg-zinc-900/40 hover:bg-zinc-900/90 hover:border-amber-500/50 transition-all text-center cursor-pointer shadow-lg group font-medium"
+                className="w-full mb-4 flex items-center justify-center space-x-3 p-3.5 rounded-xl border border-zinc-800 bg-zinc-900/40 hover:bg-zinc-900/90 hover:border-amber-500/50 transition-all text-center cursor-pointer shadow-lg group font-medium"
               >
                 <svg className="h-5 w-5" viewBox="0 0 24 24" width="20" height="20" xmlns="http://www.w3.org/2000/svg">
                   <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12V14.4h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.23z" fill="#4285F4"/>
@@ -779,9 +783,62 @@ export default function Navbar({
                 </span>
               </button>
 
+              {/* Divider */}
+              <div className="relative my-3 flex items-center justify-center">
+                <div className="absolute inset-0 flex items-center">
+                  <div className="w-full border-t border-zinc-900"></div>
+                </div>
+                <span className="relative bg-zinc-950 px-2.5 text-[9px] font-mono text-zinc-500 uppercase tracking-widest select-none">
+                  OR USE STUDENT SIMULATOR
+                </span>
+              </div>
+
+              {/* Simulated Student SSO Form */}
+              <form onSubmit={handleLoginSubmit} className="space-y-3 mb-4">
+                <div className="grid grid-cols-2 gap-2">
+                  <div>
+                    <label className="block text-[9px] font-mono text-zinc-500 mb-1 uppercase tracking-wider">
+                      Full Name
+                    </label>
+                    <input
+                      type="text"
+                      placeholder="e.g. Ritika Sen"
+                      value={nameInput}
+                      onChange={(e) => {
+                        setNameInput(e.target.value);
+                        if (errorMsg) setErrorMsg('');
+                      }}
+                      className="w-full rounded-lg border border-zinc-850 bg-zinc-900/30 px-3 py-1.5 text-xs text-zinc-100 placeholder-zinc-650 focus:border-amber-500/50 focus:outline-none"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-[9px] font-mono text-zinc-500 mb-1 uppercase tracking-wider">
+                      Student Email
+                    </label>
+                    <input
+                      type="email"
+                      required
+                      placeholder="e.g. student@iiserkol.ac.in"
+                      value={emailInput}
+                      onChange={(e) => {
+                        setEmailInput(e.target.value);
+                        if (errorMsg) setErrorMsg('');
+                      }}
+                      className="w-full rounded-lg border border-zinc-850 bg-zinc-900/30 px-3 py-1.5 text-xs text-zinc-100 placeholder-zinc-650 focus:border-amber-500/50 focus:outline-none"
+                    />
+                  </div>
+                </div>
+                <button
+                  type="submit"
+                  className="w-full flex items-center justify-center space-x-2 py-2 rounded-lg border border-zinc-800 bg-zinc-950 hover:bg-zinc-900/40 hover:border-amber-500/35 text-zinc-350 hover:text-amber-400 text-[11px] font-semibold transition-all cursor-pointer text-center font-mono"
+                >
+                  <span>Simulate Student SSO Sign-In</span>
+                </button>
+              </form>
+
               {errorMsg && (
-                <div className="mb-6 rounded-lg bg-red-500/10 border border-red-500/25 p-3.5 text-xs text-red-400 leading-relaxed">
-                  <div className="font-bold flex items-center gap-1 mb-0.5 text-red-500 font-mono text-[10px]">
+                <div className="mb-4 rounded-lg bg-red-500/10 border border-red-500/25 p-3 text-xs text-red-400 leading-relaxed font-mono">
+                  <div className="font-bold flex items-center gap-1 mb-0.5 text-red-500 text-[10px]">
                     ⚠️ AUTH_ERROR
                   </div>
                   {errorMsg}
