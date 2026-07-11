@@ -54,9 +54,9 @@ export default function UserProfile({
         <div className="h-16 w-16 mb-6 rounded-full bg-zinc-900 border border-zinc-800 flex items-center justify-center text-zinc-500">
           <UserIcon className="h-8 w-8" />
         </div>
-        <h3 className="text-xl font-serif font-bold text-zinc-200">Access Restricted</h3>
-        <p className="text-sm text-zinc-500 mt-2 max-w-sm">
-          Please log in using your official IISER Kolkata account to view your activity backlog and customize your profile preferences.
+        <h3 className="text-lg font-serif font-bold text-zinc-200">Connect Your Account</h3>
+        <p className="text-xs text-zinc-500 mt-1 max-w-xs leading-relaxed">
+          Log in with your official @iiserkol.ac.in email to view your personalized profile, track movies you have watched, and see your discussion history!
         </p>
       </div>
     );

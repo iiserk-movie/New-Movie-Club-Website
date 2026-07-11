@@ -526,6 +526,79 @@ export default function PastScreenings({
         </div>
       )}
 
+      {/* Featured Marquee Showcase Carousel */}
+      {pastMovies.length > 0 && (
+        <div className="space-y-4 pt-2">
+          <div className="flex items-center justify-between pb-2">
+            <h3 className="font-serif text-lg font-bold text-zinc-300 flex items-center gap-2">
+              <span className="h-2 w-2 rounded-full bg-amber-500 animate-pulse"></span>
+              Cinephile Favorites & Recent Screenings
+            </h3>
+            <p className="text-[10px] font-mono text-zinc-500 uppercase tracking-wider">Interactive Reel</p>
+          </div>
+          
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4 overflow-x-auto pb-4 scrollbar-thin scrollbar-thumb-zinc-800 scrollbar-track-transparent">
+            {pastMovies.slice(0, 5).map((movie, idx) => {
+              const avgRating = calculateAverageRating(movie);
+              return (
+                <div
+                  key={`marquee-${movie.id}`}
+                  onClick={() => setSelectedMovieId(selectedMovieId === movie.id ? null : movie.id)}
+                  className={`group relative flex-shrink-0 cursor-pointer rounded-2xl border bg-[#110e1a]/80 backdrop-blur-md overflow-hidden transition-all duration-500 hover:scale-[1.03] ${
+                    selectedMovieId === movie.id 
+                      ? 'border-amber-500/80 shadow-[0_0_20px_rgba(245,158,11,0.25)] ring-1 ring-amber-500/30' 
+                      : 'border-zinc-900 hover:border-zinc-850'
+                  }`}
+                >
+                  <div className="absolute inset-0 z-0 opacity-10 filter blur-[4px] group-hover:opacity-20 transition-opacity">
+                    <img 
+                      src={getPolishedPosterUrl(movie.title, movie.posterUrl)} 
+                      alt="" 
+                      className="w-full h-full object-cover" 
+                    />
+                  </div>
+
+                  <div className="relative z-10 p-4 space-y-3 flex flex-col justify-between h-full">
+                    <div className="flex items-center justify-between">
+                      <span className="text-[9px] font-mono text-zinc-600 font-bold">REEL #0{idx + 1}</span>
+                      <span className="text-[10px] font-mono text-amber-500 font-bold flex items-center gap-0.5 bg-amber-500/5 px-1.5 py-0.5 rounded border border-amber-500/10">
+                        ★ {avgRating}
+                      </span>
+                    </div>
+
+                    <div className="aspect-[2/3] w-full rounded-lg overflow-hidden border border-zinc-900 bg-zinc-950 shadow-md relative">
+                      <img
+                        src={getPolishedPosterUrl(movie.title, movie.posterUrl)}
+                        alt={movie.title}
+                        referrerPolicy="no-referrer"
+                        className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+                        onError={(e) => {
+                          e.currentTarget.src = 'https://images.unsplash.com/photo-1489599849927-2ee91cede3ba?q=80&w=300';
+                        }}
+                      />
+                      <div className="absolute inset-0 bg-gradient-to-t from-zinc-950/80 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity flex items-end p-2">
+                        <span className="text-[9px] font-mono font-bold text-amber-400 uppercase tracking-wider block w-full text-center">
+                          Read Logs & Reviews
+                        </span>
+                      </div>
+                    </div>
+
+                    <div className="space-y-0.5">
+                      <h4 className="font-serif text-xs font-bold text-zinc-100 tracking-tight truncate group-hover:text-amber-300 transition-colors">
+                        {movie.title}
+                      </h4>
+                      <p className="text-[10px] text-zinc-500 font-medium truncate">
+                        {movie.director} ({movie.year})
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      )}
+
       {/* Past Screenings Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
         {pastMovies.map((movie) => {

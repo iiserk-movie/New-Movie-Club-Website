@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { 
-  Film, Sparkles, MapPin, Users, Clapperboard 
+  Film, Sparkles, MapPin, Users, Clapperboard, Calendar, Clock, Play, Bell, ChevronRight, ChevronLeft, ExternalLink, MessageSquare, Volume2, X, ChevronDown, ChevronUp, ThumbsUp, Check
 } from 'lucide-react';
 
 import { Screening, PastMovie, Recommendation, User, UserReview, ClubDiscussion, Poll } from './types';
@@ -58,6 +58,11 @@ export default function App() {
   const [activeTab, setActiveTab] = useState<string>('schedule');
   const [focusedDiscussionId, setFocusedDiscussionId] = useState<string | null>(null);
   const [adminMode, setAdminMode] = useState<boolean>(false);
+  const [spotlightIndex, setSpotlightIndex] = useState<number>(0);
+  const [showTrailerModal, setShowTrailerModal] = useState<boolean>(false);
+  const [trailerUrlToPlay, setTrailerUrlToPlay] = useState<string>('');
+  const [rsvpedIds, setRsvpedIds] = useState<Record<string, boolean>>({});
+  const [heroFeedbackMsg, setHeroFeedbackMsg] = useState<string>('');
   const [randomQuote, setRandomQuote] = useState(() => CINEMA_QUOTES[Math.floor(Math.random() * CINEMA_QUOTES.length)]);
 
   const randomizeQuote = () => {
@@ -1008,36 +1013,216 @@ export default function App() {
 
       {/* Main Feature Cinematic Hero Segment */}
       {activeTab === 'schedule' && (
-        <div className="relative border-b border-amber-500/10 py-16 sm:py-24 overflow-hidden z-10">
-          <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 relative">
-            <div className="max-w-3xl">
-              <div className="inline-flex items-center space-x-1.5 bg-zinc-900/90 border border-zinc-800/80 px-3.5 py-1.5 rounded-full text-xs font-mono text-amber-500 mb-6 font-semibold shadow-inner shadow-amber-500/5">
-                <span className="h-1.5 w-1.5 rounded-full bg-amber-500 animate-ping"></span>
-                <span>MOVIE CLUB • IISER KOLKATA</span>
-              </div>
+        (() => {
+          const featured = upcomingScreenings[spotlightIndex] || upcomingScreenings[0] || null;
+          if (!featured) {
+            return (
+              <div className="relative border-b border-zinc-900/40 bg-zinc-950/20 py-20 overflow-hidden z-10">
+                <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 relative">
+                  <div className="max-w-3xl">
+                    <div className="inline-flex items-center space-x-1.5 bg-zinc-900/90 border border-zinc-800/80 px-3.5 py-1.5 rounded-full text-xs font-mono text-amber-500 mb-6 font-semibold shadow-inner shadow-amber-500/5">
+                      <span className="h-1.5 w-1.5 rounded-full bg-amber-500 animate-ping"></span>
+                      <span>MOVIE CLUB • IISER KOLKATA</span>
+                    </div>
 
-              <h2 className="font-serif text-4xl sm:text-6xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-zinc-100 via-amber-200 to-amber-300 tracking-tight leading-[1.1] animate-glow">
-                Explore the Language of Cinema.
-              </h2>
-              
-              <p className="mt-4 text-sm sm:text-base text-zinc-350 max-w-2xl leading-relaxed italic font-serif">
-                "{randomQuote.text}" — <span className="text-amber-400/90 font-mono font-medium tracking-wide uppercase text-xs">{randomQuote.author}</span>
-              </p>
+                    <h2 className="font-serif text-4xl sm:text-6xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-zinc-100 via-amber-200 to-amber-300 tracking-tight leading-[1.1] animate-glow">
+                      Explore the Language of Cinema.
+                    </h2>
+                    
+                    <p className="mt-4 text-sm sm:text-base text-zinc-350 max-w-2xl leading-relaxed italic font-serif">
+                      "{randomQuote.text}" — <span className="text-amber-400/90 font-mono font-medium tracking-wide uppercase text-xs">{randomQuote.author}</span>
+                    </p>
 
-              {/* Quick stats board */}
-              <div className="mt-8 flex flex-wrap gap-x-8 gap-y-4 text-xs font-mono text-zinc-500">
-                <div className="flex items-center space-x-2">
-                  <MapPin className="h-4.5 w-4.5 text-amber-500/70" />
-                  <span>Regular Base: <b className="text-zinc-300">M.N. Saha Auditorium</b></span>
+                    <div className="mt-8 flex flex-wrap gap-x-8 gap-y-4 text-xs font-mono text-zinc-500">
+                      <div className="flex items-center space-x-2">
+                        <MapPin className="h-4.5 w-4.5 text-amber-500/70" />
+                        <span>Regular Base: <b className="text-zinc-300">M.N. Saha Auditorium</b></span>
+                      </div>
+                    </div>
+                  </div>
                 </div>
               </div>
+            );
+          }
+
+          const formatPrettyDate = (dateStr: string) => {
+            const options: any = { weekday: 'long', month: 'short', day: 'numeric', year: 'numeric' };
+            return new Date(dateStr).toLocaleDateString('en-US', options);
+          };
+
+          const getYoutubeEmbedUrl = (url?: string): string => {
+            if (!url) return '';
+            try {
+              let videoId = '';
+              if (url.includes('v=')) {
+                videoId = url.split('v=')[1].split('&')[0];
+              } else if (url.includes('youtu.be/')) {
+                videoId = url.split('youtu.be/')[1].split('?')[0];
+              } else if (url.includes('embed/')) {
+                videoId = url.split('embed/')[1].split('?')[0];
+              }
+              return videoId ? `https://www.youtube.com/embed/${videoId}?autoplay=1&rel=0` : '';
+            } catch {
+              return '';
+            }
+          };
+
+          return (
+            <div className="relative border-b border-zinc-900 overflow-hidden z-10 bg-zinc-950">
+              <div className="absolute inset-0 z-0">
+                <img 
+                  src={featured.backdropUrl || 'https://images.unsplash.com/photo-1489599849927-2ee91cede3ba?q=80&w=1200'} 
+                  alt="" 
+                  className="w-full h-full object-cover object-center scale-102 filter blur-[2px] opacity-25 brightness-[0.4]"
+                />
+                <div className="absolute inset-0 bg-gradient-to-r from-[#0a090d] via-[#0a090d]/85 to-[#0a090d]/30"></div>
+                <div className="absolute inset-0 bg-gradient-to-t from-[#0a090d] via-transparent to-transparent"></div>
+              </div>
+
+              <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-12 sm:py-20 relative z-10 grid grid-cols-1 lg:grid-cols-12 gap-8 md:gap-12 items-center">
+                <div className="lg:col-span-8 space-y-6">
+                  <div className="flex flex-wrap items-center gap-2">
+                    <span className="inline-flex items-center space-x-1.5 bg-amber-500/15 text-amber-400 border border-amber-500/20 px-3 py-1 rounded-full text-xs font-mono font-bold tracking-wider uppercase shadow-inner">
+                      <Sparkles className="h-3 w-3 text-amber-400 animate-pulse" />
+                      <span>SPOTLIGHT SHOWCASE</span>
+                    </span>
+                    <span className="inline-flex items-center space-x-1 bg-zinc-900 border border-zinc-800 px-3 py-1 rounded-full text-xs font-mono text-zinc-400">
+                      <span>Screening {spotlightIndex + 1} of {upcomingScreenings.length}</span>
+                    </span>
+                  </div>
+
+                  <h2 className="font-serif text-4xl sm:text-6xl font-black text-transparent bg-clip-text bg-gradient-to-r from-zinc-550 via-zinc-150 to-amber-250 tracking-tight leading-[1.05] animate-glow">
+                    {featured.title}
+                  </h2>
+
+                  <p className="font-mono text-xs text-zinc-400 font-semibold uppercase tracking-wider flex flex-wrap items-center gap-x-3 gap-y-1.5">
+                    <span>Director: <span className="text-amber-400">{featured.director}</span></span>
+                    <span className="text-zinc-700">•</span>
+                    <span>Year: <span className="text-zinc-200">{featured.year}</span></span>
+                    <span className="text-zinc-700">•</span>
+                    <span>Runtime: <span className="text-zinc-200">{featured.runtime}</span></span>
+                    <span className="text-zinc-700">•</span>
+                    <span>Language: <span className="text-zinc-200">{featured.language}</span></span>
+                  </p>
+
+                  <p className="text-sm sm:text-base text-zinc-350 max-w-2xl leading-relaxed italic font-serif">
+                    "{featured.description}"
+                  </p>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 max-w-3xl pt-2 font-sans">
+                    <div className="flex items-center space-x-2.5 bg-zinc-900/60 backdrop-blur-md px-3.5 py-2.5 rounded-xl border border-zinc-850">
+                      <Calendar className="h-4.5 w-4.5 text-amber-400" />
+                      <div>
+                        <span className="text-zinc-500 block text-[9px] uppercase tracking-wider font-mono">Screen Date</span>
+                        <span className="text-zinc-200 text-xs font-bold">{formatPrettyDate(featured.date)}</span>
+                      </div>
+                    </div>
+
+                    <div className="flex items-center space-x-2.5 bg-zinc-900/60 backdrop-blur-md px-3.5 py-2.5 rounded-xl border border-zinc-850">
+                      <Clock className="h-4.5 w-4.5 text-rose-400" />
+                      <div>
+                        <span className="text-zinc-500 block text-[9px] uppercase tracking-wider font-mono">Showtime</span>
+                        <span className="text-zinc-200 text-xs font-bold">{featured.time} IST</span>
+                      </div>
+                    </div>
+
+                    <div className="flex items-center space-x-2.5 bg-zinc-900/60 backdrop-blur-md px-3.5 py-2.5 rounded-xl border border-zinc-850">
+                      <MapPin className="h-4.5 w-4.5 text-emerald-400" />
+                      <div className="min-w-0">
+                        <span className="text-zinc-500 block text-[9px] uppercase tracking-wider font-mono">Venue Lounge</span>
+                        <span className="text-zinc-200 text-xs font-bold truncate block" title={featured.venue}>
+                          {featured.venue.split(',')[0]}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="flex flex-wrap items-center gap-3.5 pt-4">
+                    {featured.trailerUrl && (
+                      <button
+                        onClick={() => {
+                          const embed = getYoutubeEmbedUrl(featured.trailerUrl);
+                          if (embed) {
+                            setTrailerUrlToPlay(embed);
+                            setShowTrailerModal(true);
+                          } else {
+                            window.open(featured.trailerUrl, '_blank');
+                          }
+                        }}
+                        className="flex items-center space-x-2.5 bg-amber-500 hover:bg-amber-600 active:scale-98 text-zinc-950 px-6 py-3 rounded-xl font-bold text-sm transition-all shadow-xl shadow-amber-500/10 cursor-pointer"
+                      >
+                        <Play className="h-4 w-4 fill-zinc-950" />
+                        <span>Watch Trailer</span>
+                      </button>
+                    )}
+
+                    <button
+                      onClick={() => {
+                        setActiveTab('discussions');
+                        setFocusedDiscussionId(null);
+                      }}
+                      className="flex items-center space-x-2.5 bg-zinc-900/60 hover:bg-zinc-900/90 text-zinc-400 hover:text-zinc-200 border border-zinc-800 px-5 py-3 rounded-xl font-semibold text-sm transition-all cursor-pointer"
+                    >
+                      <MessageSquare className="h-4 w-4" />
+                      <span>Discussion Board</span>
+                    </button>
+                  </div>
+
+                  {upcomingScreenings.length > 1 && (
+                    <div className="pt-6 border-t border-zinc-900/60 max-w-2xl">
+                      <p className="text-[10px] font-mono text-zinc-500 uppercase tracking-widest mb-2 font-bold">
+                        NEXT IN THEATRES:
+                      </p>
+                      <div className="flex flex-wrap gap-2.5">
+                        {upcomingScreenings.map((screen, sIdx) => (
+                          <button
+                            key={screen.id}
+                            onClick={() => setSpotlightIndex(sIdx)}
+                            className={`px-3 py-1.5 rounded-lg border text-left text-xs transition-all flex items-center space-x-2 cursor-pointer ${
+                              spotlightIndex === sIdx
+                                ? 'bg-amber-500/10 border-amber-500/50 text-amber-400 font-bold'
+                                : 'bg-zinc-900/40 border-zinc-900 text-zinc-400 hover:border-zinc-800 hover:text-zinc-200'
+                            }`}
+                          >
+                            <span className="font-mono text-[9px] text-zinc-500">#{sIdx + 1}</span>
+                            <span className="truncate max-w-[150px]">{screen.title}</span>
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </div>
+
+                <div className="lg:col-span-4 hidden lg:flex justify-center relative">
+                  <div className="absolute -inset-1 rounded-3xl bg-gradient-to-tr from-amber-500/10 to-purple-500/15 blur-2xl opacity-60 z-0"></div>
+                  
+                  <div className="relative group/poster z-10">
+                    <img 
+                      src={featured.posterUrl || 'https://images.unsplash.com/photo-1489599849927-2ee91cede3ba?q=80&w=600'} 
+                      alt="" 
+                      className="h-[380px] w-[260px] object-cover rounded-2xl shadow-[0_25px_50px_-12px_rgba(0,0,0,0.8)] border border-zinc-800 transition-all duration-700 ease-out transform group-hover/poster:-translate-y-2 group-hover/poster:rotate-1 group-hover/poster:shadow-[0_30px_60px_-10px_rgba(245,158,11,0.25)]"
+                      referrerPolicy="no-referrer"
+                    />
+                    <div className="absolute top-3 left-3 bg-zinc-950/90 backdrop-blur-md px-2.5 py-1 rounded-md text-[9px] font-mono font-bold text-amber-400 uppercase border border-zinc-800 shadow-md">
+                      🍿 {featured.runtime}
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {heroFeedbackMsg && (
+                <div className="absolute bottom-6 right-6 z-40 bg-zinc-900 text-amber-400 border border-amber-500/35 px-4 py-3 rounded-xl shadow-2xl flex items-center space-x-2.5 text-xs font-mono animate-slide-in">
+                  <div className="h-1.5 w-1.5 rounded-full bg-amber-500 animate-ping"></div>
+                  <span>{heroFeedbackMsg}</span>
+                </div>
+              )}
             </div>
-          </div>
-        </div>
+          );
+        })()
       )}
 
       {/* Main tab panel layout */}
-      <main className="flex-grow mx-auto max-w-7xl w-full px-4 sm:px-6 lg:px-8 py-10 relative z-10">
+      <main className="flex-grow mx-auto max-w-7xl w-full px-4 sm:px-6 lg:px-8 py-8 relative z-10">
         <AnimatePresence mode="wait">
           <motion.div
             key={activeTab}
@@ -1153,6 +1338,37 @@ export default function App() {
           </div>
         </div>
       </footer>
+
+      {/* Trailer Modal Overlay */}
+      {showTrailerModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/90 backdrop-blur-md">
+          <div className="relative w-full max-w-4xl aspect-video rounded-2xl border border-zinc-800 bg-zinc-950 overflow-hidden shadow-2xl animate-scale-up">
+            <button
+              onClick={() => {
+                setShowTrailerModal(false);
+                setTrailerUrlToPlay('');
+              }}
+              className="absolute top-4 right-4 z-10 bg-zinc-900/90 hover:bg-zinc-800 text-zinc-400 hover:text-white p-2 rounded-xl border border-zinc-800 cursor-pointer transition-colors"
+              title="Close trailer"
+            >
+              <X className="h-5 w-5" />
+            </button>
+            {trailerUrlToPlay ? (
+              <iframe
+                src={trailerUrlToPlay}
+                title="Movie Trailer"
+                className="w-full h-full border-0"
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                allowFullScreen
+              ></iframe>
+            ) : (
+              <div className="w-full h-full flex items-center justify-center text-zinc-500 font-mono text-xs">
+                No active trailer source found.
+              </div>
+            )}
+          </div>
+        </div>
+      )}
     </div>
   );
 }

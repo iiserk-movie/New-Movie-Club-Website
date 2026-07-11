@@ -406,7 +406,7 @@ export default function ScreeningSchedule({
 
     if (!hasReminder) {
       const emailText = currentUserEmail ? `to ${currentUserEmail}` : "to your email";
-      setFeedbackMsg(`🔔 RSVPs acknowledged! Screening reminder sent ${emailText} for "${movieTitle}"`);
+      setFeedbackMsg(`🔔 Reminder scheduled! We'll send an email notification ${emailText} before "${movieTitle}" starts.`);
       setTimeout(() => setFeedbackMsg(''), 5500);
     }
   };
@@ -683,12 +683,12 @@ export default function ScreeningSchedule({
                       {reminders[screening.id] ? (
                         <>
                           <Check className="h-3.5 w-3.5" />
-                          <span>RSVP Confirmed</span>
+                          <span>Reminder Set</span>
                         </>
                       ) : (
                         <>
-                          <Bell className="h-3.5 w-3.5 text-amber-400" />
-                          <span>RSVP & Remind Me</span>
+                          <Bell className="h-3.5 w-3.5 text-amber-400 animate-pulse" />
+                          <span>Remind Me</span>
                         </>
                       )}
                     </button>

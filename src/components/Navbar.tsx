@@ -132,7 +132,7 @@ export default function Navbar({
     const extMatch = trimmedEmail.endsWith('@iiserkol.ac.in');
     
     if (!extMatch) {
-      setErrorMsg('This Google app is restricted to IISER Kolkata accounts (@iiserkol.ac.in). Please log in using your student email.');
+      setErrorMsg('Access is restricted to IISER Kolkata accounts (@iiserkol.ac.in). Please log in using your institute email.');
       return;
     }
 
@@ -181,8 +181,7 @@ export default function Navbar({
           popupErr.code === 'auth/operation-not-supported-in-this-environment' ||
           /iPhone|iPad|iPod|Android/i.test(navigator.userAgent)
         ) {
-          // Instead of failing blindly, let the user know they can use the direct redirect or the built-in simulator
-          setErrorMsg('Popup was blocked, closed, or not supported. You can try again, use the secure Student Simulator form below, or open the app in a new tab.');
+          setErrorMsg('Popup was blocked, closed, or not supported. Please try again or open the app in a new tab.');
           return;
         } else {
           throw popupErr;
@@ -197,7 +196,7 @@ export default function Navbar({
       
       if (!extMatch) {
         await fbSignOut(auth);
-        setErrorMsg('This Google app is restricted to IISER Kolkata accounts (@iiserkol.ac.in). Please log in using your student email.');
+        setErrorMsg('Access is restricted to IISER Kolkata accounts (@iiserkol.ac.in). Please log in using your institute email.');
         return;
       }
       
@@ -216,9 +215,9 @@ export default function Navbar({
     } catch (err: any) {
       console.error('Google Sign-In Error:', err);
       if (err.code === 'auth/popup-closed-by-user') {
-        setErrorMsg('Google login popup was closed. Please try again, open the app in a new tab, or use the Student Simulator bypass below.');
+        setErrorMsg('Google login popup was closed. Please try again or open the app in a new tab.');
       } else if (err.message && err.message.includes('cross-origin')) {
-        setErrorMsg('Embedded browser iframe restriction. Please try clicking "Open in New Tab" or use the built-in Student Simulator bypass below.');
+        setErrorMsg('Embedded browser iframe restriction. Please try clicking "Open in New Tab" to sign in.');
       } else {
         setErrorMsg(err.message || 'An error occurred during Google Sign-In.');
       }
@@ -782,59 +781,6 @@ export default function Navbar({
                   Sign in with Google
                 </span>
               </button>
-
-              {/* Divider */}
-              <div className="relative my-3 flex items-center justify-center">
-                <div className="absolute inset-0 flex items-center">
-                  <div className="w-full border-t border-zinc-900"></div>
-                </div>
-                <span className="relative bg-zinc-950 px-2.5 text-[9px] font-mono text-zinc-500 uppercase tracking-widest select-none">
-                  OR USE STUDENT SIMULATOR
-                </span>
-              </div>
-
-              {/* Simulated Student SSO Form */}
-              <form onSubmit={handleLoginSubmit} className="space-y-3 mb-4">
-                <div className="grid grid-cols-2 gap-2">
-                  <div>
-                    <label className="block text-[9px] font-mono text-zinc-500 mb-1 uppercase tracking-wider">
-                      Full Name
-                    </label>
-                    <input
-                      type="text"
-                      placeholder="e.g. Ritika Sen"
-                      value={nameInput}
-                      onChange={(e) => {
-                        setNameInput(e.target.value);
-                        if (errorMsg) setErrorMsg('');
-                      }}
-                      className="w-full rounded-lg border border-zinc-850 bg-zinc-900/30 px-3 py-1.5 text-xs text-zinc-100 placeholder-zinc-650 focus:border-amber-500/50 focus:outline-none"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-[9px] font-mono text-zinc-500 mb-1 uppercase tracking-wider">
-                      Student Email
-                    </label>
-                    <input
-                      type="email"
-                      required
-                      placeholder="e.g. student@iiserkol.ac.in"
-                      value={emailInput}
-                      onChange={(e) => {
-                        setEmailInput(e.target.value);
-                        if (errorMsg) setErrorMsg('');
-                      }}
-                      className="w-full rounded-lg border border-zinc-850 bg-zinc-900/30 px-3 py-1.5 text-xs text-zinc-100 placeholder-zinc-650 focus:border-amber-500/50 focus:outline-none"
-                    />
-                  </div>
-                </div>
-                <button
-                  type="submit"
-                  className="w-full flex items-center justify-center space-x-2 py-2 rounded-lg border border-zinc-800 bg-zinc-950 hover:bg-zinc-900/40 hover:border-amber-500/35 text-zinc-350 hover:text-amber-400 text-[11px] font-semibold transition-all cursor-pointer text-center font-mono"
-                >
-                  <span>Simulate Student SSO Sign-In</span>
-                </button>
-              </form>
 
               {errorMsg && (
                 <div className="mb-4 rounded-lg bg-red-500/10 border border-red-500/25 p-3 text-xs text-red-400 leading-relaxed font-mono">
