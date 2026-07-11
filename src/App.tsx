@@ -488,6 +488,18 @@ export default function App() {
           randomizeQuote();
           // Sync to database
           syncUserToFirestore(userObj);
+        } else if (!firebaseUser.isAnonymous) {
+          // Strictly force signout if authenticated but not @iiserkol.ac.in email
+          console.warn('[Firebase] Unauthorized Google Account signed in. Force-logging out:', email);
+          try {
+            const { signOut: fbSignOut } = await import('firebase/auth');
+            await fbSignOut(auth);
+          } catch (err) {
+            console.error('[Firebase] Failed to sign out unauthorized account:', err);
+          }
+          setCurrentUser(null);
+          localStorage.removeItem('iiser_movie_user');
+          setAdminMode(false);
         }
       }
     });
@@ -980,7 +992,7 @@ export default function App() {
       </div>
 
       {/* Upper Navigation Row */}
-      <div className="relative z-10">
+      <div className="relative z-50">
         <Navbar
           currentUser={currentUser}
           onLogin={handleLogin}

@@ -603,7 +603,7 @@ export default function Recommendations({
               <div className="bg-zinc-900/80 border border-zinc-800 p-4 rounded-xl space-y-3">
                 <div className="flex items-center justify-between text-xs font-mono">
                   <span className="text-amber-500 flex items-center gap-1.5 px-1.5 py-0.5 bg-amber-500/5 rounded border border-amber-500/10 font-bold uppercase tracking-wider text-[10px]">
-                    🍿 SMART CINEMA AUTOFILL & SEARCH
+                    🍿 SMART MULTIMEDIA AUTOFILL & SEARCH
                   </span>
                   <span className="text-zinc-550 text-[10px]/none">Real-time API suggestions</span>
                 </div>
@@ -616,8 +616,9 @@ export default function Recommendations({
                     type="text"
                     value={letterboxdInput}
                     onChange={(e) => handleLetterboxdInputChange(e.target.value)}
-                    placeholder="Type film name (e.g. Parasite, Inception) or paste Letterboxd/IMDb link"
+                    placeholder="Type title (e.g. Parasite, Breaking Bad, Death Note) or paste link"
                     className="w-full rounded-lg border border-zinc-800 bg-zinc-950 py-2 pl-9 pr-8 text-xs text-zinc-100 placeholder-zinc-500 focus:border-amber-500/50 focus:outline-none"
+                    id="input-multimedia-search"
                   />
                   {isAiLoading && (
                     <span className="absolute right-3 top-2.5 flex items-center h-4 w-4">
@@ -644,7 +645,7 @@ export default function Recommendations({
                           />
                           <div className="min-w-0 flex-1">
                             <div className="font-bold text-zinc-200 truncate">{movie.title} <span className="text-zinc-550 font-normal">({movie.year})</span></div>
-                            <div className="text-[10px] text-zinc-500 font-mono mt-0.5 truncate">Dir: {movie.director || 'Unknown'} • {movie.genre || 'Cinema'}</div>
+                            <div className="text-[10px] text-zinc-500 font-mono mt-0.5 truncate">Creator/Dir: {movie.director || 'Unknown'} • {movie.genre || 'Cinema'}</div>
                           </div>
                         </button>
                       ))}
@@ -653,7 +654,7 @@ export default function Recommendations({
                 </div>
 
                 <p className="text-[10px] text-zinc-550 leading-normal leading-relaxed font-sans">
-                  💡 Hint: Search for a movie by name or paste an IMDb / Letterboxd link above, and we will automatically fill in the film details for you!
+                  💡 Hint: Search for any movie, TV show, anime, documentary, or series by name, or paste an IMDb / Letterboxd / MyAnimeList / TMDB link above, and we will automatically fill in the details for you!
                 </p>
 
                 {selectedMovie && (

@@ -203,28 +203,28 @@ async function fetchUrlMetadata(url: string) {
       try {
         gResponse = await ai.models.generateContent({
           model: "gemini-3.5-flash",
-          contents: `Find complete, highly accurate and precise cinematic metadata details for the movie query/reference: "${geminiQueryPrompt}". 
+          contents: `Find complete, highly accurate and precise cinematic/television/anime metadata details for the query/reference: "${geminiQueryPrompt}". 
           ${focalIdInstructions}
-          Find the exact official release year, director name, runtime duration (e.g. '130 min' or '1h 55m'), genre list, a complete synoptic description, its exact Letterboxd slug (e.g., 'tumbbad', 'perfect-days'), and its exact Wikipedia page title (e.g., 'Tumbbad (film)'). Also find a beautiful widescreen photographic landscape backdrop URL, a premium quality poster (ideally TMDB/Wikipedia), its primary spoken language with English subtitles (e.g. 'Japanese (with English Subs)'), and its official YouTube trailer link.`,
+          Find the exact official release year, director/creator/studio name, runtime duration or episode count (e.g. '130 min', '24 eps', '8 episodes', '2 Seasons'), genre list, a complete synoptic description, its exact Letterboxd, TMDB, or MyAnimeList slug (e.g., 'tumbbad', 'attack-on-titan'), and its exact Wikipedia page title (e.g., 'Tumbbad (film)', 'Attack on Titan'). Also find a beautiful widescreen photographic landscape backdrop URL, a premium quality poster (ideally TMDB/Wikipedia/MyAnimeList), its primary spoken language with English subtitles (e.g. 'Japanese (with English Subs)'), and its official YouTube trailer link.`,
           config: {
-            systemInstruction: "You are a professional cinema curator for the IISER Kolkata Movie Club. Search movie archives and retrieve precise metadata. Return the synopsis/description concisely (approx 100-150 words). Format the genre as a comma-separated list. If backdrop or poster urls cannot be found, populate placeholders or tmdb URLs. For trailerUrl, always provide a real embedding YouTube link like 'https://www.youtube.com/watch?v=...' or if not found, a YouTube search query link like 'https://www.youtube.com/results?search_query=...'",
+            systemInstruction: "You are a professional cinema, television, and anime curator for the IISER Kolkata Movie Club. Search global archives (Wikipedia, IMDb, TMDB, MyAnimeList) and retrieve precise metadata. Return the synopsis/description concisely (approx 100-150 words). Format the genre as a comma-separated list. If backdrop or poster urls cannot be found, populate placeholders or tmdb URLs. For trailerUrl, always provide a real embedding YouTube link like 'https://www.youtube.com/watch?v=...' or if not found, a YouTube search query link like 'https://www.youtube.com/results?search_query=...'",
             tools: [{ googleSearch: {} }],
             responseMimeType: "application/json",
             responseSchema: {
               type: Type.OBJECT,
               properties: {
-                title: { type: Type.STRING, description: "Standard official title of the movie." },
+                title: { type: Type.STRING, description: "Standard official title of the movie/show/anime." },
                 year: { type: Type.INTEGER, description: "Correct release calendar year." },
-                description: { type: Type.STRING, description: "Compelling cinematic synopsis of the movie (under 150 words)." },
-                director: { type: Type.STRING, description: "Director of the film." },
-                duration: { type: Type.STRING, description: "Runtime format, e.g. '130 min' or '1h 55m'." },
-                genre: { type: Type.STRING, description: "Primary genre(s) formatted as a comma-separated list, e.g. 'Drama, Thriller, Sci-Fi'." },
-                letterboxdSlug: { type: Type.STRING, description: "The lowercase official Letterboxd URL slug, e.g. 'tumbbad', 'perfect-days'." },
-                wikipediaTitle: { type: Type.STRING, description: "The exact Wikipedia title suitable for URL encoding, e.g. 'Tumbbad (film)'." },
-                posterUrl: { type: Type.STRING, description: "A high-quality movie poster URL. Prefer TMDB poster URL if found." },
-                backdropUrl: { type: Type.STRING, description: "Widescreen background image/snapshot of the movie." },
-                language: { type: Type.STRING, description: "Spoken language name optionally including English subtitles status (e.g., 'Hindi (with English Subs)', 'Spanish (with English Subs)', etc.)." },
-                trailerUrl: { type: Type.STRING, description: "The official YouTube trailer link for the movie, e.g., 'https://www.youtube.com/watch?v=...' or YouTube trailer search link." }
+                description: { type: Type.STRING, description: "Compelling cinematic synopsis of the movie/show/anime (under 150 words)." },
+                director: { type: Type.STRING, description: "Director, creator, or studio of the film/show/anime." },
+                duration: { type: Type.STRING, description: "Runtime format or episode/season count, e.g. '130 min', '24 eps', '2 Seasons'." },
+                genre: { type: Type.STRING, description: "Primary genre(s) or medium formatted as a comma-separated list, e.g. 'Drama, Thriller, Anime, Sci-Fi'." },
+                letterboxdSlug: { type: Type.STRING, description: "The lowercase official Letterboxd, TMDB, or MyAnimeList URL slug, e.g. 'tumbbad', 'attack-on-titan'." },
+                wikipediaTitle: { type: Type.STRING, description: "The exact Wikipedia title suitable for URL encoding, e.g. 'Tumbbad (film)', 'Attack on Titan'." },
+                posterUrl: { type: Type.STRING, description: "A high-quality poster URL. Prefer TMDB or MAL poster URL if found." },
+                backdropUrl: { type: Type.STRING, description: "Widescreen background image/snapshot of the movie/show/anime." },
+                language: { type: Type.STRING, description: "Spoken language name optionally including English subtitles status (e.g., 'Japanese (with English Subs)', etc.)." },
+                trailerUrl: { type: Type.STRING, description: "The official YouTube trailer link for the movie/show/anime, e.g., 'https://www.youtube.com/watch?v=...' or YouTube search link." }
               },
               required: ["title", "year", "description", "director", "duration", "genre", "letterboxdSlug", "wikipediaTitle", "posterUrl", "backdropUrl", "language", "trailerUrl"]
             }
@@ -234,27 +234,27 @@ async function fetchUrlMetadata(url: string) {
         console.warn("[Server] Gemini content generation with search grounding failed. Retrying without search grounding...", searchError);
         gResponse = await ai.models.generateContent({
           model: "gemini-3.5-flash",
-          contents: `Find complete, highly accurate and precise cinematic metadata details for the movie query/reference: "${geminiQueryPrompt}". 
+          contents: `Find complete, highly accurate and precise cinematic/television/anime metadata details for the query/reference: "${geminiQueryPrompt}". 
           ${focalIdInstructions}
-          Find the exact official release year, director name, runtime duration (e.g. '130 min' or '1h 55m'), genre list, a complete synoptic description, its exact Letterboxd slug (e.g., 'tumbbad', 'perfect-days'), and its exact Wikipedia page title (e.g., 'Tumbbad (film)'). Also find a beautiful widescreen photographic landscape backdrop URL, a premium quality poster (ideally TMDB/Wikipedia), its primary spoken language with English subtitles (e.g. 'Japanese (with English Subs)'), and its official YouTube trailer link.`,
+          Find the exact official release year, director/creator/studio name, runtime duration or episode count (e.g. '130 min', '24 eps', '8 episodes', '2 Seasons'), genre list, a complete synoptic description, its exact Letterboxd, TMDB, or MyAnimeList slug (e.g., 'tumbbad', 'attack-on-titan'), and its exact Wikipedia page title (e.g., 'Tumbbad (film)', 'Attack on Titan'). Also find a beautiful widescreen photographic landscape backdrop URL, a premium quality poster (ideally TMDB/Wikipedia/MyAnimeList), its primary spoken language with English subtitles (e.g. 'Japanese (with English Subs)'), and its official YouTube trailer link.`,
           config: {
-            systemInstruction: "You are a professional cinema curator for the IISER Kolkata Movie Club. Search movie archives and retrieve precise metadata. Return the synopsis/description concisely (approx 100-150 words). Format the genre as a comma-separated list. If backdrop or poster urls cannot be found, populate placeholders or tmdb URLs. For trailerUrl, provide the official trailer YouTube URL or a search query link if not found.",
+            systemInstruction: "You are a professional cinema, television, and anime curator for the IISER Kolkata Movie Club. Search global archives (Wikipedia, IMDb, TMDB, MyAnimeList) and retrieve precise metadata. Return the synopsis/description concisely (approx 100-150 words). Format the genre as a comma-separated list. If backdrop or poster urls cannot be found, populate placeholders or tmdb/MAL URLs. For trailerUrl, provide the official trailer YouTube URL or a search query link if not found.",
             responseMimeType: "application/json",
             responseSchema: {
               type: Type.OBJECT,
               properties: {
-                title: { type: Type.STRING, description: "Standard official title of the movie." },
+                title: { type: Type.STRING, description: "Standard official title of the movie/show/anime." },
                 year: { type: Type.INTEGER, description: "Correct release calendar year." },
-                description: { type: Type.STRING, description: "Compelling cinematic synopsis of the movie (under 150 words)." },
-                director: { type: Type.STRING, description: "Director of the film." },
-                duration: { type: Type.STRING, description: "Runtime format, e.g. '130 min' or '1h 55m'." },
-                genre: { type: Type.STRING, description: "Primary genre(s) formatted as a comma-separated list, e.g. 'Drama, Thriller, Sci-Fi'." },
-                letterboxdSlug: { type: Type.STRING, description: "The lowercase official Letterboxd URL slug, e.g. 'tumbbad', 'perfect-days'." },
-                wikipediaTitle: { type: Type.STRING, description: "The exact Wikipedia title suitable for URL encoding, e.g. 'Tumbbad (film)'." },
-                posterUrl: { type: Type.STRING, description: "A high-quality movie poster URL. Prefer TMDB poster URL if found." },
-                backdropUrl: { type: Type.STRING, description: "Widescreen background image/snapshot of the movie." },
+                description: { type: Type.STRING, description: "Compelling cinematic synopsis of the movie/show/anime (under 150 words)." },
+                director: { type: Type.STRING, description: "Director, creator, or studio of the film/show/anime." },
+                duration: { type: Type.STRING, description: "Runtime format or episode/season count, e.g. '130 min', '24 eps', '2 Seasons'." },
+                genre: { type: Type.STRING, description: "Primary genre(s) or medium formatted as a comma-separated list, e.g. 'Drama, Thriller, Anime, Sci-Fi'." },
+                letterboxdSlug: { type: Type.STRING, description: "The lowercase official Letterboxd, TMDB, or MyAnimeList URL slug, e.g. 'tumbbad', 'attack-on-titan'." },
+                wikipediaTitle: { type: Type.STRING, description: "The exact Wikipedia title suitable for URL encoding, e.g. 'Tumbbad (film)', 'Attack on Titan'." },
+                posterUrl: { type: Type.STRING, description: "A high-quality poster URL. Prefer TMDB or MAL poster URL if found." },
+                backdropUrl: { type: Type.STRING, description: "Widescreen background image/snapshot of the movie/show/anime." },
                 language: { type: Type.STRING, description: "Spoken language name optionally including English subtitles status (e.g., 'English (with Subs)', etc.)." },
-                trailerUrl: { type: Type.STRING, description: "The official YouTube trailer link for the movie, e.g., 'https://www.youtube.com/watch?v=...'." }
+                trailerUrl: { type: Type.STRING, description: "The official YouTube trailer link for the movie/show/anime, e.g., 'https://www.youtube.com/watch?v=...'." }
               },
               required: ["title", "year", "description", "director", "duration", "genre", "letterboxdSlug", "wikipediaTitle", "posterUrl", "backdropUrl", "language", "trailerUrl"]
             }
@@ -353,15 +353,15 @@ async function fetchUrlMetadata(url: string) {
     console.log(`[Server Autocomplete] Searching for partial query: "${query}"`);
 
     try {
-      const isUrl = query.toLowerCase().includes("imdb.com/") || query.toLowerCase().includes("letterboxd.com/");
+      const isUrl = query.toLowerCase().includes("imdb.com/") || query.toLowerCase().includes("letterboxd.com/") || query.toLowerCase().includes("myanimelist.net/");
       
       let gResponse;
       try {
         gResponse = await ai.models.generateContent({
           model: "gemini-3.5-flash",
-          contents: `Search Google for movies matching: "${query}". Return a structured list of up to 4 most matching movies. If the query is an IMDb link or Letterboxd film link, resolve details for that single exact movie. For each movie, find its title, year, director, runtime (e.g. '120 min'), genre(s) comma-separated, a short 1-sentence description, a Letterboxd slug (e.g. 'inception'), a Wikipedia title, and a high-quality poster (prefer TMDB URLs or high-quality posters from search).`,
+          contents: `Search Google for movies, TV shows, anime, documentaries, or series matching: "${query}". Return a structured list of up to 4 most matching entries. If the query is a direct link (IMDb, Letterboxd, MAL), resolve details for that single exact entry. For each entry, find its title, year, director/creator/studio, runtime/episodes (e.g. '120 min', '24 eps', '2 Seasons'), genre(s) comma-separated, a short 1-sentence description, a Letterboxd/TMDB/MAL slug (e.g. 'inception', 'attack-on-titan'), a Wikipedia title, and a high-quality poster (prefer TMDB/Wikipedia/MAL URLs or high-quality posters from search).`,
           config: {
-            systemInstruction: "You are a professional cinema curator. Provide search suggestions for matches with precise title, year, director, runtime duration, comma-separated genres, and standard web poster artwork URLs.",
+            systemInstruction: "You are a professional curator for movies, television, and anime. Provide search suggestions with precise title, year, director/creator/studio, runtime/episode count, comma-separated genres/categories, and standard web poster artwork URLs.",
             tools: [{ googleSearch: {} }],
             responseMimeType: "application/json",
             responseSchema: {
@@ -372,13 +372,13 @@ async function fetchUrlMetadata(url: string) {
                   title: { type: Type.STRING },
                   year: { type: Type.INTEGER },
                   description: { type: Type.STRING, description: "Concise 1-sentence synopsis." },
-                  director: { type: Type.STRING },
-                  duration: { type: Type.STRING, description: "e.g. '120 min'" },
-                  genre: { type: Type.STRING, description: "e.g. 'Drama, Thriller'" },
-                  letterboxdSlug: { type: Type.STRING },
-                  wikipediaTitle: { type: Type.STRING },
-                  posterUrl: { type: Type.STRING },
-                  backdropUrl: { type: Type.STRING }
+                  director: { type: Type.STRING, description: "Director, creator, or studio of the film/show/anime." },
+                  duration: { type: Type.STRING, description: "Runtime format or episode/season count, e.g. '120 min', '24 eps', '2 Seasons'." },
+                  genre: { type: Type.STRING, description: "Comma-separated genres or categories, e.g. 'Drama, Thriller, Anime'." },
+                  letterboxdSlug: { type: Type.STRING, description: "Lowercase official Letterboxd, TMDB, or MyAnimeList URL slug." },
+                  wikipediaTitle: { type: Type.STRING, description: "Exact Wikipedia title." },
+                  posterUrl: { type: Type.STRING, description: "High-quality poster image URL." },
+                  backdropUrl: { type: Type.STRING, description: "Beautiful landscape backdrop image URL." }
                 },
                 required: ["title", "year", "description", "director", "duration", "genre", "letterboxdSlug", "wikipediaTitle", "posterUrl", "backdropUrl"]
               }
@@ -389,9 +389,9 @@ async function fetchUrlMetadata(url: string) {
         console.warn("[Server Autocomplete] Autocomplete search grounding failed, retrying without grounding...", searchError);
         gResponse = await ai.models.generateContent({
           model: "gemini-3.5-flash",
-          contents: `Find up to 4 classic or modern movies matching the keyword search: "${query}". For each movie, find its title, year, director, runtime (e.g. '120 min'), genre(s) comma-separated, a short 1-sentence description, a Letterboxd slug (e.g. 'inception'), a Wikipedia title, and a high-quality poster (prefer TMDB URLs or high-quality posters).`,
+          contents: `Find up to 4 movies, TV shows, anime, documentaries, or series matching the keyword search: "${query}". For each entry, find its title, year, director/creator/studio, runtime/episodes (e.g. '120 min', '24 eps', '2 Seasons'), genre(s) comma-separated, a short 1-sentence description, a Letterboxd/TMDB/MAL slug (e.g. 'inception', 'attack-on-titan'), a Wikipedia title, and a high-quality poster.`,
           config: {
-            systemInstruction: "You are a professional cinema curator. Provide search suggestions for matches with precise title, year, director, runtime duration, comma-separated genres, and standard web poster artwork URLs.",
+            systemInstruction: "You are a professional curator for movies, television, and anime. Provide search suggestions with precise title, year, director/creator/studio, runtime/episode count, comma-separated genres/categories, and standard web poster artwork URLs.",
             responseMimeType: "application/json",
             responseSchema: {
               type: Type.ARRAY,
@@ -401,13 +401,13 @@ async function fetchUrlMetadata(url: string) {
                   title: { type: Type.STRING },
                   year: { type: Type.INTEGER },
                   description: { type: Type.STRING, description: "Concise 1-sentence synopsis." },
-                  director: { type: Type.STRING },
-                  duration: { type: Type.STRING, description: "e.g. '120 min'" },
-                  genre: { type: Type.STRING, description: "e.g. 'Drama, Thriller'" },
-                  letterboxdSlug: { type: Type.STRING },
-                  wikipediaTitle: { type: Type.STRING },
-                  posterUrl: { type: Type.STRING },
-                  backdropUrl: { type: Type.STRING }
+                  director: { type: Type.STRING, description: "Director, creator, or studio of the film/show/anime." },
+                  duration: { type: Type.STRING, description: "Runtime format or episode/season count, e.g. '120 min', '24 eps', '2 Seasons'." },
+                  genre: { type: Type.STRING, description: "Comma-separated genres or categories, e.g. 'Drama, Thriller, Anime'." },
+                  letterboxdSlug: { type: Type.STRING, description: "Lowercase official Letterboxd, TMDB, or MyAnimeList URL slug." },
+                  wikipediaTitle: { type: Type.STRING, description: "Exact Wikipedia title." },
+                  posterUrl: { type: Type.STRING, description: "High-quality poster image URL." },
+                  backdropUrl: { type: Type.STRING, description: "Beautiful landscape backdrop image URL." }
                 },
                 required: ["title", "year", "description", "director", "duration", "genre", "letterboxdSlug", "wikipediaTitle", "posterUrl", "backdropUrl"]
               }
