@@ -70,12 +70,12 @@ export default function App() {
     setRandomQuote(CINEMA_QUOTES[randomIndex]);
   };
 
-  // Core schedules, past screenings, recommendations pools with initial local fallback
-  const [screenings, setScreenings] = useState<Screening[]>(initialScreenings);
+  // Core schedules, past screenings, recommendations pools with initial empty state to prevent deleted default items flashing on load
+  const [screenings, setScreenings] = useState<Screening[]>([]);
   const [dbLoaded, setDbLoaded] = useState<boolean>(false);
-  const [pastMovies, setPastMovies] = useState<PastMovie[]>(initialPastMovies);
-  const [recommendations, setRecommendations] = useState<Recommendation[]>(initialRecommendations);
-  const [discussions, setDiscussions] = useState<ClubDiscussion[]>(initialDiscussions);
+  const [pastMovies, setPastMovies] = useState<PastMovie[]>([]);
+  const [recommendations, setRecommendations] = useState<Recommendation[]>([]);
+  const [discussions, setDiscussions] = useState<ClubDiscussion[]>([]);
   const [polls, setPolls] = useState<Poll[]>([]);
 
   // Filter active/upcoming screenings vs past movies client-side
@@ -168,22 +168,7 @@ export default function App() {
   useEffect(() => {
     const runBootstrap = async () => {
       try {
-        const seedMarkerRef = doc(db, 'users', 'dbSeeded');
-        
-        let markerExists = false;
-        try {
-          const markerSnap = await getDoc(seedMarkerRef);
-          markerExists = markerSnap.exists() && markerSnap.data()?.seeded === true;
-        } catch (e) {
-          console.warn('[Firebase] Seed marker check warning, checking collection states next:', e);
-        }
-
-        if (markerExists) {
-          console.log('[Firebase] Database already seeded. Skipping auto-seeding checks.');
-          return;
-        }
-
-        // Check if each collection is empty independently to guarantee perfect backfill seeding
+        // Fetch all exclusion markers first (highly reliable, no authentication needed)
         const excludedIds = new Set<string>();
         try {
           const exclusionSnap = await getDocs(collection(db, 'exclusionMarkers'));
@@ -194,6 +179,24 @@ export default function App() {
           console.warn('[Firebase] Failed to fetch exclusion markers:', e);
         }
 
+        // Backward compatible check: look for 'dbSeeded' in exclusionMarkers, then fallback to users/dbSeeded doc
+        let markerExists = excludedIds.has('dbSeeded');
+        if (!markerExists) {
+          try {
+            const seedMarkerRef = doc(db, 'users', 'dbSeeded');
+            const markerSnap = await getDoc(seedMarkerRef);
+            markerExists = markerSnap.exists() && markerSnap.data()?.seeded === true;
+          } catch (e) {
+            console.warn('[Firebase] Seed marker check warning, checking collection states next:', e);
+          }
+        }
+
+        if (markerExists) {
+          console.log('[Firebase] Database already seeded. Skipping auto-seeding checks.');
+          return;
+        }
+
+        // Check if each collection is empty independently to guarantee perfect backfill seeding
         let screeningsEmpty = false;
         try {
           const testSnap = await getDocs(query(collection(db, 'screenings'), limit(1)));
@@ -280,16 +283,26 @@ export default function App() {
           try {
             const batch = writeBatch(db);
             const userEmail = auth.currentUser?.email || null;
+            let addedCount = 0;
             initialRecommendations.forEach((r) => {
-              const adjustedRec = {
-                ...r,
-                suggestedBy: userEmail || r.suggestedBy,
-                votes: userEmail ? [userEmail] : r.votes
-              };
-              batch.set(doc(db, 'recommendations', r.id), sanitizeDoc(adjustedRec));
+              if (!excludedIds.has(r.id)) {
+                const adjustedRec = {
+                  ...r,
+                  suggestedBy: userEmail || r.suggestedBy,
+                  votes: userEmail ? [userEmail] : r.votes
+                };
+                batch.set(doc(db, 'recommendations', r.id), sanitizeDoc(adjustedRec));
+                addedCount++;
+              } else {
+                console.log(`[Firebase Seeding] Skipping excluded recommendation: ${r.title} (${r.id})`);
+              }
             });
-            await batch.commit();
-            console.log('[Firebase] Successfully seeded recommendations.');
+            if (addedCount > 0) {
+              await batch.commit();
+              console.log('[Firebase] Successfully seeded recommendations.');
+            } else {
+              console.log('[Firebase] All initial recommendations are excluded, skipped seeding.');
+            }
           } catch (e) {
             console.warn('[Firebase] Recommendations seeding error:', e);
           }
@@ -309,13 +322,19 @@ export default function App() {
           }
         }
 
-        // Always ensure the master marker is written if not exists or if collections were empty
+        // Always ensure the master marker is written to both places if not exists or if collections were empty
         if (!markerExists) {
           try {
-            await setDoc(seedMarkerRef, { seeded: true, seededAt: new Date().toISOString() });
-            console.log('[Firebase] Master seed marker written successfully.');
+            await setDoc(doc(db, 'exclusionMarkers', 'dbSeeded'), { seeded: true, seededAt: new Date().toISOString() });
+            console.log('[Firebase] Master seed marker written to exclusionMarkers successfully.');
           } catch (e) {
-            console.warn('[Firebase] Failed to write master seed marker:', e);
+            console.warn('[Firebase] Failed to write master seed marker to exclusionMarkers:', e);
+          }
+          try {
+            await setDoc(doc(db, 'users', 'dbSeeded'), { seeded: true, seededAt: new Date().toISOString() });
+            console.log('[Firebase] Master seed marker written to users collection successfully.');
+          } catch (e) {
+            console.warn('[Firebase] Failed to write master seed marker to users collection:', e);
           }
         }
       } catch (err) {
@@ -337,7 +356,7 @@ export default function App() {
     const unsubscribe = onSnapshot(screeningsCol, (snapshot) => {
       const list: Screening[] = [];
       snapshot.forEach((docSnap) => {
-        list.push(docSnap.data() as Screening);
+        list.push({ id: docSnap.id, ...docSnap.data() } as Screening);
       });
       // Sort by date/time order
       list.sort((a, b) => {
@@ -376,7 +395,7 @@ export default function App() {
     const unsubscribe = onSnapshot(pastCol, (snapshot) => {
       const list: PastMovie[] = [];
       snapshot.forEach((docSnap) => {
-        list.push(docSnap.data() as PastMovie);
+        list.push({ id: docSnap.id, ...docSnap.data() } as PastMovie);
       });
       // Sort past movies descending by screening date
       list.sort((a, b) => (b.screenedDate || '').localeCompare(a.screenedDate || ''));
@@ -410,7 +429,7 @@ export default function App() {
     const unsubscribe = onSnapshot(recsCol, (snapshot) => {
       const list: Recommendation[] = [];
       snapshot.forEach((docSnap) => {
-        list.push(docSnap.data() as Recommendation);
+        list.push({ id: docSnap.id, ...docSnap.data() } as Recommendation);
       });
       // Sort by proposed date descending
       list.sort((a, b) => (b.suggestedAt || '').localeCompare(a.suggestedAt || ''));
@@ -444,7 +463,7 @@ export default function App() {
     const unsubscribe = onSnapshot(discussionsCol, (snapshot) => {
       const list: ClubDiscussion[] = [];
       snapshot.forEach((docSnap) => {
-        list.push(docSnap.data() as ClubDiscussion);
+        list.push({ id: docSnap.id, ...docSnap.data() } as ClubDiscussion);
       });
       // Sort by createdAt descending
       list.sort((a, b) => (b.createdAt || '').localeCompare(a.createdAt || ''));
@@ -462,7 +481,7 @@ export default function App() {
     const unsubscribe = onSnapshot(pollsCol, (snapshot) => {
       const list: Poll[] = [];
       snapshot.forEach((docSnap) => {
-        list.push(docSnap.data() as Poll);
+        list.push({ id: docSnap.id, ...docSnap.data() } as Poll);
       });
       // Sort by createdAt descending
       list.sort((a, b) => (b.createdAt || '').localeCompare(a.createdAt || ''));
@@ -887,6 +906,12 @@ export default function App() {
     setRecommendations(prev => prev.filter(r => r.id !== id));
     try {
       await deleteDoc(doc(db, 'recommendations', id));
+      // Write exclusion marker to prevent re-seeding
+      try {
+        await setDoc(doc(db, 'exclusionMarkers', id), { excluded: true, deletedAt: new Date().toISOString() });
+      } catch (err) {
+        console.warn('[Firebase] Failed to write exclusion marker for recommendation:', err);
+      }
     } catch (error) {
       handleFirestoreError(error, OperationType.DELETE, `recommendations/${id}`);
     }
@@ -913,6 +938,13 @@ export default function App() {
       await setDoc(doc(db, 'pastMovies', pastId), sanitizeDoc(newPastMovie));
       // 2. Delete from screenings collection
       await deleteDoc(doc(db, 'screenings', screening.id));
+      // 3. Write exclusion marker so we don't re-seed it
+      const baseId = screening.id.startsWith('pm-') ? screening.id.replace('pm-', '') : screening.id;
+      try {
+        await setDoc(doc(db, 'exclusionMarkers', baseId), { excluded: true, deletedAt: new Date().toISOString() });
+      } catch (err) {
+        console.warn('[Firebase] Failed to write exclusion marker:', err);
+      }
     } catch (error) {
       handleFirestoreError(error, OperationType.WRITE, `pastMovies/${pastId}`);
     }
@@ -943,6 +975,12 @@ export default function App() {
       await setDoc(doc(db, 'pastMovies', pastId), sanitizeDoc(newPastMovie));
       // 2. Delete from recommendations collection
       await deleteDoc(doc(db, 'recommendations', rec.id));
+      // 3. Write exclusion marker for the recommendation ID
+      try {
+        await setDoc(doc(db, 'exclusionMarkers', rec.id), { excluded: true, deletedAt: new Date().toISOString() });
+      } catch (err) {
+        console.warn('[Firebase] Failed to write exclusion marker for recommendation:', err);
+      }
     } catch (error) {
       handleFirestoreError(error, OperationType.WRITE, `pastMovies/${pastId}`);
     }
