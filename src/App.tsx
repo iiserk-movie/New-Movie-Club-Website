@@ -1274,7 +1274,7 @@ export default function App() {
       )}
 
       {/* Main tab panel layout */}
-      <main className="flex-grow mx-auto max-w-7xl w-full px-4 sm:px-6 lg:px-8 py-8 relative z-10">
+      <main className="flex-grow mx-auto max-w-7xl w-full px-4 sm:px-6 lg:px-8 py-8 relative z-30">
         <AnimatePresence mode="wait">
           <motion.div
             key={activeTab}
