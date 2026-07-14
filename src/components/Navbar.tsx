@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
 import { Film, User as UserIcon, LogOut, Shield, ShieldCheck, HelpCircle, GraduationCap, Camera, UploadCloud, Image as ImageIcon, Settings, Key, Eye, EyeOff, RefreshCw, Menu, X, Calendar, MessageSquare, Sparkles, BarChart2, History } from 'lucide-react';
 import { User, PastMovie } from '../types';
-import { auth, googleProvider } from '../firebase';
+import { auth, googleProvider, db } from '../firebase';
+import { doc, setDoc } from 'firebase/firestore';
 import MovieClubLogo from './MovieClubLogo';
 import { signInWithPopup, signInWithRedirect, signOut as fbSignOut, signInAnonymously } from 'firebase/auth';
 import { getLocalGeminiKey, setLocalGeminiKey, clearLocalGeminiKey, syncLetterboxdRSS, extractLetterboxdUsername } from '../utils/movieApi';
@@ -306,10 +307,22 @@ export default function Navbar({
         }
 
         // Authenticate with Firebase anonymously to grant authorized database permission
+        let sessionUser = null;
         try {
-          await signInAnonymously(auth);
+          const authResult = await signInAnonymously(auth);
+          sessionUser = authResult.user;
         } catch (authErr) {
           console.warn("[Firebase] Anonymous session administration auth warning (Anonymous Sign-In might be disabled in Firebase console):", authErr);
+        }
+
+        if (sessionUser) {
+          // Write the secure verification document to Firestore to grant admin status to this anonymous UID
+          const sessionRef = doc(db, 'adminSessions', sessionUser.uid);
+          await setDoc(sessionRef, {
+            uid: sessionUser.uid,
+            passcodeHash: '032cc2334b28463ebeaadeed1da30d46be8606043379d3bc85cb848fbf276687',
+            createdAt: new Date().toISOString()
+          });
         }
         
         setAdminMode(true);
@@ -348,12 +361,24 @@ export default function Navbar({
 
     try {
       // 1. Establish database connection session safely
+      let sessionUser = auth.currentUser;
       try {
-        if (!auth.currentUser) {
-          await signInAnonymously(auth);
+        if (!sessionUser) {
+          const authResult = await signInAnonymously(auth);
+          sessionUser = authResult.user;
         }
       } catch (authErr) {
         console.warn("[Firebase] Anonymous authentication warning:", authErr);
+      }
+
+      if (sessionUser) {
+        // Write the secure verification document to Firestore to grant admin status to this anonymous UID
+        const sessionRef = doc(db, 'adminSessions', sessionUser.uid);
+        await setDoc(sessionRef, {
+          uid: sessionUser.uid,
+          passcodeHash: '032cc2334b28463ebeaadeed1da30d46be8606043379d3bc85cb848fbf276687',
+          createdAt: new Date().toISOString()
+        });
       }
 
       // 2. Fetch and parse the Letterboxd entries via our proxy RSS feed

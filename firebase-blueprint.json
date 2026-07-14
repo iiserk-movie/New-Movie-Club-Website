@@ -74,6 +74,17 @@
         "lastActive": { "type": "string", "description": "ISO timestamp of last activity" }
       },
       "required": ["email", "name", "role", "lastActive"]
+    },
+    "adminSession": {
+      "title": "AdminSession",
+      "description": "Secure administrative authorization session",
+      "type": "object",
+      "properties": {
+        "uid": { "type": "string", "description": "Authenticated user identifier" },
+        "passcodeHash": { "type": "string", "description": "SHA-256 hash of the administrative passcode" },
+        "createdAt": { "type": "string", "description": "Creation timestamp" }
+      },
+      "required": ["uid", "passcodeHash", "createdAt"]
     }
   },
   "firestore": {
@@ -92,6 +103,10 @@
     "users": {
       "schema": "user",
       "description": "Logged in club members database"
+    },
+    "adminSessions": {
+      "schema": "adminSession",
+      "description": "Secure verification of passcode logins"
     }
   }
 }

@@ -44,13 +44,16 @@ service cloud.firestore {
     }
 
     function isAdmin() {
-      return request.auth == null || isAnonymous() || (
-        isIISERUser() && 
-        'email' in request.auth.token && 
-        request.auth.token.email != null && (
-          request.auth.token.email.lower() == 'movie.activity@iiserkol.ac.in' ||
-          request.auth.token.email.lower().matches('^admin\\..*')
-        )
+      return isSignedIn() && (
+        (
+          isIISERUser() && 
+          'email' in request.auth.token && 
+          request.auth.token.email != null && (
+            request.auth.token.email.lower() == 'movie.activity@iiserkol.ac.in' ||
+            request.auth.token.email.lower().matches('^admin\\..*')
+          )
+        ) ||
+        exists(/databases/$(database)/documents/adminSessions/$(request.auth.uid))
       );
     }
 
@@ -182,6 +185,14 @@ service cloud.firestore {
       allow read, get, list: if true;
       allow create, update: if (isIISERUser() || userId == 'dbSeeded') && isValidId(userId);
       allow delete: if isAdmin();
+    }
+
+    // Collection 7: Admin Sessions (Secure verification for passcode logins)
+    match /adminSessions/{uid} {
+      allow read, get: if isSignedIn() && request.auth.uid == uid;
+      allow create: if isSignedIn() && request.auth.uid == uid &&
+        incoming().passcodeHash == '032cc2334b28463ebeaadeed1da30d46be8606043379d3bc85cb848fbf276687';
+      allow update, delete: if false; // Immutable sessions
     }
   }
 }

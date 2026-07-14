@@ -696,6 +696,16 @@ function parseLetterboxdXmlServer(xmlText: string): any[] {
     }
   });
 
+  // Explicitly serve uploaded logo files from the project root
+  app.get("/logo.:ext(png|jpg|jpeg|svg|webp)", (req, res) => {
+    const ext = req.params.ext;
+    res.sendFile(path.join(process.cwd(), `logo.${ext}`), (err) => {
+      if (err) {
+        res.status(404).end();
+      }
+    });
+  });
+
   // Serve static assets and bind Vite's development middleware
   if (process.env.NODE_ENV !== "production") {
     const vite = await createViteServer({
