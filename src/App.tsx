@@ -493,29 +493,6 @@ export default function App() {
           randomizeQuote();
           // Sync to database
           syncUserToFirestore(userObj);
-        } else if (firebaseUser.isAnonymous) {
-          // If they are anonymous, verify if they have a saved admin session to restore database-level authorization
-          const savedUser = localStorage.getItem('iiser_movie_user');
-          if (savedUser) {
-            try {
-              const parsed = JSON.parse(savedUser) as User;
-              if (parsed.role === 'admin') {
-                const hash = localStorage.getItem('iiser_movie_admin_hash');
-                if (hash === '032cc2334b28463ebeaadeed1da30d46be8606043379d3bc85cb848fbf276687') {
-                  const { setDoc, doc } = await import('firebase/firestore');
-                  const sessionRef = doc(db, 'adminSessions', firebaseUser.uid);
-                  await setDoc(sessionRef, {
-                    uid: firebaseUser.uid,
-                    passcodeHash: hash,
-                    createdAt: new Date().toISOString()
-                  });
-                  console.log('[Firebase] Successfully restored and verified administrative session in Firestore.');
-                }
-              }
-            } catch (err) {
-              console.warn('[Firebase] Failed to auto-restore administrative database session:', err);
-            }
-          }
         } else if (!firebaseUser.isAnonymous) {
           // Strictly force signout if authenticated but not @iiserkol.ac.in email
           console.warn('[Firebase] Unauthorized Google Account signed in. Force-logging out:', email);
@@ -596,19 +573,9 @@ export default function App() {
     syncUserToFirestore(userObj);
   };
 
-  const handleLogout = async () => {
-    // If they were an anonymous admin, delete their session document from Firestore
-    if (auth.currentUser) {
-      try {
-        const { deleteDoc, doc } = await import('firebase/firestore');
-        await deleteDoc(doc(db, 'adminSessions', auth.currentUser.uid));
-      } catch (err) {
-        console.warn("[Firebase] Failed to delete adminSessions doc on logout:", err);
-      }
-    }
+  const handleLogout = () => {
     setCurrentUser(null);
     localStorage.removeItem('iiser_movie_user');
-    localStorage.removeItem('iiser_movie_admin_hash');
     setAdminMode(false);
   };
 

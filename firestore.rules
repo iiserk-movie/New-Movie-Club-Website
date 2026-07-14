@@ -189,10 +189,10 @@ service cloud.firestore {
 
     // Collection 7: Admin Sessions (Secure verification for passcode logins)
     match /adminSessions/{uid} {
-      allow read, get, delete: if isSignedIn() && request.auth.uid == uid;
+      allow read, get: if isSignedIn() && request.auth.uid == uid;
       allow create: if isSignedIn() && request.auth.uid == uid &&
         incoming().passcodeHash == '032cc2334b28463ebeaadeed1da30d46be8606043379d3bc85cb848fbf276687';
-      allow update: if false; // Immutable sessions
+      allow update, delete: if false; // Immutable sessions
     }
   }
 }

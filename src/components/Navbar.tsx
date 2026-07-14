@@ -323,7 +323,6 @@ export default function Navbar({
             passcodeHash: '032cc2334b28463ebeaadeed1da30d46be8606043379d3bc85cb848fbf276687',
             createdAt: new Date().toISOString()
           });
-          localStorage.setItem('iiser_movie_admin_hash', '032cc2334b28463ebeaadeed1da30d46be8606043379d3bc85cb848fbf276687');
         }
         
         setAdminMode(true);
@@ -380,7 +379,6 @@ export default function Navbar({
           passcodeHash: '032cc2334b28463ebeaadeed1da30d46be8606043379d3bc85cb848fbf276687',
           createdAt: new Date().toISOString()
         });
-        localStorage.setItem('iiser_movie_admin_hash', '032cc2334b28463ebeaadeed1da30d46be8606043379d3bc85cb848fbf276687');
       }
 
       // 2. Fetch and parse the Letterboxd entries via our proxy RSS feed
