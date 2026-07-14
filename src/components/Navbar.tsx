@@ -450,9 +450,9 @@ export default function Navbar({
         <div className="mx-auto flex max-w-7xl h-20 items-center justify-between px-4 sm:px-6 lg:px-8">
           {/* Logo Brand */}
           <div className="flex items-center space-x-3 cursor-pointer" onClick={() => setActiveTab('schedule')}>
-            <div className="relative flex h-11 w-11 items-center justify-center rounded-xl bg-zinc-900 ring-1 ring-zinc-800 p-0.5 overflow-hidden">
+            <div className="relative flex h-11 w-11 items-center justify-center">
               <MovieClubLogo className="h-11 w-11" />
-              <div className="absolute top-0 right-0 flex h-2 w-2 rounded-full bg-amber-500 animate-pulse"></div>
+              <div className="absolute -top-0.5 -right-0.5 flex h-2.5 w-2.5 rounded-full bg-amber-500 animate-pulse"></div>
             </div>
             <div>
               <h1 className="font-serif text-lg font-extrabold tracking-wide text-transparent bg-clip-text bg-gradient-to-r from-zinc-100 via-amber-200 to-amber-400 sm:text-xl drop-shadow-[0_2px_8px_rgba(245,158,11,0.2)] uppercase">
@@ -665,7 +665,7 @@ export default function Navbar({
           >
             <div className="flex items-center justify-between border-b border-zinc-900/60 pb-5">
               <div className="flex items-center space-x-3">
-                <div className="relative flex h-9 w-9 items-center justify-center rounded-xl bg-zinc-950 border border-zinc-900 p-1.5 shrink-0 shadow-inner">
+                <div className="relative flex h-9 w-9 items-center justify-center shrink-0">
                   <MovieClubLogo className="h-full w-full" />
                 </div>
                 <div>
