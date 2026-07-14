@@ -194,5 +194,12 @@ service cloud.firestore {
         incoming().passcodeHash == '032cc2334b28463ebeaadeed1da30d46be8606043379d3bc85cb848fbf276687';
       allow update, delete: if false; // Immutable sessions
     }
+
+    // Collection 8: Exclusion Markers (Prevent deleted default screenings from re-seeding)
+    match /exclusionMarkers/{markerId} {
+      allow read, get, list: if true;
+      allow create, update: if (isIISERUser() || isAdmin()) && isValidId(markerId);
+      allow delete: if isAdmin();
+    }
   }
 }

@@ -13,6 +13,7 @@ export default function TriviaGame() {
   const [isAnswered, setIsAnswered] = useState(false);
   const [score, setScore] = useState(0);
   const [streak, setStreak] = useState(0);
+  const [maxStreak, setMaxStreak] = useState(0);
   const [highestScore, setHighestScore] = useState(0);
   const [gameComplete, setGameComplete] = useState(false);
 
@@ -36,6 +37,9 @@ export default function TriviaGame() {
       const newStreak = streak + 1;
       setScore(newScore);
       setStreak(newStreak);
+      if (newStreak > maxStreak) {
+        setMaxStreak(newStreak);
+      }
       if (newScore > highestScore) {
         setHighestScore(newScore);
         localStorage.setItem('iiser_movie_highest_score', String(newScore));
@@ -62,6 +66,7 @@ export default function TriviaGame() {
     setIsAnswered(false);
     setScore(0);
     setStreak(0);
+    setMaxStreak(0);
     setGameComplete(false);
   };
 
@@ -124,7 +129,7 @@ export default function TriviaGame() {
               </div>
               <div className="text-center border-l border-zinc-900">
                 <span className="text-[10px] uppercase font-mono text-zinc-500 block">Max Streak</span>
-                <span className="text-xl font-extrabold font-mono text-zinc-200">{streak || 3} Correct</span>
+                <span className="text-xl font-extrabold font-mono text-zinc-200">{maxStreak} Correct</span>
               </div>
             </div>
 

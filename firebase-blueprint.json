@@ -85,6 +85,16 @@
         "createdAt": { "type": "string", "description": "Creation timestamp" }
       },
       "required": ["uid", "passcodeHash", "createdAt"]
+    },
+    "exclusionMarker": {
+      "title": "ExclusionMarker",
+      "description": "Marker tracking deleted screenings/movies to prevent re-seeding",
+      "type": "object",
+      "properties": {
+        "excluded": { "type": "boolean", "description": "Whether the entry is excluded from re-seeding" },
+        "deletedAt": { "type": "string", "description": "Timestamp of deletion" }
+      },
+      "required": ["excluded", "deletedAt"]
     }
   },
   "firestore": {
@@ -107,6 +117,10 @@
     "adminSessions": {
       "schema": "adminSession",
       "description": "Secure verification of passcode logins"
+    },
+    "exclusionMarkers": {
+      "schema": "exclusionMarker",
+      "description": "Collection to track deleted default database items and prevent them from being auto-repopulated"
     }
   }
 }

@@ -178,7 +178,22 @@ export default function App() {
           console.warn('[Firebase] Seed marker check warning, checking collection states next:', e);
         }
 
+        if (markerExists) {
+          console.log('[Firebase] Database already seeded. Skipping auto-seeding checks.');
+          return;
+        }
+
         // Check if each collection is empty independently to guarantee perfect backfill seeding
+        const excludedIds = new Set<string>();
+        try {
+          const exclusionSnap = await getDocs(collection(db, 'exclusionMarkers'));
+          exclusionSnap.forEach(docSnap => {
+            excludedIds.add(docSnap.id);
+          });
+        } catch (e) {
+          console.warn('[Firebase] Failed to fetch exclusion markers:', e);
+        }
+
         let screeningsEmpty = false;
         try {
           const testSnap = await getDocs(query(collection(db, 'screenings'), limit(1)));
@@ -215,11 +230,21 @@ export default function App() {
           console.log('[Firebase] Seeding screenings...');
           try {
             const batch = writeBatch(db);
+            let addedCount = 0;
             initialScreenings.forEach((s) => {
-              batch.set(doc(db, 'screenings', s.id), sanitizeDoc(s));
+              if (!excludedIds.has(s.id)) {
+                batch.set(doc(db, 'screenings', s.id), sanitizeDoc(s));
+                addedCount++;
+              } else {
+                console.log(`[Firebase Seeding] Skipping excluded screening: ${s.title} (${s.id})`);
+              }
             });
-            await batch.commit();
-            console.log('[Firebase] Successfully seeded screenings.');
+            if (addedCount > 0) {
+              await batch.commit();
+              console.log('[Firebase] Successfully seeded screenings.');
+            } else {
+              console.log('[Firebase] All initial screenings are excluded, skipped seeding.');
+            }
           } catch (e) {
             console.warn('[Firebase] Screenings seeding error:', e);
           }
@@ -229,11 +254,22 @@ export default function App() {
           console.log('[Firebase] Seeding past movies...');
           try {
             const batch = writeBatch(db);
+            let addedCount = 0;
             initialPastMovies.forEach((m) => {
-              batch.set(doc(db, 'pastMovies', m.id), sanitizeDoc(m));
+              const baseId = m.id.startsWith('pm-') ? m.id.replace('pm-', '') : m.id;
+              if (!excludedIds.has(m.id) && !excludedIds.has(baseId)) {
+                batch.set(doc(db, 'pastMovies', m.id), sanitizeDoc(m));
+                addedCount++;
+              } else {
+                console.log(`[Firebase Seeding] Skipping excluded past movie: ${m.title} (${m.id})`);
+              }
             });
-            await batch.commit();
-            console.log('[Firebase] Successfully seeded past movies.');
+            if (addedCount > 0) {
+              await batch.commit();
+              console.log('[Firebase] Successfully seeded past movies.');
+            } else {
+              console.log('[Firebase] All initial past movies are excluded, skipped seeding.');
+            }
           } catch (e) {
             console.warn('[Firebase] Past movies seeding error:', e);
           }
@@ -618,6 +654,14 @@ export default function App() {
   const handleDeleteScreening = async (id: string) => {
     try {
       await deleteDoc(doc(db, 'screenings', id));
+      
+      // Also write an exclusion marker for this base screening ID so we don't re-seed it
+      const baseId = id.startsWith('pm-') ? id.replace('pm-', '') : id;
+      try {
+        await setDoc(doc(db, 'exclusionMarkers', baseId), { excluded: true, deletedAt: new Date().toISOString() });
+      } catch (err) {
+        console.warn('[Firebase] Failed to write exclusion marker:', err);
+      }
     } catch (error) {
       handleFirestoreError(error, OperationType.DELETE, `screenings/${id}`);
       throw error;
@@ -765,6 +809,14 @@ export default function App() {
       // Also delete corresponding screening if it exists so that it doesn't keep regenerating
       const screeningId = movieId.startsWith('pm-') ? movieId.replace('pm-', '') : movieId;
       await deleteDoc(doc(db, 'screenings', screeningId));
+
+      // Also write an exclusion marker for this base screening ID so we don't re-seed it
+      const baseId = movieId.startsWith('pm-') ? movieId.replace('pm-', '') : movieId;
+      try {
+        await setDoc(doc(db, 'exclusionMarkers', baseId), { excluded: true, deletedAt: new Date().toISOString() });
+      } catch (err) {
+        console.warn('[Firebase] Failed to write exclusion marker:', err);
+      }
     } catch (error) {
       handleFirestoreError(error, OperationType.DELETE, `pastMovies/${movieId}`);
       throw error;
