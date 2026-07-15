@@ -196,7 +196,7 @@ export default function App() {
           return;
         }
 
-        // Check if each collection is empty independently to guarantee perfect backfill seeding
+        // Check if each collection is empty
         let screeningsEmpty = false;
         try {
           const testSnap = await getDocs(query(collection(db, 'screenings'), limit(1)));
@@ -229,8 +229,14 @@ export default function App() {
           console.warn('[Firebase] discussions empty check failed:', e);
         }
 
-        if (screeningsEmpty) {
-          console.log('[Firebase] Seeding screenings...');
+        // CRITICAL BUG FIX: We ONLY seed the database if it is completely brand new and empty across all core collections.
+        // If some collections have data, we assume the site has already been initialized and active, and skip seeding entirely.
+        const databaseIsEmpty = screeningsEmpty && pastMoviesEmpty && recommendationsEmpty && discussionsEmpty;
+
+        if (databaseIsEmpty) {
+          console.log('[Firebase Seeding] Brand new database detected. Seeding initial data...');
+          
+          // Seed Screenings
           try {
             const batch = writeBatch(db);
             let addedCount = 0;
@@ -238,23 +244,17 @@ export default function App() {
               if (!excludedIds.has(s.id)) {
                 batch.set(doc(db, 'screenings', s.id), sanitizeDoc(s));
                 addedCount++;
-              } else {
-                console.log(`[Firebase Seeding] Skipping excluded screening: ${s.title} (${s.id})`);
               }
             });
             if (addedCount > 0) {
               await batch.commit();
               console.log('[Firebase] Successfully seeded screenings.');
-            } else {
-              console.log('[Firebase] All initial screenings are excluded, skipped seeding.');
             }
           } catch (e) {
             console.warn('[Firebase] Screenings seeding error:', e);
           }
-        }
 
-        if (pastMoviesEmpty) {
-          console.log('[Firebase] Seeding past movies...');
+          // Seed Past Movies
           try {
             const batch = writeBatch(db);
             let addedCount = 0;
@@ -263,23 +263,17 @@ export default function App() {
               if (!excludedIds.has(m.id) && !excludedIds.has(baseId)) {
                 batch.set(doc(db, 'pastMovies', m.id), sanitizeDoc(m));
                 addedCount++;
-              } else {
-                console.log(`[Firebase Seeding] Skipping excluded past movie: ${m.title} (${m.id})`);
               }
             });
             if (addedCount > 0) {
               await batch.commit();
               console.log('[Firebase] Successfully seeded past movies.');
-            } else {
-              console.log('[Firebase] All initial past movies are excluded, skipped seeding.');
             }
           } catch (e) {
             console.warn('[Firebase] Past movies seeding error:', e);
           }
-        }
 
-        if (recommendationsEmpty) {
-          console.log('[Firebase] Seeding recommendations...');
+          // Seed Recommendations
           try {
             const batch = writeBatch(db);
             const userEmail = auth.currentUser?.email || null;
@@ -293,23 +287,17 @@ export default function App() {
                 };
                 batch.set(doc(db, 'recommendations', r.id), sanitizeDoc(adjustedRec));
                 addedCount++;
-              } else {
-                console.log(`[Firebase Seeding] Skipping excluded recommendation: ${r.title} (${r.id})`);
               }
             });
             if (addedCount > 0) {
               await batch.commit();
               console.log('[Firebase] Successfully seeded recommendations.');
-            } else {
-              console.log('[Firebase] All initial recommendations are excluded, skipped seeding.');
             }
           } catch (e) {
             console.warn('[Firebase] Recommendations seeding error:', e);
           }
-        }
 
-        if (discussionsEmpty) {
-          console.log('[Firebase] Seeding discussions...');
+          // Seed Discussions
           try {
             const batch = writeBatch(db);
             initialDiscussions.forEach((d) => {
@@ -320,23 +308,24 @@ export default function App() {
           } catch (e) {
             console.warn('[Firebase] Discussions seeding error:', e);
           }
+        } else {
+          console.log('[Firebase Seeding] Existing database content detected. Skipping backfill seeding to respect user deletions.');
         }
 
-        // Always ensure the master marker is written to both places if not exists or if collections were empty
-        if (!markerExists) {
-          try {
-            await setDoc(doc(db, 'exclusionMarkers', 'dbSeeded'), { seeded: true, seededAt: new Date().toISOString() });
-            console.log('[Firebase] Master seed marker written to exclusionMarkers successfully.');
-          } catch (e) {
-            console.warn('[Firebase] Failed to write master seed marker to exclusionMarkers:', e);
-          }
-          try {
-            await setDoc(doc(db, 'users', 'dbSeeded'), { seeded: true, seededAt: new Date().toISOString() });
-            console.log('[Firebase] Master seed marker written to users collection successfully.');
-          } catch (e) {
-            console.warn('[Firebase] Failed to write master seed marker to users collection:', e);
-          }
+        // Always write the master seed marker to prevent checking in the future
+        try {
+          await setDoc(doc(db, 'exclusionMarkers', 'dbSeeded'), { seeded: true, seededAt: new Date().toISOString() });
+          console.log('[Firebase] Master seed marker written to exclusionMarkers successfully.');
+        } catch (e) {
+          console.warn('[Firebase] Failed to write master seed marker to exclusionMarkers:', e);
         }
+        try {
+          await setDoc(doc(db, 'users', 'dbSeeded'), { seeded: true, seededAt: new Date().toISOString() });
+          console.log('[Firebase] Master seed marker written to users collection successfully.');
+        } catch (e) {
+          console.warn('[Firebase] Failed to write master seed marker to users collection:', e);
+        }
+
       } catch (err) {
         console.warn('[Firebase] Master database seeding check bypassed or failed:', err);
       }

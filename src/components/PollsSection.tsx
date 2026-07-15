@@ -23,6 +23,7 @@ export default function PollsSection({
   const [activeTab, setActiveTab] = useState<'active' | 'closed' | 'upcoming'>('active');
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [expandedPollSynopses, setExpandedPollSynopses] = useState<Record<string, boolean>>({});
+  const [expandedOptionSynopses, setExpandedOptionSynopses] = useState<Record<string, boolean>>({});
   const [errorMsg, setErrorMsg] = useState('');
   const [successMsg, setSuccessMsg] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -358,8 +359,8 @@ export default function PollsSection({
       </div>
 
       {/* Selector Tabs */}
-      <div className="flex items-center justify-between border-b border-zinc-900 pb-1">
-        <div className="flex gap-2">
+      <div className="flex items-center justify-between border-b border-zinc-900 pb-1 overflow-x-auto scrollbar-none">
+        <div className="flex gap-2 min-w-max">
           {[
             { id: 'active', label: 'Active Polls', desc: 'Accepting Votes' },
             { id: 'closed', label: 'Closed Results', desc: 'Final Screenings' },
@@ -421,6 +422,9 @@ export default function PollsSection({
             // Calculate total aggregate votes in this poll
             const totalAggVotes = poll.options.reduce((sum, opt) => sum + opt.votes.length, 0);
 
+            // Calculate max votes across options to highlight the leading one for the admin
+            const maxVotes = Math.max(...poll.options.map(o => o.votes.length));
+
             // If closed, sort options descending by votes.length to show candidates
             const sortedOptionsForClosed = [...poll.options].sort((a, b) => b.votes.length - a.votes.length);
             const winner = sortedOptionsForClosed[0];
@@ -430,7 +434,7 @@ export default function PollsSection({
               <motion.div
                 key={poll.id}
                 layoutId={`poll-card-${poll.id}`}
-                className="bg-[#121019]/65 backdrop-blur-md p-6 rounded-3xl border border-zinc-900/60 shadow-2xl card-hover space-y-6"
+                className="bg-[#121019]/65 backdrop-blur-md p-4 sm:p-6 rounded-2xl sm:rounded-3xl border border-zinc-900/60 shadow-2xl card-hover space-y-6"
               >
                 {/* Header: Dates + Title */}
                 <div className="flex flex-col gap-3 border-b border-zinc-900 pb-5 md:flex-row md:items-start md:justify-between">
@@ -468,7 +472,7 @@ export default function PollsSection({
                   </div>
 
                   {/* Right side: Timer statistics */}
-                  <div className="shrink-0 flex flex-col items-start md:items-end gap-1.5 md:text-right font-mono text-[10px] text-zinc-500 bg-zinc-900/40 p-3 rounded-lg border border-zinc-900/80 min-w-[200px]">
+                  <div className="shrink-0 flex flex-col items-start md:items-end gap-1.5 md:text-right font-mono text-[10px] text-zinc-500 bg-zinc-900/40 p-3 rounded-lg border border-zinc-900/80 w-full md:w-auto md:min-w-[200px]">
                     <div className="flex items-center gap-1.5 text-zinc-400">
                       <Clock className="h-3.5 w-3.5 text-zinc-500" />
                       <span>{isClosed ? 'Closed timeline:' : 'Closing milestone:'}</span>
@@ -552,13 +556,13 @@ export default function PollsSection({
                         <div className="text-[10px] font-mono tracking-widest text-zinc-500 uppercase">
                           OTHER RUNNERS-UP ({runnersUp.length})
                         </div>
-                        <div className="grid gap-3 sm:grid-cols-2">
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                           {runnersUp.map((runner, idx) => {
                             const ratio = totalAggVotes > 0 ? Math.round((runner.votes.length / totalAggVotes) * 100) : 0;
                             return (
                               <div 
                                 key={runner.id} 
-                                className="bg-zinc-900/60 p-4 rounded-xl border border-zinc-900 flex items-start gap-3.5 hover:bg-zinc-900 transition-all duration-200"
+                                className="bg-zinc-900/60 p-4 rounded-xl border border-zinc-900 flex items-start gap-3.5 hover:bg-zinc-900 transition-all duration-200 min-w-0"
                               >
                                 <img 
                                   src={getPolishedPosterUrl(runner.title, runner.posterUrl)} 
@@ -610,20 +614,21 @@ export default function PollsSection({
                     <p className="text-[10px] font-mono tracking-wider text-amber-500 border border-amber-500/10 bg-amber-500/5 px-2.5 py-1.5 rounded-lg max-w-max font-semibold">
                       💡 Multiple choices allowed
                     </p>
-
-                    <div className="grid gap-4 md:grid-cols-2">
+ 
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       {poll.options.map((option) => {
                         const isVoted = currentUser ? option.votes.includes(currentUser.email) : false;
+                        const isLeader = option.votes.length === maxVotes && maxVotes > 0;
                         return (
                           <div
                             key={option.id}
-                            className={`p-4 rounded-xl border transition-all duration-300 flex flex-col justify-between gap-4 ${
+                            className={`p-4 rounded-xl border transition-all duration-300 flex flex-col justify-between gap-4 min-w-0 ${
                               isVoted
                                 ? 'bg-amber-500/5 border-amber-500/40 shadow-[0_4px_25px_rgba(245,158,11,0.02)]'
                                 : 'bg-zinc-900/40 border-zinc-850 hover:bg-zinc-900/70 hover:border-zinc-800'
                             }`}
                           >
-                            <div className="flex gap-4">
+                            <div className="flex gap-4 min-w-0">
                               <img
                                 src={getPolishedPosterUrl(option.title, option.posterUrl)}
                                 alt={option.title}
@@ -634,34 +639,66 @@ export default function PollsSection({
                                 }}
                               />
                               <div className="min-w-0 space-y-1">
-                                <h4 className="font-serif text-sm font-bold text-zinc-100 uppercase tracking-wide truncate">
-                                  {option.title} <span className="font-sans text-xs text-zinc-550 font-normal">({option.year})</span>
-                                </h4>
+                                <div className="flex items-baseline gap-1.5 flex-wrap min-w-0">
+                                  <h4 className="font-serif text-sm font-bold text-zinc-100 uppercase tracking-wide truncate max-w-[110px] min-[380px]:max-w-[150px] min-[480px]:max-w-[200px] sm:max-w-xs" title={option.title}>
+                                    {option.title}
+                                  </h4>
+                                  <span className="font-sans text-xs text-zinc-500 font-normal shrink-0">({option.year})</span>
+                                  {adminMode && isLeader && (
+                                    <span className="inline-flex items-center gap-0.5 text-[8px] font-bold font-mono tracking-wide uppercase text-amber-400 bg-amber-500/10 border border-amber-500/20 px-1.5 py-0.5 rounded-md shrink-0">
+                                      <Crown className="h-2 w-2 fill-amber-400 text-amber-500 shrink-0" />
+                                      LEADER
+                                    </span>
+                                  )}
+                                </div>
                                 <p className="text-[10px] text-zinc-400 font-mono truncate">
                                   Dir: {option.director} • {option.genre}
                                 </p>
                                 {option.synopsis && (
                                   <div className="pt-1">
-                                    <p className="text-[11px] leading-relaxed text-zinc-350 font-sans">
+                                    <p className={`text-[11px] leading-relaxed text-zinc-350 font-sans ${
+                                      expandedOptionSynopses[option.id] ? '' : 'line-clamp-3'
+                                    }`}>
                                       {option.synopsis}
                                     </p>
+                                    {option.synopsis.length > 80 && (
+                                      <button
+                                        type="button"
+                                        onClick={(e) => {
+                                          e.stopPropagation();
+                                          setExpandedOptionSynopses(prev => ({
+                                            ...prev,
+                                            [option.id]: !prev[option.id]
+                                          }));
+                                        }}
+                                        className="text-[10px] font-mono text-amber-500 hover:text-amber-400 mt-1 cursor-pointer focus:outline-none hover:underline inline-flex items-center"
+                                      >
+                                        {expandedOptionSynopses[option.id] ? 'Read less' : 'Read more'}
+                                      </button>
+                                    )}
                                   </div>
                                 )}
                               </div>
                             </div>
-
+ 
                             {/* Voting Button interface */}
-                            <div className="flex items-center justify-between border-t border-zinc-900 pt-3">
-                              <div className="font-mono text-[10px] text-zinc-500 flex items-center gap-1">
-                                <span className={`text-xs font-bold ${isVoted ? 'text-amber-400' : 'text-zinc-400'}`}>
-                                  {option.votes.length}
-                                </span>
-                                <span>{option.votes.length === 1 ? 'Vote' : 'Votes'} cast</span>
-                              </div>
-
+                            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-t border-zinc-900 pt-3">
+                              {adminMode ? (
+                                <div className="font-mono text-[10px] text-zinc-500 flex items-center gap-1">
+                                  <span className={`text-xs font-bold ${isVoted ? 'text-amber-400' : 'text-zinc-400'}`}>
+                                    {option.votes.length}
+                                  </span>
+                                  <span>{option.votes.length === 1 ? 'Vote' : 'Votes'} cast</span>
+                                </div>
+                              ) : (
+                                <div className="font-mono text-[10px] text-zinc-550 flex items-center gap-1">
+                                  <span className="leading-snug">Individual counts hidden until poll ends</span>
+                                </div>
+                              )}
+ 
                               <button
                                 onClick={() => handleToggleVote(poll.id, option.id)}
-                                className={`px-4.5 py-1.5 rounded-lg text-[10px] uppercase font-mono font-bold tracking-wider hover:scale-[1.03] transition-all cursor-pointer select-none flex items-center gap-1 ${
+                                className={`w-full sm:w-auto justify-center px-4.5 py-1.5 rounded-lg text-[10px] uppercase font-mono font-bold tracking-wider hover:scale-[1.03] transition-all cursor-pointer select-none flex items-center gap-1 ${
                                   isVoted
                                     ? 'bg-amber-500 hover:bg-amber-600 text-zinc-950 shadow-[0_2px_12px_rgba(245,158,11,0.2)]'
                                     : 'bg-zinc-800 hover:bg-zinc-700 text-zinc-200 hover:text-white border border-zinc-700/50'
