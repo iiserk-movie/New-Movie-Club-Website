@@ -610,9 +610,9 @@ export default function PastScreenings({
               key={movie.id}
               className="group flex flex-col rounded-3xl border border-zinc-900/60 bg-[#121019]/65 backdrop-blur-md overflow-hidden shadow-2xl card-hover"
             >
-              <div className="flex gap-4 p-5">
+              <div className="flex flex-col sm:flex-row gap-5 p-5">
                 {/* Poster Box */}
-                <div className="relative w-24 h-36 flex-shrink-0 rounded-lg overflow-hidden border border-zinc-850 bg-zinc-900 shadow-md">
+                <div className="relative w-24 h-36 flex-shrink-0 rounded-lg overflow-hidden border border-zinc-850 bg-zinc-900 shadow-md mx-auto sm:mx-0">
                   <img
                     src={getPolishedPosterUrl(movie.title, movie.posterUrl)}
                     alt={movie.title}
@@ -626,14 +626,14 @@ export default function PastScreenings({
                 </div>
 
                 {/* Main details */}
-                <div className="flex-1 flex flex-col justify-between">
+                <div className="flex-1 flex flex-col justify-between min-w-0">
                   <div>
-                    <div className="flex items-center justify-between">
-                      <span className="text-[10px] uppercase font-mono font-bold text-amber-500/80 bg-amber-500/5 border border-amber-500/10 px-2 py-0.5 rounded-md">
+                    <div className="flex flex-col xs:flex-row xs:items-center justify-between gap-2">
+                      <span className="text-[10px] uppercase font-mono font-bold text-amber-500/80 bg-amber-500/5 border border-amber-500/10 px-2 py-0.5 rounded-md max-w-max">
                         Screened on {movie.screenedDate}
                       </span>
                       {adminMode && (
-                        <div className="flex items-center space-x-1.5 shrink-0">
+                        <div className="flex items-center space-x-1.5 shrink-0 self-end xs:self-auto">
                           <button
                             type="button"
                             onClick={() => handleStartEditPastMovie(movie)}
@@ -645,7 +645,7 @@ export default function PastScreenings({
                           <button
                             type="button"
                             onClick={() => handleDeletePastMovieClick(movie)}
-                            className="p-1.5 text-zinc-400 hover:text-red-450 hover:bg-zinc-900 rounded-lg transition-colors cursor-pointer"
+                            className="p-1.5 text-zinc-400 hover:text-red-455 hover:bg-zinc-900 rounded-lg transition-colors cursor-pointer"
                             title="Delete Past Screening"
                           >
                             <Trash2 className="h-3.5 w-3.5" />
@@ -654,30 +654,32 @@ export default function PastScreenings({
                       )}
                     </div>
                     
-                    <h3 className="font-serif text-lg font-bold text-zinc-100 tracking-tight mt-2 line-clamp-1">
+                    <h3 className="font-serif text-lg font-bold text-zinc-100 tracking-tight mt-2.5 break-words">
                       {movie.title} <span className="text-zinc-500 font-normal">({movie.year})</span>
                     </h3>
                     
-                    <p className="text-xs text-zinc-400 mt-0.5">
+                    <p className="text-xs text-zinc-400 mt-1 break-words">
                       Directed by <span className="text-zinc-300 font-medium">{movie.director}</span>
                     </p>
 
-                    <div className="flex items-center space-x-1.5 mt-2">
-                      {renderStars(Math.round(avgRating))}
-                      <span className="text-xs font-bold text-zinc-300 font-mono mt-0.5">{avgRating}</span>
-                      <span className="text-[10px] text-zinc-600 font-mono mt-1">({movie.reviews.length + 12} Letterboxd Votes)</span>
+                    <div className="flex flex-wrap items-center gap-x-2 gap-y-1 mt-2.5">
+                      <div className="flex items-center space-x-1">
+                        {renderStars(Math.round(avgRating))}
+                      </div>
+                      <span className="text-xs font-bold text-zinc-300 font-mono">{avgRating}</span>
+                      <span className="text-[10px] text-zinc-600 font-mono">({movie.reviews.length + 12} Letterboxd Votes)</span>
                     </div>
                   </div>
 
-                  <div className="flex items-center justify-between border-t border-zinc-900/60 pt-3">
-                    <span className="text-[10.5px] font-medium text-zinc-500 font-mono flex items-center gap-1">
-                      <MessageSquare className="h-3.5 w-3.5" />
-                      {movie.reviews.length} Student reviews
+                  <div className="flex items-center justify-between border-t border-zinc-900/60 pt-3 mt-4 gap-2">
+                    <span className="text-[10.5px] font-medium text-zinc-500 font-mono flex items-center gap-1 min-w-0 truncate">
+                      <MessageSquare className="h-3.5 w-3.5 shrink-0" />
+                      <span className="truncate">{movie.reviews.length} Student reviews</span>
                     </span>
 
                     <button
                       onClick={() => setSelectedMovieId(isExpanded ? null : movie.id)}
-                      className="text-xs text-amber-400 hover:text-amber-300 font-mono flex items-center gap-0.5 cursor-pointer"
+                      className="text-xs text-amber-400 hover:text-amber-300 font-mono flex items-center gap-0.5 cursor-pointer shrink-0"
                     >
                       <span>{isExpanded ? 'Hide Reviews' : 'Student Logs'}</span>
                       {isExpanded ? <ChevronUp className="h-4.5 w-4.5" /> : <ChevronDown className="h-4.5 w-4.5" />}
@@ -1092,7 +1094,7 @@ export default function PastScreenings({
                       </span>
                     </div>
 
-                    <div className="border border-zinc-900 rounded-2xl overflow-hidden bg-zinc-950 max-h-[220px] overflow-y-auto divide-y divide-zinc-900/40">
+                    <div className="border border-zinc-900 rounded-2xl overflow-hidden bg-zinc-950 max-h-[300px] overflow-y-auto divide-y divide-zinc-900/40">
                       {syncedMovies.map((movie) => {
                         const isSelected = !!selectedImportIds[movie.title];
                         const existsLocally = pastMovies.some(existing => 
@@ -1109,43 +1111,58 @@ export default function PastScreenings({
                                 [movie.title]: !prev[movie.title]
                               }));
                             }}
-                            className={`flex items-center gap-3 p-3 transition-colors select-none ${existsLocally ? 'opacity-50 cursor-default' : 'hover:bg-zinc-900/30 cursor-pointer'}`}
+                            className={`flex flex-col sm:flex-row sm:items-center gap-3 p-4 transition-colors select-none ${existsLocally ? 'opacity-50 cursor-default' : 'hover:bg-zinc-900/30 cursor-pointer'}`}
                           >
-                            <div className="shrink-0 flex items-center justify-center">
-                              <input
-                                type="checkbox"
-                                checked={isSelected}
-                                disabled={existsLocally}
-                                readOnly
-                                className="h-4 w-4 rounded border-zinc-800 bg-zinc-900 text-amber-500 focus:ring-amber-500 checked:bg-amber-500 cursor-pointer focus:ring-offset-zinc-950 transition-all"
+                            <div className="flex items-center justify-between sm:justify-start gap-3 shrink-0">
+                              <div className="flex items-center justify-center">
+                                <input
+                                  type="checkbox"
+                                  checked={isSelected}
+                                  disabled={existsLocally}
+                                  readOnly
+                                  className="h-4 w-4 rounded border-zinc-800 bg-zinc-900 text-amber-500 focus:ring-amber-500 checked:bg-amber-500 cursor-pointer focus:ring-offset-zinc-950 transition-all"
+                                />
+                              </div>
+
+                              <img 
+                                src={movie.posterUrl} 
+                                alt={movie.title}
+                                referrerPolicy="no-referrer"
+                                className="w-10 h-14 rounded object-cover border border-zinc-850 bg-zinc-900 shrink-0"
+                                onError={(e) => {
+                                  e.currentTarget.src = 'https://images.unsplash.com/photo-1489599849927-2ee91cede3ba?q=80&w=300';
+                                }}
                               />
+
+                              {existsLocally && (
+                                <div className="sm:hidden text-[9px] font-mono font-bold text-zinc-400 bg-zinc-900/80 px-2 py-0.5 rounded border border-zinc-850">
+                                  Already Added
+                                </div>
+                              )}
                             </div>
 
-                            <img 
-                              src={movie.posterUrl} 
-                              alt={movie.title}
-                              referrerPolicy="no-referrer"
-                              className="w-10 h-14 rounded object-cover border border-zinc-850 bg-zinc-900"
-                              onError={(e) => {
-                                e.currentTarget.src = 'https://images.unsplash.com/photo-1489599849927-2ee91cede3ba?q=80&w=300';
-                              }}
-                            />
-
                             <div className="flex-1 min-w-0">
-                              <div className="flex items-baseline gap-1.5 flex-wrap">
-                                <h5 className="text-xs font-bold text-zinc-200 truncate">{movie.title}</h5>
-                                <span className="text-[10px] font-mono text-zinc-500">({movie.year})</span>
+                              <div className="flex flex-col xs:flex-row xs:items-baseline gap-1 xs:gap-2">
+                                <h5 className="text-xs font-bold text-zinc-200 break-words leading-tight">{movie.title}</h5>
+                                <span className="text-[10px] font-mono text-zinc-500 shrink-0">({movie.year})</span>
                               </div>
-                              <p className="text-[10px] text-zinc-500 truncate mt-0.5">
-                                Directed by <span className="text-zinc-400">{movie.director || 'Unknown'}</span> • {movie.genre?.join(', ')}
+                              <p className="text-[10px] text-zinc-400 mt-1 leading-normal break-words">
+                                Directed by <span className="text-zinc-300 font-medium">{movie.director || 'Unknown'}</span>
                               </p>
-                              <p className="text-[9px] font-mono text-zinc-600 mt-1">
-                                Date Logged: {movie.screenedDate} • Rating: {movie.rating} ★
-                              </p>
+                              {movie.genre && movie.genre.length > 0 && (
+                                <p className="text-[10px] text-zinc-550 mt-0.5 leading-normal break-words">
+                                  {movie.genre.join(', ')}
+                                </p>
+                              )}
+                              <div className="flex flex-wrap items-center gap-x-2.5 gap-y-1 mt-1.5 pt-1.5 border-t border-zinc-900/60 font-mono text-[9px] text-zinc-500">
+                                <span>Logged: {movie.screenedDate}</span>
+                                <span className="text-zinc-650">•</span>
+                                <span className="text-amber-500 font-bold">{movie.rating} ★</span>
+                              </div>
                             </div>
 
                             {existsLocally && (
-                              <div className="shrink-0 text-[10px] font-mono text-zinc-650 bg-zinc-900/60 px-2 py-0.5 rounded">
+                              <div className="hidden sm:block shrink-0 text-[10px] font-mono text-zinc-650 bg-zinc-900/60 px-2 py-0.5 rounded">
                                 Already Added
                               </div>
                             )}
