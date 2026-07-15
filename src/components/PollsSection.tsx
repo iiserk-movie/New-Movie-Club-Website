@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { 
   Plus, Search, ThumbsUp, Calendar, Clock, Sparkles, User, HelpCircle, 
   Film, AlertCircle, Link2, Trash, Check, Crown, Vote, Volume2, Archive, ListFilter, Play
@@ -8,6 +8,62 @@ import { Poll, PollMovieOption, User as AppUser } from '../types';
 import { db, sanitizeDoc } from '../firebase';
 import { doc, setDoc, updateDoc, deleteDoc } from 'firebase/firestore';
 import { getPolishedPosterUrl } from '../letterboxdDb';
+
+interface OptionSynopsisProps {
+  synopsis: string;
+}
+
+function OptionSynopsis({ synopsis }: OptionSynopsisProps) {
+  const [isExpanded, setIsExpanded] = useState(false);
+  const [isTruncated, setIsTruncated] = useState(false);
+  const textRef = useRef<HTMLParagraphElement>(null);
+
+  useEffect(() => {
+    const el = textRef.current;
+    if (!el) return;
+
+    const checkTruncation = () => {
+      setIsTruncated(el.scrollHeight > el.clientHeight);
+    };
+
+    checkTruncation();
+
+    const observer = new ResizeObserver(() => {
+      checkTruncation();
+    });
+
+    observer.observe(el);
+
+    return () => {
+      observer.disconnect();
+    };
+  }, [synopsis, isExpanded]);
+
+  return (
+    <div className="pt-1">
+      <p
+        ref={textRef}
+        className={`text-[11px] leading-relaxed text-zinc-350 font-sans ${
+          isExpanded ? '' : 'line-clamp-3'
+        }`}
+      >
+        {synopsis}
+      </p>
+      {(isTruncated || isExpanded) && (
+        <button
+          type="button"
+          onClick={(e) => {
+            e.stopPropagation();
+            setIsExpanded(!isExpanded);
+          }}
+          className="text-[10px] font-mono text-amber-500 hover:text-amber-400 mt-1 cursor-pointer focus:outline-none hover:underline inline-flex items-center"
+        >
+          {isExpanded ? 'Read less' : 'Read more'}
+        </button>
+      )}
+    </div>
+  );
+}
 
 interface PollsSectionProps {
   polls: Poll[];
@@ -655,28 +711,7 @@ export default function PollsSection({
                                   Dir: {option.director} • {option.genre}
                                 </p>
                                 {option.synopsis && (
-                                  <div className="pt-1">
-                                    <p className={`text-[11px] leading-relaxed text-zinc-350 font-sans ${
-                                      expandedOptionSynopses[option.id] ? '' : 'line-clamp-3'
-                                    }`}>
-                                      {option.synopsis}
-                                    </p>
-                                    {option.synopsis.length > 80 && (
-                                      <button
-                                        type="button"
-                                        onClick={(e) => {
-                                          e.stopPropagation();
-                                          setExpandedOptionSynopses(prev => ({
-                                            ...prev,
-                                            [option.id]: !prev[option.id]
-                                          }));
-                                        }}
-                                        className="text-[10px] font-mono text-amber-500 hover:text-amber-400 mt-1 cursor-pointer focus:outline-none hover:underline inline-flex items-center"
-                                      >
-                                        {expandedOptionSynopses[option.id] ? 'Read less' : 'Read more'}
-                                      </button>
-                                    )}
-                                  </div>
+                                  <OptionSynopsis synopsis={option.synopsis} />
                                 )}
                               </div>
                             </div>
