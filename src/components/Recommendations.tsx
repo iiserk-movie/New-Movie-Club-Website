@@ -10,6 +10,15 @@ import { letterboxdMovies, LetterboxdMovie, findMovieByUrlOrSlug, parseLetterbox
 import { compressAndResizeImage } from '../utils/imageCompressor';
 import { getMovieDetails, searchMovies } from '../utils/movieApi';
 
+const COLLAGE_POSTERS = [
+  'https://upload.wikimedia.org/wikipedia/en/a/a2/2001_A_Space_Odyssey_Poster.jpg', // 2001: A Space Odyssey
+  'https://upload.wikimedia.org/wikipedia/en/b/bc/Interstellar_film_poster.jpg', // Interstellar
+  'https://upload.wikimedia.org/wikipedia/en/3/3d/Pulp_Fiction_cover.jpg', // Pulp Fiction
+  'https://upload.wikimedia.org/wikipedia/en/a/ab/La_La_Land_%28film%29.png', // La La Land
+  'https://upload.wikimedia.org/wikipedia/en/9/9b/Blade_Runner_2049_poster.png', // Blade Runner 2049
+  'https://upload.wikimedia.org/wikipedia/en/4/41/Past_Lives_poster.jpeg', // Past Lives
+];
+
 interface RecommendationsProps {
   recommendations: Recommendation[];
   currentUser: { email: string; name: string; role: 'admin' | 'student' } | null;
@@ -338,18 +347,21 @@ export default function Recommendations({
 
   return (
     <div className="space-y-8">
-      {/* Header and Action Toggle */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between border-b border-zinc-900 pb-6 gap-4">
-        <div>
-          <span className="text-amber-500 font-mono text-xs uppercase tracking-widest font-semibold flex items-center gap-1.5">
-            <MessageSquareHeart className="h-4 w-4" /> Member Voice
-          </span>
-          <h2 className="font-serif text-3xl font-bold text-zinc-100 tracking-tight sm:text-4xl mt-1">
-            Student Wishlist
-          </h2>
-        </div>
+      {/* Header and Action Toggle Banner */}
+      <div className="relative rounded-3xl overflow-hidden h-48 md:h-60 mb-10 border border-amber-500/10 shadow-[0_20px_50px_rgba(0,0,0,0.5)] flex items-end">
+        <div className="absolute inset-0 z-0 overflow-hidden">
+          {/* Immersive cozy cinematic background image */}
+          <img 
+            src="https://images.unsplash.com/photo-1516979187457-637abb4f9353?q=80&w=1600" 
+            alt="Library Archive" 
+            className="absolute inset-0 w-full h-full object-cover brightness-[0.55] contrast-[1.1] scale-105"
+          />
+          <div className="absolute inset-0 bg-gradient-to-t from-[#0a090d] via-[#0a090d]/40 to-transparent z-0"></div>
+          <div className="absolute inset-0 bg-gradient-to-r from-[#0a090d] via-[#0a090d]/25 to-transparent z-0"></div>
 
-        <div>
+        </div>
+        
+        <div className="absolute top-4 right-4 z-20">
           {currentUser ? (
             <button
               onClick={() => {
@@ -364,16 +376,28 @@ export default function Recommendations({
                 setLbSuggestions([]);
               }}
               id="btn-recommend-trigger"
-              className="flex items-center space-x-2 bg-amber-500 hover:bg-amber-600 text-zinc-950 px-5 py-2.5 rounded-xl font-bold text-sm transition-transform hover:scale-102 shadow-lg shadow-amber-500/10 cursor-pointer"
+              className="flex items-center space-x-2 bg-amber-500 hover:bg-amber-600 text-zinc-950 px-5 py-2.5 rounded-xl font-bold text-sm transition-all hover:scale-102 shadow-lg shadow-amber-500/10 cursor-pointer"
             >
               <Plus className="h-4.5 w-4.5 font-bold" />
               <span>Recommend a Movie</span>
             </button>
           ) : (
-            <div className="text-amber-500/80 bg-amber-500/5 px-4 py-2.5 rounded-xl border border-amber-500/10 text-xs font-mono animate-pulse">
+            <div className="text-amber-500/80 bg-amber-500/5 px-4 py-2.5 rounded-xl border border-amber-500/10 text-xs font-semibold backdrop-blur-sm">
               🔑 Sign in with your IISER email to recommend
             </div>
           )}
+        </div>
+
+        <div className="relative z-10 p-6 md:p-8 max-w-2xl space-y-1.5">
+          <span className="text-amber-500 font-mono text-[10px] uppercase tracking-widest font-bold flex items-center gap-1.5">
+            <MessageSquareHeart className="h-4 w-4" /> Member Voice
+          </span>
+          <h2 className="font-serif text-2xl md:text-3xl lg:text-4xl font-bold text-zinc-100 tracking-tight">
+            Student Wishlist
+          </h2>
+          <p className="text-zinc-400 text-xs md:text-sm font-sans font-medium line-clamp-2 leading-relaxed">
+            Suggest masterpieces for our next active club screening cycle! Search and find movie metadata automatically to cast wishlist entries.
+          </p>
         </div>
       </div>
 

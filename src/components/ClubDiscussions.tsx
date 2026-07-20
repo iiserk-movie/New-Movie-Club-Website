@@ -6,6 +6,14 @@ import {
 import { ClubDiscussion, DiscussionComment, User as UserType } from '../types';
 import { letterboxdMovies } from '../letterboxdDb';
 
+const COLLAGE_POSTERS = [
+  'https://upload.wikimedia.org/wikipedia/en/5/53/Parasite_%282019_film%29_poster.gif', // Parasite
+  'https://upload.wikimedia.org/wikipedia/en/d/db/Spirited_Away_Japanese_poster.png', // Spirited Away
+  'https://upload.wikimedia.org/wikipedia/en/2/2e/Inception_%282010%29_theatrical_poster.jpg', // Inception
+  'https://upload.wikimedia.org/wikipedia/en/3/3d/Pulp_Fiction_cover.jpg', // Pulp Fiction
+  'https://upload.wikimedia.org/wikipedia/en/b/bc/Interstellar_film_poster.jpg', // Interstellar
+];
+
 interface ClubDiscussionsProps {
   discussions: ClubDiscussion[];
   onAddDiscussion: (data: Omit<ClubDiscussion, 'id' | 'createdAt' | 'authorEmail' | 'authorName' | 'votes' | 'comments'>) => Promise<void>;
@@ -419,30 +427,47 @@ export default function ClubDiscussions({
       ) : (
         /* DISCUSSION MAIN DIRECTORY */
         <div className="space-y-6 animate-fade-in">
-          {/* Header row */}
-          <div className="flex flex-col md:flex-row md:items-center justify-between border-b border-zinc-900 pb-5 gap-4">
-            <div>
-              <span className="text-amber-500 font-mono text-xs uppercase tracking-widest font-semibold flex items-center gap-1.5">
-                <MessageCircle className="h-4 w-4" /> Discussion Boards
-              </span>
-              <h2 className="font-serif text-3xl font-bold text-zinc-100 tracking-tight sm:text-4xl mt-1">
-                Reviews & Discussions
-              </h2>
+          {/* Header Banner */}
+          <div className="relative rounded-3xl overflow-hidden h-48 md:h-60 mb-10 border border-amber-500/10 shadow-[0_20px_50px_rgba(0,0,0,0.5)] flex items-end">
+            <div className="absolute inset-0 z-0 overflow-hidden">
+              {/* Immersive projector light beam background image */}
+              <img 
+                src="https://images.unsplash.com/photo-1536440136628-849c177e76a1?q=80&w=1600" 
+                alt="Cinema Projector" 
+                className="absolute inset-0 w-full h-full object-cover brightness-[0.55] contrast-[1.1] scale-105"
+              />
+              <div className="absolute inset-0 bg-gradient-to-t from-[#0a090d] via-[#0a090d]/40 to-transparent z-0"></div>
+              <div className="absolute inset-0 bg-gradient-to-r from-[#0a090d] via-[#0a090d]/25 to-transparent z-0"></div>
+
+            </div>
+            
+            <div className="absolute top-4 right-4 z-20">
+              <button
+                onClick={() => {
+                  if (!currentUser) {
+                    alert('Please log in using your institute email to start a discussion thread!');
+                    return;
+                  }
+                  setShowCreateModal(true);
+                }}
+                className="flex items-center space-x-2 bg-amber-500 hover:bg-amber-600 text-zinc-950 px-5 py-2.5 rounded-xl font-bold text-sm transition-all hover:scale-102 shadow-lg shadow-amber-500/15 cursor-pointer"
+              >
+                <Plus className="h-4.5 w-4.5 font-bold" />
+                <span>Launch Thread</span>
+              </button>
             </div>
 
-            <button
-              onClick={() => {
-                if (!currentUser) {
-                  alert('Please log in using your institute email to start a discussion thread!');
-                  return;
-                }
-                setShowCreateModal(true);
-              }}
-              className="flex items-center justify-center space-x-1.5 bg-amber-500 hover:bg-amber-600 font-semibold text-zinc-950 px-4 py-2.5 h-11 rounded-xl text-xs font-mono transition-colors shadow-lg shadow-amber-500/5 cursor-pointer self-start md:self-auto"
-            >
-              <Plus className="h-4 w-4" />
-              <span>Launch Thread</span>
-            </button>
+            <div className="relative z-10 p-6 md:p-8 max-w-2xl space-y-1.5">
+              <span className="text-amber-500 font-mono text-[10px] uppercase tracking-widest font-bold flex items-center gap-1.5">
+                <MessageCircle className="h-4 w-4" /> Discussion Boards
+              </span>
+              <h2 className="font-serif text-2xl md:text-3xl lg:text-4xl font-bold text-zinc-100 tracking-tight">
+                Reviews & Discussions
+              </h2>
+              <p className="text-zinc-400 text-xs md:text-sm font-sans font-medium line-clamp-2 leading-relaxed">
+                Exchange movie reviews, director theories, aesthetic questions, and join lively film studies conversations with fellow IISER Kolkata members.
+              </p>
+            </div>
           </div>
 
           {successMsg && (

@@ -8,6 +8,14 @@ import { PastMovie, UserReview } from '../types';
 import { getPolishedPosterUrl } from '../letterboxdDb';
 import { syncLetterboxdRSS, extractLetterboxdUsername } from '../utils/movieApi';
 
+const COLLAGE_POSTERS = [
+  'https://upload.wikimedia.org/wikipedia/en/a/a2/2001_A_Space_Odyssey_Poster.jpg', // 2001
+  'https://upload.wikimedia.org/wikipedia/en/3/3d/Pulp_Fiction_cover.jpg', // Pulp Fiction
+  'https://upload.wikimedia.org/wikipedia/en/2/2e/Inception_%282010%29_theatrical_poster.jpg', // Inception
+  'https://upload.wikimedia.org/wikipedia/en/b/bc/Interstellar_film_poster.jpg', // Interstellar
+  'https://upload.wikimedia.org/wikipedia/en/5/53/Parasite_%282019_film%29_poster.gif', // Parasite
+];
+
 interface PastScreeningsProps {
   pastMovies: PastMovie[];
   onAddReview: (movieId: string, review: Omit<UserReview, 'id' | 'createdAt'>) => void;
@@ -464,23 +472,26 @@ export default function PastScreenings({
 
   return (
     <div className="space-y-10">
-      {/* Header and Sync Actions */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between border-b border-zinc-900 pb-6 gap-4">
-        <div>
-          <span className="text-amber-500 font-mono text-xs uppercase tracking-widest font-semibold flex items-center gap-1.5">
-            <MessageCircleCode className="h-4 w-4" /> Letterboxd Archive
-          </span>
-          <h2 className="font-serif text-3xl font-bold text-zinc-100 tracking-tight sm:text-4xl mt-1">
-            Past Screenings
-          </h2>
-        </div>
+      {/* Header and Sync Actions Banner */}
+      <div className="relative rounded-3xl overflow-hidden h-48 md:h-60 mb-10 border border-amber-500/10 shadow-[0_20px_50px_rgba(0,0,0,0.5)] flex items-end">
+        <div className="absolute inset-0 z-0 overflow-hidden">
+          {/* Immersive cinematic vintage background image */}
+          <img 
+            src="https://images.unsplash.com/photo-1440404653325-ab127d49abc1?q=80&w=1600" 
+            alt="Vintage Film Reels Stacked" 
+            className="absolute inset-0 w-full h-full object-cover brightness-[0.55] contrast-[1.1] scale-105"
+          />
+          <div className="absolute inset-0 bg-gradient-to-t from-[#0a090d] via-[#0a090d]/40 to-transparent z-0"></div>
+          <div className="absolute inset-0 bg-gradient-to-r from-[#0a090d] via-[#0a090d]/25 to-transparent z-0"></div>
 
-        <div className="flex items-center space-x-3">
+        </div>
+        
+        <div className="absolute top-4 right-4 z-20 flex items-center space-x-2.5">
           <a
             href="https://letterboxd.com"
             target="_blank"
             rel="noreferrer"
-            className="flex items-center space-x-1 border border-zinc-850 hover:border-zinc-700 text-zinc-400 hover:text-white px-3.5 py-2 rounded-xl text-xs font-medium bg-zinc-950 transition-colors"
+            className="flex items-center space-x-1.5 border border-zinc-800 hover:border-zinc-700 text-zinc-400 hover:text-white px-4 py-2.5 rounded-xl text-xs font-semibold bg-zinc-950/85 backdrop-blur-sm transition-all"
           >
             <span>Letterboxd Profile</span>
             <ExternalLink className="h-3.5 w-3.5" />
@@ -489,24 +500,36 @@ export default function PastScreenings({
           <button
             onClick={triggerSync}
             disabled={isSyncing}
-            className="flex items-center justify-center space-x-2 bg-zinc-900 text-amber-400 hover:text-amber-300 border border-amber-500/10 hover:border-amber-500/25 px-4 py-2 rounded-xl text-xs font-mono transition-all cursor-pointer disabled:opacity-50"
+            className="flex items-center justify-center space-x-2 bg-amber-500 hover:bg-amber-600 text-zinc-950 px-4 py-2.5 rounded-xl text-xs font-bold transition-all cursor-pointer disabled:opacity-50"
           >
             <RefreshCw className={`h-3.5 w-3.5 ${isSyncing ? 'animate-spin' : ''}`} />
             <span>{isSyncing ? 'Syncing...' : 'Sync Feed'}</span>
           </button>
         </div>
+
+        <div className="relative z-10 p-6 md:p-8 max-w-2xl space-y-1.5">
+          <span className="text-amber-500 font-mono text-[10px] uppercase tracking-widest font-bold flex items-center gap-1.5">
+            <MessageCircleCode className="h-4 w-4" /> Letterboxd Archive
+          </span>
+          <h2 className="font-serif text-2xl md:text-3xl lg:text-4xl font-bold text-zinc-100 tracking-tight">
+            Past Screenings
+          </h2>
+          <p className="text-zinc-400 text-xs md:text-sm font-sans font-medium line-clamp-2 leading-relaxed">
+            Browse our historical screenings archive, student rating distributions, and Letterboxd diary logs synchronized directly from our film society curators.
+          </p>
+        </div>
       </div>
 
       {/* Sync animation popover */}
       {isSyncing && (
-        <div className="rounded-2xl border border-amber-500/10 bg-amber-500/5 p-4 flex items-center space-x-4 animate-pulse">
+        <div className="rounded-2xl border border-amber-500/10 bg-amber-500/5 p-4 flex items-center space-x-4">
           <div className="h-8 w-8 rounded-full bg-amber-500/10 flex items-center justify-center text-amber-500">
             <RefreshCw className="h-4 w-4 animate-spin" />
           </div>
           <div>
-            <h4 className="text-xs font-bold font-mono text-amber-500">READING LETTERBOXD JOURNAL FEED</h4>
+            <h4 className="text-xs font-bold font-mono text-amber-500 uppercase">Synchronizing Letterboxd Journal Feed</h4>
             <p className="text-[11px] text-zinc-400 mt-0.5">
-              Connecting secure pipeline with Letterboxd API targets... fetching ratings and review counts...
+              Fetching the latest screening records, ratings, and diary entries from the film club's RSS feed...
             </p>
           </div>
         </div>
@@ -518,9 +541,9 @@ export default function PastScreenings({
             <CheckCircle2 className="h-4 w-4" />
           </div>
           <div>
-            <h4 className="text-xs font-bold font-mono text-green-400">SYNC SUCCESSFUL</h4>
+            <h4 className="text-xs font-bold font-mono text-green-400 uppercase">Archive Updated Successfully</h4>
             <p className="text-[11px] text-zinc-400 mt-0.5">
-              Retrieved 4 latest screening records matching Letterboxd diary entries perfectly.
+              The past screenings collection has been synced with the latest Letterboxd diary logs.
             </p>
           </div>
         </div>
@@ -530,11 +553,9 @@ export default function PastScreenings({
       {pastMovies.length > 0 && (
         <div className="space-y-4 pt-2">
           <div className="flex items-center justify-between pb-2">
-            <h3 className="font-serif text-lg font-bold text-zinc-300 flex items-center gap-2">
-              <span className="h-2 w-2 rounded-full bg-amber-500 animate-pulse"></span>
+            <h3 className="font-serif text-lg font-bold text-zinc-300">
               Cinephile Favorites & Recent Screenings
             </h3>
-            <p className="text-[10px] font-mono text-zinc-500 uppercase tracking-wider">Interactive Reel</p>
           </div>
           
           <div className="flex gap-4 overflow-x-auto pb-4 scrollbar-thin scrollbar-thumb-zinc-800 scrollbar-track-transparent snap-x snap-mandatory">

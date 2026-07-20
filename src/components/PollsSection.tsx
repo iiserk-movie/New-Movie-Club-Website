@@ -9,6 +9,16 @@ import { db, sanitizeDoc } from '../firebase';
 import { doc, setDoc, updateDoc, deleteDoc } from 'firebase/firestore';
 import { getPolishedPosterUrl } from '../letterboxdDb';
 
+const COLLAGE_POSTERS = [
+  'https://upload.wikimedia.org/wikipedia/en/2/2e/Inception_%282010%29_theatrical_poster.jpg', // Inception
+  'https://upload.wikimedia.org/wikipedia/en/3/3d/Pulp_Fiction_cover.jpg', // Pulp Fiction
+  'https://upload.wikimedia.org/wikipedia/en/b/bc/Interstellar_film_poster.jpg', // Interstellar
+  'https://upload.wikimedia.org/wikipedia/en/1/1c/The_Godfather_poster.jpg', // The Godfather
+  'https://upload.wikimedia.org/wikipedia/en/5/53/Parasite_%282019_film%29_poster.gif', // Parasite
+  'https://upload.wikimedia.org/wikipedia/en/d/db/Spirited_Away_Japanese_poster.png', // Spirited Away
+  'https://upload.wikimedia.org/wikipedia/en/f/fc/Fight_Club_poster.jpg', // Fight Club
+];
+
 interface OptionSynopsisProps {
   synopsis: string;
 }
@@ -387,31 +397,43 @@ export default function PollsSection({
         )}
       </AnimatePresence>
 
-      {/* Header Panel */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-6 border-b border-zinc-900 pb-6">
-        <div>
-          <div className="flex items-center gap-2">
-            <span className="p-1.5 bg-amber-500/10 rounded-lg text-amber-500 border border-amber-500/20">
-              <Vote className="h-5 w-5" />
-            </span>
-            <span className="text-[10px] font-mono tracking-wider text-amber-500 uppercase bg-amber-500/5 px-2 py-0.5 rounded border border-amber-500/10">
-              Screening Survey Engine
-            </span>
-          </div>
-          <h2 className="font-serif text-2xl font-bold tracking-tight text-zinc-100 mt-2 sm:text-3xl">
-            Movie Selection Polls
-          </h2>
+      {/* Header Panel Banner */}
+      <div className="relative rounded-3xl overflow-hidden h-48 md:h-60 mb-10 border border-amber-500/10 shadow-[0_20px_50px_rgba(0,0,0,0.5)] flex items-end">
+        <div className="absolute inset-0 z-0 overflow-hidden">
+          {/* Immersive cinematic background image */}
+          <img 
+            src="https://images.unsplash.com/photo-1478720568477-152d9b164e26?q=80&w=1600" 
+            alt="Cinematic Projector Lens" 
+            className="absolute inset-0 w-full h-full object-cover brightness-[0.55] contrast-[1.1] scale-105"
+          />
+          <div className="absolute inset-0 bg-gradient-to-t from-[#0a090d] via-[#0a090d]/40 to-transparent z-0"></div>
+          <div className="absolute inset-0 bg-gradient-to-r from-[#0a090d] via-[#0a090d]/25 to-transparent z-0"></div>
+
+        </div>
+        
+        <div className="absolute top-4 right-4 z-20">
+          {adminMode && (
+            <button
+              onClick={() => setShowCreateModal(true)}
+              className="flex items-center space-x-2 bg-amber-500 hover:bg-amber-600 text-zinc-950 px-5 py-2.5 rounded-xl font-bold text-sm transition-all hover:scale-102 shadow-lg shadow-amber-500/15 cursor-pointer"
+            >
+              <Plus className="h-4.5 w-4.5" />
+              <span>Create New Poll</span>
+            </button>
+          )}
         </div>
 
-        {adminMode && (
-          <button
-            onClick={() => setShowCreateModal(true)}
-            className="shrink-0 flex items-center justify-center gap-2 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-zinc-950 text-xs font-bold font-mono px-4 py-2.5 rounded-lg active:scale-95 transition-transform shadow-[0_4px_20px_rgba(245,158,11,0.2)] cursor-pointer"
-          >
-            <Plus className="h-4 w-4 stroke-[3]" />
-            CREATE SCREENING POLL
-          </button>
-        )}
+        <div className="relative z-10 p-6 md:p-8 max-w-2xl space-y-1.5">
+          <span className="text-amber-500 font-mono text-[10px] uppercase tracking-widest font-bold flex items-center gap-1.5">
+            <Vote className="h-4 w-4" /> Student Ballots
+          </span>
+          <h2 className="font-serif text-2xl md:text-3xl lg:text-4xl font-bold text-zinc-100 tracking-tight">
+            Movie Selection Polls
+          </h2>
+          <p className="text-zinc-400 text-xs md:text-sm font-sans font-medium line-clamp-2 leading-relaxed">
+            Vote on upcoming themed double-features and select which cinematic classics we screen next semester at the auditorium.
+          </p>
+        </div>
       </div>
 
       {/* Selector Tabs */}
@@ -542,7 +564,7 @@ export default function PollsSection({
                       </div>
                     )}
                     <div className="text-zinc-500 border-t border-zinc-900 w-full pt-1.5 mt-1 text-[9px]">
-                      TOTAL COOPERATION CASTS: <strong className="text-zinc-400 font-sans">{totalAggVotes}</strong>
+                      TOTAL VOTES CAST: <strong className="text-zinc-400 font-sans">{totalAggVotes}</strong>
                     </div>
                   </div>
                 </div>

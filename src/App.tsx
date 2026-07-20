@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { 
   Film, Sparkles, MapPin, Users, Clapperboard, Calendar, Clock, Play, Bell, ChevronRight, ChevronLeft, ExternalLink, MessageSquare, Volume2, X, ChevronDown, ChevronUp, ThumbsUp, Check
@@ -32,6 +32,54 @@ import PollsSection from './components/PollsSection';
 import { CINEMA_QUOTES } from './quotesData';
 import { letterboxdMovies } from './letterboxdDb';
 
+const BACKGROUND_POSTERS = [
+  'https://image.tmdb.org/t/p/w500/edv5CZv907Nio6v0Y20CH7LcZCH.jpg', // Inception
+  'https://image.tmdb.org/t/p/w500/d5i676XEVvnmXUZ60709ue6CVv5.jpg', // Pulp Fiction
+  'https://image.tmdb.org/t/p/w500/gEU2Qv6v36g1vOI7V2E269Yv8ks.jpg', // Interstellar
+  'https://image.tmdb.org/t/p/w500/3bhkrj6UGV6yszGeOFWh7mBz0fC.jpg', // The Godfather
+  'https://image.tmdb.org/t/p/w500/7IiTT70Yv66z76RtTYHTU76nTuO.jpg', // Parasite
+  'https://image.tmdb.org/t/p/w500/39GoRSYzpFuJZmW6uOTgDNTyil4.jpg', // Spirited Away
+  'https://image.tmdb.org/t/p/w500/pB8BM76v6g606v9S7Yg0Ywj1v79.jpg', // Fight Club
+  'https://image.tmdb.org/t/p/w500/oAxr6YyPzD81766vUq3ZzU96n2X.jpg', // Whiplash
+  'https://image.tmdb.org/t/p/w500/u76Z60S9gXy98C498X75y8gS2Z9.jpg', // La La Land
+  'https://image.tmdb.org/t/p/w500/gajva26wgoRz69unYv76b8S6pAr.jpg', // Blade Runner 2049
+  'https://image.tmdb.org/t/p/w500/6oom6Q6v7IKB66ue6CgclgclgST.jpg', // Metropolis
+  'https://image.tmdb.org/t/p/w500/l0K57XJAnx8K4N5gO6Xj6Z97M5n.jpg', // Stalker
+  'https://image.tmdb.org/t/p/w500/ve72g09mXZN0fI5gO6Xj6Z97M5n.jpg', // 2001: A Space Odyssey
+  'https://image.tmdb.org/t/p/w500/xYCoH36OofSg6fFvS6oVofYt78p.jpg', // Arrival
+  'https://image.tmdb.org/t/p/w500/i936Vv9mXZN0fI5gO6Xj6Z97M5n.jpg', // In the Mood for Love
+  'https://image.tmdb.org/t/p/w500/ptS60S9gXy98C498X75y8gS2Z9.jpg', // Perfect Days
+  'https://image.tmdb.org/t/p/w500/khunG2g1vOI7V2E269Yv8ks.jpg', // Past Lives
+  'https://image.tmdb.org/t/p/w500/kve207Nio6v0Y20CH7LcZCH.jpg', // Shutter Island
+  'https://image.tmdb.org/t/p/w500/q6y04m2gbybphm6478ifvsq6ov9.jpg', // The Shawshank Redemption
+  'https://image.tmdb.org/t/p/w500/1hRoyzDtpgE97AIu862v7b6S2Z9.jpg', // The Dark Knight
+  'https://image.tmdb.org/t/p/w500/f8ST60S9gXy98C498X75y8gS2Z9.jpg', // The Matrix
+  'https://image.tmdb.org/t/p/w500/arw27XRY7p66zAoZgXy98C498X75.jpg', // Forrest Gump
+  'https://image.tmdb.org/t/p/w500/sF1u40YvVWSUX760f64CFCH6lST.jpg', // Schindler's List
+  'https://image.tmdb.org/t/p/w500/ow3wq89sw8unEXEX91s8s2zovov.jpg', // 12 Angry Men
+  'https://image.tmdb.org/t/p/w500/ob7m6vKshYv42N7C93S8v4vBfHh.jpg', // Goodfellas
+  'https://image.tmdb.org/t/p/w500/rP2hy76vXk916669D7G5mN606vv.jpg', // The Silence of the Lambs
+  'https://image.tmdb.org/t/p/w500/5gjg6p66H918gS2Z9.jpg', // Eternal Sunshine of the Spotless Mind
+  'https://image.tmdb.org/t/p/w500/bZ9866g606v9S7Yg0Ywj1v79.jpg', // The Truman Show
+  'https://image.tmdb.org/t/p/w500/9g5D7G5mN606vv.jpg', // Psycho
+  'https://image.tmdb.org/t/p/w500/8XjK6K8L780v9S6S6S8qFf8FThW.jpg', // Amélie
+  'https://image.tmdb.org/t/p/w500/3K6g606v9S7Yg0Ywj1v79.jpg', // Casablanca
+  'https://image.tmdb.org/t/p/w500/y66z76RtTYHTU76nTuO.jpg'  // Citizen Kane
+];
+
+const FALLBACK_POSTERS = [
+  'https://images.unsplash.com/photo-1489599849927-2ee91cede3ba?q=80&w=400', // Cinema theatre
+  'https://images.unsplash.com/photo-1517604931442-7e0c8ed2963c?q=80&w=400', // Cinema seats
+  'https://images.unsplash.com/photo-1440404653325-ab127d49abc1?q=80&w=400', // Classic projector
+  'https://images.unsplash.com/photo-1536440136628-849c177e76a1?q=80&w=400', // Movie reel
+  'https://images.unsplash.com/photo-1478720143033-6a97267843d4?q=80&w=400', // Film photography
+  'https://images.unsplash.com/photo-1542204172-e7052809a850?q=80&w=400', // Camera lens
+  'https://images.unsplash.com/photo-1509198397868-475647b2a1e5?q=80&w=400', // Retro neon
+  'https://images.unsplash.com/photo-1598899134739-24c46f58b8c0?q=80&w=400', // Movie slate
+  'https://images.unsplash.com/photo-1513151233558-d860c5398176?q=80&w=400', // Abstract lights
+  'https://images.unsplash.com/photo-1518709268805-4e9042af9f23?q=80&w=400', // Vintage camera
+];
+
 // Use database-level seeding markers to prevent unwanted re-seeding on fresh page load/hard refresh
 
 const sanitizeDoc = <T extends object>(obj: T): T => {
@@ -52,6 +100,65 @@ const isScreeningFullyPast = (dateStr: string, timeStr: string): boolean => {
     return false;
   }
 };
+
+interface BackgroundPosterItemProps {
+  src: string;
+  index: number;
+  key?: React.Key;
+}
+
+function BackgroundPosterItem({ src, index }: BackgroundPosterItemProps) {
+  const getInitialSrc = (inputSrc: string) => {
+    if (!inputSrc || typeof inputSrc !== 'string' || !inputSrc.trim().startsWith('http')) {
+      return FALLBACK_POSTERS[index % FALLBACK_POSTERS.length];
+    }
+    return inputSrc;
+  };
+
+  const [currentSrc, setCurrentSrc] = useState(() => getInitialSrc(src));
+  const [fade, setFade] = useState(true);
+
+  useEffect(() => {
+    const nextSrc = getInitialSrc(src);
+    if (nextSrc !== currentSrc) {
+      setFade(false);
+      const timeout = setTimeout(() => {
+        setCurrentSrc(nextSrc);
+        setFade(true);
+      }, 1000);
+      return () => clearTimeout(timeout);
+    }
+  }, [src]);
+
+  const handleError = () => {
+    const fallback = FALLBACK_POSTERS[index % FALLBACK_POSTERS.length];
+    if (currentSrc !== fallback) {
+      setCurrentSrc(fallback);
+    }
+  };
+
+  return (
+    <div 
+      className="aspect-[2/3] w-full rounded-2xl bg-zinc-950 border border-zinc-800/20 overflow-hidden shadow-2xl transition-transform duration-700"
+      style={{
+        transform: `translateY(${(index % 4) * 12}px) rotate(${(index % 2 === 0 ? 1 : -1) * (index % 3 + 1) * 1.5}deg)`
+      }}
+    >
+      <img 
+        src={currentSrc} 
+        alt="" 
+        className="w-full h-full object-cover transition-opacity"
+        style={{
+          transition: 'opacity 1500ms ease-in-out',
+          opacity: fade ? 1 : 0
+        }}
+        onError={handleError}
+        loading="lazy"
+        referrerPolicy="no-referrer"
+      />
+    </div>
+  );
+}
 
 export default function App() {
   const [currentUser, setCurrentUser] = useState<User | null>(null);
@@ -82,32 +189,132 @@ export default function App() {
   const upcomingScreenings = screenings.filter(s => !isScreeningFullyPast(s.date, s.time));
 
   // Merge any past screenings into pastMovies client-side
-  const computedPastMovies = [...pastMovies];
-  screenings.forEach(s => {
-    if (isScreeningFullyPast(s.date, s.time)) {
-      const alreadyExists = pastMovies.some(
-        pm => pm.title.toLowerCase() === s.title.toLowerCase() || pm.id === `pm-${s.id}`
-      );
-      if (!alreadyExists) {
-        computedPastMovies.push({
-          id: `pm-${s.id}`,
-          title: s.title,
-          director: s.director || 'Unknown',
-          year: s.year || 2026,
-          screenedDate: s.date,
-          rating: 4.5,
-          letterboxdUrl: `https://letterboxd.com/film/${s.title.toLowerCase().replace(/[^a-z0-9]+/g, '-')}/`,
-          posterUrl: s.posterUrl || 'https://images.unsplash.com/photo-1489599849927-2ee91cede3ba?q=80&w=300',
-          synopsis: s.description || '',
-          genre: s.genre || ['Cinema'],
-          reviews: []
-        });
+  const computedPastMovies = useMemo(() => {
+    const merged = [...pastMovies];
+    screenings.forEach(s => {
+      if (isScreeningFullyPast(s.date, s.time)) {
+        const alreadyExists = pastMovies.some(
+          pm => pm.title.toLowerCase() === s.title.toLowerCase() || pm.id === `pm-${s.id}`
+        );
+        if (!alreadyExists) {
+          merged.push({
+            id: `pm-${s.id}`,
+            title: s.title,
+            director: s.director || 'Unknown',
+            year: s.year || 2026,
+            screenedDate: s.date,
+            rating: 4.5,
+            letterboxdUrl: `https://letterboxd.com/film/${s.title.toLowerCase().replace(/[^a-z0-9]+/g, '-')}/`,
+            posterUrl: s.posterUrl || 'https://images.unsplash.com/photo-1489599849927-2ee91cede3ba?q=80&w=300',
+            synopsis: s.description || '',
+            genre: s.genre || ['Cinema'],
+            reviews: []
+          });
+        }
       }
-    }
-  });
+    });
 
-  // Sort past movies descending by screening date
-  computedPastMovies.sort((a, b) => (b.screenedDate || '').localeCompare(a.screenedDate || ''));
+    // Sort past movies descending by screening date
+    merged.sort((a, b) => (b.screenedDate || '').localeCompare(a.screenedDate || ''));
+    return merged;
+  }, [screenings, pastMovies]);
+
+  // Dynamic Background Posters state representing real active club selections changing organically over time
+  const [gridPosters, setGridPosters] = useState<string[]>([]);
+
+  useEffect(() => {
+    // Collect all valid unique poster URLs across our active collections
+    const activeUrls = new Set<string>();
+    
+    const isValidUrl = (url: any): url is string => {
+      return !!url && typeof url === 'string' && url.trim().startsWith('http');
+    };
+
+    screenings.forEach(s => {
+      if (isValidUrl(s.posterUrl)) {
+        activeUrls.add(s.posterUrl.trim());
+      }
+    });
+    
+    computedPastMovies.forEach(pm => {
+      if (isValidUrl(pm.posterUrl)) {
+        activeUrls.add(pm.posterUrl.trim());
+      }
+    });
+    
+    recommendations.forEach(r => {
+      if (isValidUrl(r.posterUrl)) {
+        activeUrls.add(r.posterUrl.trim());
+      }
+    });
+
+    polls.forEach(p => {
+      p.options?.forEach(o => {
+        if (isValidUrl(o.posterUrl)) {
+          activeUrls.add(o.posterUrl.trim());
+        }
+      });
+    });
+
+    // Merge with high-res standard ones to guarantee a diverse selection of at least 32 posters
+    const combinedPool = Array.from(activeUrls);
+    BACKGROUND_POSTERS.forEach(url => {
+      if (isValidUrl(url) && !activeUrls.has(url.trim())) {
+        combinedPool.push(url.trim());
+      }
+    });
+
+    // Pad with FALLBACK_POSTERS if we still need more to hit 32 unique/semi-unique reliable sources
+    let fallbackIdx = 0;
+    while (combinedPool.length < 32) {
+      const fb = FALLBACK_POSTERS[fallbackIdx % FALLBACK_POSTERS.length];
+      combinedPool.push(fb);
+      fallbackIdx++;
+    }
+
+    // Initialize or update 32 elements
+    setGridPosters(prev => {
+      if (prev.length === 32) {
+        // If we already have 32 posters, detect newly added active club posters that are not yet displayed
+        const currentSet = new Set(prev);
+        const newlyAdded = Array.from(activeUrls).filter(url => !currentSet.has(url));
+        
+        if (newlyAdded.length > 0) {
+          const next = [...prev];
+          // Immediately inject newly added posters into random slots in the background grid so they show up instantly!
+          newlyAdded.forEach(newUrl => {
+            const randomSlot = Math.floor(Math.random() * 32);
+            next[randomSlot] = newUrl;
+          });
+          return next;
+        }
+        return prev;
+      }
+      // Populate 32 slots randomly from the pool on first load for a fresh look every time
+      const shuffledPool = [...combinedPool].sort(() => Math.random() - 0.5);
+      const initial: string[] = [];
+      for (let i = 0; i < 32; i++) {
+        initial.push(shuffledPool[i % shuffledPool.length]);
+      }
+      return initial;
+    });
+
+    // Start a periodic background theater ticker that randomly flips 1 random poster card to represent the living flow of the cinephile community
+    const interval = setInterval(() => {
+      setGridPosters(current => {
+        if (current.length === 0) return current;
+        const next = [...current];
+        // Select exactly 1 random position in the grid to flip
+        const randomGridIndex = Math.floor(Math.random() * 32);
+        // Pick a random poster from the entire combined pool (which includes latest database items)
+        const randomNewPoster = combinedPool[Math.floor(Math.random() * combinedPool.length)];
+        next[randomGridIndex] = randomNewPoster;
+        return next;
+      });
+    }, 10000); // Shift every 10 seconds for a super slow, smooth, ambient cinematic experience
+
+    return () => clearInterval(interval);
+  }, [screenings, computedPastMovies, recommendations, polls]);
 
   // Automatic database auto-archive for past screenings when an administrative user is logged in
   useEffect(() => {
@@ -1066,13 +1273,30 @@ export default function App() {
   };
 
   return (
-    <div className="min-h-screen bg-[#0a090d] bg-gradient-to-br from-[#1b1424] via-[#0d0c11] to-[#060608] text-zinc-100 flex flex-col font-sans selection:bg-amber-400 selection:text-zinc-950 relative overflow-x-hidden">
+    <div className="min-h-screen bg-[#0a090d] bg-gradient-to-br from-[#120e1a] via-[#0d0c11] to-[#050507] text-zinc-100 flex flex-col font-sans selection:bg-amber-400 selection:text-zinc-950 relative overflow-x-hidden">
       {/* Decorative backdrop gradients representing theatrical lighting effects applied globally behind all content */}
-      <div className="fixed inset-0 pointer-events-none overflow-hidden z-0">
-        <div className="absolute top-[-10%] left-1/4 h-[500px] w-[500px] bg-amber-500/8 rounded-full blur-[130px]"></div>
-        <div className="absolute top-[30%] right-[10%] h-[600px] w-[600px] bg-purple-600/5 rounded-full blur-[140px]"></div>
-        <div className="absolute bottom-[10%] left-[-10%] h-[600px] w-[600px] bg-rose-500/6 rounded-full blur-[140px]"></div>
-        <div className="absolute bottom-[-10%] right-[-10%] h-[500px] w-[500px] bg-amber-500/5 rounded-full blur-[130px]"></div>
+      <div className="fixed inset-0 pointer-events-none overflow-hidden z-0 select-none">
+        {/* Subtle grid of hand-selected cinematic poster frames representing real human cinephile soul */}
+        <div className="absolute inset-0 grid grid-cols-2 sm:grid-cols-4 md:grid-cols-6 lg:grid-cols-8 gap-6 p-6 opacity-[0.24] filter saturate-[0.85] contrast-[1.1]">
+          {(gridPosters.length === 32 ? gridPosters : Array.from({ length: 32 }).map((_, idx) => BACKGROUND_POSTERS[idx % BACKGROUND_POSTERS.length])).map((imgUrl, i) => {
+            return (
+              <BackgroundPosterItem 
+                key={i} 
+                src={imgUrl} 
+                index={i} 
+              />
+            );
+          })}
+        </div>
+        {/* Cinematic gradient overlay to fade the poster grid elegantly and ensure high contrast readability */}
+        <div className="absolute inset-0 bg-gradient-to-b from-[#0a090d]/15 via-[#0a090d]/70 to-[#0a090d]"></div>
+        <div className="absolute inset-0 bg-radial-gradient from-transparent to-[#0a090d]/90"></div>
+        
+        {/* Dynamic organic warm theatrical lighting glows */}
+        <div className="absolute top-[-5%] left-1/4 h-[600px] w-[600px] bg-amber-500/12 rounded-full blur-[140px] mix-blend-screen animate-pulse duration-[8000ms]"></div>
+        <div className="absolute top-[35%] right-[5%] h-[700px] w-[700px] bg-purple-600/8 rounded-full blur-[160px] mix-blend-screen"></div>
+        <div className="absolute bottom-[20%] left-[-5%] h-[700px] w-[700px] bg-rose-500/8 rounded-full blur-[160px] mix-blend-screen"></div>
+        <div className="absolute bottom-[-5%] right-[10%] h-[600px] w-[600px] bg-amber-500/8 rounded-full blur-[140px] mix-blend-screen animate-pulse duration-[10000ms]"></div>
       </div>
 
       {/* Upper Navigation Row */}
@@ -1147,15 +1371,15 @@ export default function App() {
           };
 
           return (
-            <div className="relative border-b border-zinc-900 overflow-hidden z-10 bg-zinc-950">
+            <div className="relative border-b border-zinc-900/35 overflow-hidden z-10 bg-zinc-950/25 backdrop-blur-sm">
               <div className="absolute inset-0 z-0">
                 <img 
                   src={featured.backdropUrl || 'https://images.unsplash.com/photo-1489599849927-2ee91cede3ba?q=80&w=1200'} 
                   alt="" 
                   className="w-full h-full object-cover object-center scale-102 filter blur-[2px] opacity-25 brightness-[0.4]"
                 />
-                <div className="absolute inset-0 bg-gradient-to-r from-[#0a090d] via-[#0a090d]/85 to-[#0a090d]/30"></div>
-                <div className="absolute inset-0 bg-gradient-to-t from-[#0a090d] via-transparent to-transparent"></div>
+                <div className="absolute inset-0 bg-gradient-to-r from-[#0a090d]/80 via-[#0a090d]/65 to-[#0a090d]/20"></div>
+                <div className="absolute inset-0 bg-gradient-to-t from-[#0a090d]/60 via-transparent to-transparent"></div>
               </div>
 
               <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-12 sm:py-20 relative z-10 grid grid-cols-1 lg:grid-cols-12 gap-8 md:gap-12 items-center">

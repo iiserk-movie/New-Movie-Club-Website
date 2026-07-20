@@ -441,26 +441,39 @@ export default function ScreeningSchedule({
       )}
 
       {/* Header Info */}
-      <div className="flex flex-col md:flex-row md:items-end justify-between border-b border-zinc-900 pb-6 gap-6">
-        <div>
-          <span className="text-amber-500 font-mono text-xs uppercase tracking-widest font-semibold flex items-center gap-1.5">
+      <div className="relative rounded-3xl overflow-hidden h-48 md:h-60 mb-10 border border-zinc-900/80 shadow-2xl flex items-end">
+        <img 
+          src="https://images.unsplash.com/photo-1535016120720-40c646be5580?q=80&w=1600" 
+          alt="Velvet Theater Stage" 
+          className="absolute inset-0 w-full h-full object-cover brightness-[0.35] contrast-[1.05]"
+        />
+        <div className="absolute inset-0 bg-gradient-to-t from-[#0a090d] via-[#0a090d]/65 to-transparent"></div>
+        <div className="absolute inset-0 bg-gradient-to-r from-[#0a090d] via-[#0a090d]/30 to-transparent"></div>
+        
+        <div className="absolute top-4 right-4 z-10">
+          {adminMode && (
+            <button
+              onClick={openAddForm}
+              id="btn-add-screening"
+              className="flex items-center space-x-2 bg-amber-500 hover:bg-amber-600 text-zinc-950 px-5 py-2.5 rounded-xl font-bold text-sm transition-all hover:scale-102 shadow-lg shadow-amber-500/15 cursor-pointer"
+            >
+              <Plus className="h-4.5 w-4.5" />
+              <span>Add Screening</span>
+            </button>
+          )}
+        </div>
+
+        <div className="relative z-10 p-6 md:p-8 max-w-2xl space-y-1.5">
+          <span className="text-amber-500 font-mono text-[10px] uppercase tracking-widest font-bold flex items-center gap-1.5">
             <Calendar className="h-4 w-4" /> Theatre Calendar
           </span>
-          <h2 className="font-serif text-3xl font-bold text-zinc-100 tracking-tight sm:text-4xl mt-1">
+          <h2 className="font-serif text-2xl md:text-3xl lg:text-4xl font-bold text-zinc-100 tracking-tight">
             Upcoming Screenings
           </h2>
+          <p className="text-zinc-400 text-xs md:text-sm font-sans font-medium line-clamp-2 leading-relaxed">
+            Join us at the M.N. Saha Auditorium for regular screenings of global film masterpieces, indie retrospectives, and academic discussion sessions.
+          </p>
         </div>
-        
-        {adminMode && (
-          <button
-            onClick={openAddForm}
-            id="btn-add-screening"
-            className="flex items-center space-x-2 bg-amber-500 hover:bg-amber-600 text-zinc-950 px-5 py-2.5 rounded-xl font-bold text-sm transition-transform hover:scale-102 shadow-lg shadow-amber-500/15 cursor-pointer self-start md:self-auto shrink-0 md:mt-4"
-          >
-            <Plus className="h-4.5 w-4.5" />
-            <span>Add Screening</span>
-          </button>
-        )}
       </div>
 
       {/* Empty States */}
@@ -558,12 +571,9 @@ export default function ScreeningSchedule({
                 />
                 <div className="absolute inset-0 bg-gradient-to-t lg:bg-gradient-to-r from-[#121019] via-[#121019]/40 to-transparent"></div>
 
-                <div className="absolute bottom-4 left-4 flex flex-col space-y-1 bg-[#0a090d]/90 backdrop-blur-md px-3.5 py-2 rounded-xl border border-zinc-900/60 shadow-lg">
+                <div className="absolute bottom-4 left-4 flex items-center bg-[#0a090d]/90 backdrop-blur-md px-3.5 py-2 rounded-xl border border-zinc-900/40 shadow-lg">
                   <span className="font-mono text-amber-400 font-bold text-xs uppercase tracking-wider">
                     {countdown}
-                  </span>
-                  <span className="text-zinc-500 text-[10px] uppercase font-mono">
-                    Countdown Status
                   </span>
                 </div>
               </div>

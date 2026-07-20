@@ -805,16 +805,16 @@ export default function Navbar({
               </button>
 
               {errorMsg && (
-                <div className="mb-4 rounded-lg bg-red-500/10 border border-red-500/25 p-3 text-xs text-red-400 leading-relaxed font-mono">
-                  <div className="font-bold flex items-center gap-1 mb-0.5 text-red-500 text-[10px]">
-                    ⚠️ AUTH_ERROR
+                <div className="mb-4 rounded-xl bg-red-500/5 border border-red-500/15 p-3 text-xs text-red-400 leading-relaxed font-sans">
+                  <div className="font-bold flex items-center gap-1 mb-0.5 text-red-500 text-[10px] uppercase tracking-wider">
+                    Authentication Error
                   </div>
                   {errorMsg}
                 </div>
               )}
 
               <div className="border-t border-zinc-900/80 pt-4.5 mt-2 flex items-center justify-between text-xs text-zinc-500">
-                <span className="font-mono text-[9px] uppercase tracking-wider text-zinc-600">iiserkol.ac.in SSO auth</span>
+                <span className="text-[10px] tracking-wider text-zinc-500 font-semibold uppercase">IISER Kolkata Accounts</span>
                 <button
                   type="button"
                   onClick={() => {
