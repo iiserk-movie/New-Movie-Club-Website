@@ -294,7 +294,7 @@ export default function ClubDiscussions({
               <div className="rounded-2xl border border-zinc-900 bg-zinc-950 p-6 space-y-4 shadow-xl">
                 <h3 className="text-xs uppercase font-mono tracking-widest text-zinc-400 font-semibold flex items-center gap-1.5 border-b border-zinc-900 pb-3">
                   <MessageSquare className="h-4 w-4 text-amber-500" />
-                  <span>Interactive Replies ({activeDiscussion.comments.length})</span>
+                  <span>Replies ({activeDiscussion.comments.length})</span>
                 </h3>
 
                 <div className="space-y-4 max-h-[400px] overflow-y-auto pr-2 custom-scroll">
