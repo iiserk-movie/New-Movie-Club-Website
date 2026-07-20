@@ -183,18 +183,23 @@ async function fetchUrlMetadata(url: string) {
         geminiQueryPrompt = `Film Title: "${scrapedMetadata.title}" released in ${scrapedMetadata.year || 'unknown'}. Synopsis Context: "${scrapedMetadata.description}"`;
         focalIdInstructions = `We have pre-matched the movie details as: Title: "${scrapedMetadata.title}", Year: ${scrapedMetadata.year || 'unknown'}. Perfect the details using Google search.`;
       } else {
-        const imdbMatch = cleanQuery.match(/(tt\d+)/i);
-        const lbMatch = cleanQuery.match(/letterboxd\.com\/film\/([a-zA-Z0-9\-_]+)/i);
+        const imdbMatch = cleanQuery.match(/(tt\d{7,10})/i);
+        const lbMatch = cleanQuery.match(/letterboxd\.com\/film\/([a-zA-Z0-9\-_]+)/i) || cleanQuery.match(/boxd\.it\/([a-zA-Z0-9\-_]+)/i);
         
         if (imdbMatch) {
           focalIdInstructions = `The user specified IMDb ID: "${imdbMatch[1]}". Search Google for "IMDb ${imdbMatch[1]}" to resolve the exact film metadata.`;
           geminiQueryPrompt = `IMDb ID ${imdbMatch[1]}`;
         } else if (lbMatch) {
-          focalIdInstructions = `The user specified Letterboxd slug: "${lbMatch[1]}". Search Google for "Letterboxd film ${lbMatch[1]}" to resolve the exact film metadata.`;
-          geminiQueryPrompt = `Letterboxd film ${lbMatch[1]}`;
-        } else if (cleanQuery.includes("http") || cleanQuery.includes("imdb.com") || cleanQuery.includes("letterboxd.com")) {
-          focalIdInstructions = `The user specified direct web link: "${cleanQuery}". Search Google for pages linking or containing this reference and extract complete metadata.`;
-          geminiQueryPrompt = `Movie link: "${cleanQuery}"`;
+          const rawSlug = lbMatch[1];
+          const titleFromSlug = rawSlug.replace(/[\-_]/g, ' ');
+          focalIdInstructions = `The user specified Letterboxd reference: "${rawSlug}". Search Google for "Letterboxd film ${titleFromSlug}" or "${titleFromSlug}" to resolve the exact film metadata.`;
+          geminiQueryPrompt = `Letterboxd film ${titleFromSlug}`;
+        } else if (cleanQuery.includes("http") || cleanQuery.includes("imdb.com") || cleanQuery.includes("letterboxd.com") || cleanQuery.includes("boxd.it")) {
+          const urlParts = cleanQuery.split('/').filter(Boolean);
+          const lastPart = urlParts[urlParts.length - 1] || "";
+          const cleanedPart = lastPart.replace(/[\-_]/g, ' ').replace(/\?.*$/, '');
+          focalIdInstructions = `The user specified direct web link: "${cleanQuery}". Cleaned reference: "${cleanedPart}". Search Google for pages linking or containing this reference and extract complete metadata.`;
+          geminiQueryPrompt = `Movie link: "${cleanQuery}" ${cleanedPart}`;
         }
       }
 

@@ -132,12 +132,12 @@ export default function Recommendations({
     const lowerQuery = query.toLowerCase();
 
     // 1. Detect if it's an IMDb link, Letterboxd link, or IMDb ID directly (tt1234567...)
-    const isUrl = lowerQuery.includes('letterboxd.com/film/') || 
-                  lowerQuery.includes('imdb.com/title/') || 
-                  lowerQuery.includes('imdb.com/title/tt') ||
-                  /\b(tt\d{7,10})\b/i.test(query) ||
-                  /^(https?:\/\/)?(www\.)?imdb\.com/i.test(query) ||
-                  /^(https?:\/\/)?(www\.)?letterboxd\.com/i.test(query);
+    const isUrl = lowerQuery.includes('letterboxd.com') || 
+                  lowerQuery.includes('boxd.it') ||
+                  lowerQuery.includes('imdb.com') || 
+                  lowerQuery.includes('wikipedia.org') ||
+                  /^(https?:\/\/)/i.test(query) ||
+                  /\b(tt\d{7,10})\b/i.test(query);
 
     if (isUrl) {
       setLbSuggestions([]); // clear suggestions list for URL inputs

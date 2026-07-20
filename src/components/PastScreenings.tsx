@@ -537,14 +537,14 @@ export default function PastScreenings({
             <p className="text-[10px] font-mono text-zinc-500 uppercase tracking-wider">Interactive Reel</p>
           </div>
           
-          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4 overflow-x-auto pb-4 scrollbar-thin scrollbar-thumb-zinc-800 scrollbar-track-transparent">
+          <div className="flex gap-4 overflow-x-auto pb-4 scrollbar-thin scrollbar-thumb-zinc-800 scrollbar-track-transparent snap-x snap-mandatory">
             {pastMovies.slice(0, 5).map((movie, idx) => {
               const avgRating = calculateAverageRating(movie);
               return (
                 <div
                   key={`marquee-${movie.id}`}
                   onClick={() => setSelectedMovieId(selectedMovieId === movie.id ? null : movie.id)}
-                  className={`group relative flex-shrink-0 cursor-pointer rounded-2xl border bg-[#110e1a]/80 backdrop-blur-md overflow-hidden transition-all duration-500 hover:scale-[1.03] ${
+                  className={`group relative flex-shrink-0 w-[160px] xs:w-[180px] sm:w-[200px] snap-start cursor-pointer rounded-2xl border bg-zinc-900/40 backdrop-blur-md overflow-hidden transition-all duration-500 hover:scale-[1.03] ${
                     selectedMovieId === movie.id 
                       ? 'border-amber-500/80 shadow-[0_0_20px_rgba(245,158,11,0.25)] ring-1 ring-amber-500/30' 
                       : 'border-zinc-900 hover:border-zinc-850'

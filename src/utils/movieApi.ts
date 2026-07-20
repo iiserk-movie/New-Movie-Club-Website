@@ -270,12 +270,12 @@ async function fetchWikipediaMetadata(movieTitle: string, releaseYear?: number):
  */
 async function resolveMovieMetadataKeyless(query: string): Promise<MovieDetails | null> {
   try {
-    const isUrl = query.toLowerCase().includes('letterboxd.com/film/') || 
-                  query.toLowerCase().includes('imdb.com/title/') || 
-                  query.toLowerCase().includes('imdb.com/title/tt') ||
-                  /\b(tt\d{7,10})\b/i.test(query) ||
-                  /^(https?:\/\/)?(www\.)?imdb\.com/i.test(query) ||
-                  /^(https?:\/\/)?(www\.)?letterboxd\.com/i.test(query);
+    const isUrl = query.toLowerCase().includes('letterboxd.com') || 
+                  query.toLowerCase().includes('boxd.it') ||
+                  query.toLowerCase().includes('imdb.com') || 
+                  query.toLowerCase().includes('wikipedia.org') ||
+                  /^(https?:\/\/)/i.test(query) ||
+                  /\b(tt\d{7,10})\b/i.test(query);
 
     let title = query;
     let year = undefined;

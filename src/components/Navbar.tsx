@@ -465,7 +465,7 @@ export default function Navbar({
           </div>
 
           {/* Navigation Items */}
-          <nav className="hidden md:flex items-center space-x-1">
+          <nav className="hidden md:flex items-center bg-[#181622]/60 border border-zinc-900/60 p-1 rounded-xl shadow-inner shadow-black/40">
             {[
               { id: 'schedule', label: 'Screenings' },
               { id: 'past', label: 'Past Screenings' },
@@ -478,16 +478,13 @@ export default function Navbar({
                 key={tab.id}
                 id={`tab-${tab.id}`}
                 onClick={() => setActiveTab(tab.id)}
-                className={`relative px-4 py-2 rounded-lg text-sm font-medium transition-all ${
+                className={`relative px-4 py-1.5 rounded-lg text-xs font-semibold tracking-wide uppercase transition-all duration-300 cursor-pointer ${
                   activeTab === tab.id
-                    ? 'text-amber-400 bg-zinc-900'
-                    : 'text-zinc-400 hover:text-zinc-200 hover:bg-zinc-900/50'
+                    ? 'text-amber-400 bg-zinc-900 shadow-md shadow-black/50 border border-zinc-800/40 font-bold'
+                    : 'text-zinc-400 hover:text-zinc-200 hover:bg-zinc-900/30 border border-transparent'
                 }`}
               >
                 {tab.label}
-                {activeTab === tab.id && (
-                  <span className="absolute bottom-0 left-4 right-4 h-0.5 bg-amber-500 rounded-full" />
-                )}
               </button>
             ))}
           </nav>
