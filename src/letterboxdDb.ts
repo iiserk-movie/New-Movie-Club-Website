@@ -394,8 +394,65 @@ const realMoviePosters: Record<string, string> = {
   "past-lives": "https://upload.wikimedia.org/wikipedia/en/4/41/Past_Lives_poster.jpeg",
   "shutter-island": "https://upload.wikimedia.org/wikipedia/en/7/76/Shutter_island_poster.jpg",
   "se7en": "https://upload.wikimedia.org/wikipedia/en/6/68/Seven_deadly_sins_poster.jpg",
-  "inception": "https://upload.wikimedia.org/wikipedia/en/2/2e/Inception_%282010%29_theatrical_poster.jpg"
+  "inception": "https://upload.wikimedia.org/wikipedia/en/2/2e/Inception_%282010%29_theatrical_poster.jpg",
+  "oppenheimer": "https://upload.wikimedia.org/wikipedia/en/8/8a/Oppenheimer_%28film%29.jpg",
+  "spider-man-into-the-spider-verse": "https://upload.wikimedia.org/wikipedia/en/0/02/Spider-Man_Into_the_Spider-Verse_poster.png",
+  "the-dark-knight": "https://upload.wikimedia.org/wikipedia/en/1/1c/The_Dark_Knight_%282008_film%29_poster.jpg"
 };
+
+export const DISTINCT_FALLBACK_POSTERS = [
+  "https://upload.wikimedia.org/wikipedia/en/b/bc/Interstellar_film_poster.jpg",
+  "https://upload.wikimedia.org/wikipedia/en/5/53/Parasite_%282019_film%29_poster.gif",
+  "https://upload.wikimedia.org/wikipedia/en/1/11/Everything_Everywhere_All_at_Once.png",
+  "https://upload.wikimedia.org/wikipedia/en/0/01/Whiplash_poster.jpg",
+  "https://upload.wikimedia.org/wikipedia/en/d/db/Spirited_Away_Japanese_poster.png",
+  "https://upload.wikimedia.org/wikipedia/en/a/ab/La_La_Land_%28film%29.png",
+  "https://upload.wikimedia.org/wikipedia/en/5/52/Dune_Part_Two_poster.jpeg",
+  "https://upload.wikimedia.org/wikipedia/en/9/9b/Blade_Runner_2049_poster.png",
+  "https://upload.wikimedia.org/wikipedia/en/0/0b/Your_Name_poster.png",
+  "https://upload.wikimedia.org/wikipedia/en/f/fc/Fight_Club_poster.jpg",
+  "https://upload.wikimedia.org/wikipedia/en/3/3d/Pulp_Fiction_cover.jpg",
+  "https://upload.wikimedia.org/wikipedia/en/1/1c/The_Godfather_poster.jpg",
+  "https://upload.wikimedia.org/wikipedia/en/c/cb/Perfect_blue_poster.png",
+  "https://upload.wikimedia.org/wikipedia/en/7/74/Pather_Panchali_1955_Poster.jpg",
+  "https://upload.wikimedia.org/wikipedia/en/3/38/Tumbbad_poster.jpg",
+  "https://upload.wikimedia.org/wikipedia/commons/9/97/Metropolis_poster_German_Expressionism_silent_film.jpg",
+  "https://upload.wikimedia.org/wikipedia/en/d/d4/The_Zone_of_Interest_poster.jpeg",
+  "https://upload.wikimedia.org/wikipedia/en/d/df/Arrival_film_poster.jpg",
+  "https://upload.wikimedia.org/wikipedia/en/f/fa/In_the_Mood_for_Love_poster.jpg",
+  "https://upload.wikimedia.org/wikipedia/en/d/d4/Stalker_poster.jpg",
+  "https://upload.wikimedia.org/wikipedia/en/a/a2/2001_A_Space_Odyssey_Poster.jpg",
+  "https://upload.wikimedia.org/wikipedia/en/4/4b/Perfect_Days_poster.jpeg",
+  "https://upload.wikimedia.org/wikipedia/en/2/22/Princess_Mononoke_theatrical_poster.png",
+  "https://upload.wikimedia.org/wikipedia/en/4/41/Past_Lives_poster.jpeg",
+  "https://upload.wikimedia.org/wikipedia/en/7/76/Shutter_island_poster.jpg",
+  "https://upload.wikimedia.org/wikipedia/en/6/68/Seven_deadly_sins_poster.jpg",
+  "https://upload.wikimedia.org/wikipedia/en/2/2e/Inception_%282010%29_theatrical_poster.jpg",
+  "https://upload.wikimedia.org/wikipedia/en/8/8a/Oppenheimer_%28film%29.jpg",
+  "https://upload.wikimedia.org/wikipedia/en/0/02/Spider-Man_Into_the_Spider-Verse_poster.png",
+  "https://upload.wikimedia.org/wikipedia/en/1/1c/The_Dark_Knight_%282008_film%29_poster.jpg",
+  "https://upload.wikimedia.org/wikipedia/en/3/3b/Chungking_Express_poster.jpg",
+  "https://upload.wikimedia.org/wikipedia/en/7/75/Akira_poster.jpg",
+  "https://upload.wikimedia.org/wikipedia/en/6/69/Oldboy_2003_poster.jpg",
+  "https://upload.wikimedia.org/wikipedia/en/8/8e/Drive2011Poster.jpg",
+  "https://upload.wikimedia.org/wikipedia/en/0/00/The_Grand_Budapest_Hotel.jpg",
+  "https://upload.wikimedia.org/wikipedia/en/7/70/Portrait_of_a_Lady_on_Fire_poster.jpg",
+  "https://upload.wikimedia.org/wikipedia/en/0/00/Mulholland_Drive_%28poster%29.jpg",
+  "https://upload.wikimedia.org/wikipedia/en/5/53/Amelie_poster.jpg",
+  "https://upload.wikimedia.org/wikipedia/en/3/33/Taxi_Driver_%281976_film_poster%29.jpg",
+  "https://upload.wikimedia.org/wikipedia/en/1/10/Cid_de_Deus.jpg"
+];
+
+export function getDeterministicPoster(identifier: string): string {
+  if (!identifier) return DISTINCT_FALLBACK_POSTERS[0];
+  let hash = 0;
+  for (let i = 0; i < identifier.length; i++) {
+    hash = (hash << 5) - hash + identifier.charCodeAt(i);
+    hash |= 0;
+  }
+  const index = Math.abs(hash) % DISTINCT_FALLBACK_POSTERS.length;
+  return DISTINCT_FALLBACK_POSTERS[index];
+}
 
 export const letterboxdMovies: LetterboxdMovie[] = rawLetterboxdMovies.map(movie => {
   const realUrl = realMoviePosters[movie.id];
@@ -472,20 +529,26 @@ export function parseLetterboxdUrlToMovie(url: string): { title: string; slug: s
 }
 
 export function getPolishedPosterUrl(title: string, currentPosterUrl?: string): string {
-  const fallbackUnsplash = 'https://images.unsplash.com/photo-1489599849927-2ee91cede3ba?q=80&w=300';
   const url = currentPosterUrl?.trim() || '';
-  const isPlaceholder = !url || url.includes('images.unsplash.com');
+  const isGeneric = !url || url.includes('images.unsplash.com') || url.includes('photo-1489599849927');
 
-  if (isPlaceholder && title) {
+  if (!isGeneric) {
+    return url;
+  }
+
+  if (title) {
     const cleanTitle = title.toLowerCase().trim();
-    // Exact or partial title match
+    // Match by exact title, stripped title, or slug substring
     const match = letterboxdMovies.find(m => 
       m.title.toLowerCase().trim() === cleanTitle ||
-      m.title.toLowerCase().trim().replace(/[^a-z0-9]/g, '') === cleanTitle.replace(/[^a-z0-9]/g, '')
+      m.title.toLowerCase().trim().replace(/[^a-z0-9]/g, '') === cleanTitle.replace(/[^a-z0-9]/g, '') ||
+      cleanTitle.includes(m.id) ||
+      m.id.includes(cleanTitle.replace(/\s+/g, '-'))
     );
     if (match && match.posterUrl && !match.posterUrl.includes('images.unsplash.com')) {
       return match.posterUrl;
     }
   }
-  return url || fallbackUnsplash;
+
+  return getDeterministicPoster(title);
 }

@@ -30,55 +30,11 @@ import ClubDiscussions from './components/ClubDiscussions';
 import UserProfile from './components/UserProfile';
 import PollsSection from './components/PollsSection';
 import { CINEMA_QUOTES } from './quotesData';
-import { letterboxdMovies } from './letterboxdDb';
+import { letterboxdMovies, getDeterministicPoster, getPolishedPosterUrl, DISTINCT_FALLBACK_POSTERS } from './letterboxdDb';
 
-const BACKGROUND_POSTERS = [
-  'https://image.tmdb.org/t/p/w500/edv5CZv907Nio6v0Y20CH7LcZCH.jpg', // Inception
-  'https://image.tmdb.org/t/p/w500/d5i676XEVvnmXUZ60709ue6CVv5.jpg', // Pulp Fiction
-  'https://image.tmdb.org/t/p/w500/gEU2Qv6v36g1vOI7V2E269Yv8ks.jpg', // Interstellar
-  'https://image.tmdb.org/t/p/w500/3bhkrj6UGV6yszGeOFWh7mBz0fC.jpg', // The Godfather
-  'https://image.tmdb.org/t/p/w500/7IiTT70Yv66z76RtTYHTU76nTuO.jpg', // Parasite
-  'https://image.tmdb.org/t/p/w500/39GoRSYzpFuJZmW6uOTgDNTyil4.jpg', // Spirited Away
-  'https://image.tmdb.org/t/p/w500/pB8BM76v6g606v9S7Yg0Ywj1v79.jpg', // Fight Club
-  'https://image.tmdb.org/t/p/w500/oAxr6YyPzD81766vUq3ZzU96n2X.jpg', // Whiplash
-  'https://image.tmdb.org/t/p/w500/u76Z60S9gXy98C498X75y8gS2Z9.jpg', // La La Land
-  'https://image.tmdb.org/t/p/w500/gajva26wgoRz69unYv76b8S6pAr.jpg', // Blade Runner 2049
-  'https://image.tmdb.org/t/p/w500/6oom6Q6v7IKB66ue6CgclgclgST.jpg', // Metropolis
-  'https://image.tmdb.org/t/p/w500/l0K57XJAnx8K4N5gO6Xj6Z97M5n.jpg', // Stalker
-  'https://image.tmdb.org/t/p/w500/ve72g09mXZN0fI5gO6Xj6Z97M5n.jpg', // 2001: A Space Odyssey
-  'https://image.tmdb.org/t/p/w500/xYCoH36OofSg6fFvS6oVofYt78p.jpg', // Arrival
-  'https://image.tmdb.org/t/p/w500/i936Vv9mXZN0fI5gO6Xj6Z97M5n.jpg', // In the Mood for Love
-  'https://image.tmdb.org/t/p/w500/ptS60S9gXy98C498X75y8gS2Z9.jpg', // Perfect Days
-  'https://image.tmdb.org/t/p/w500/khunG2g1vOI7V2E269Yv8ks.jpg', // Past Lives
-  'https://image.tmdb.org/t/p/w500/kve207Nio6v0Y20CH7LcZCH.jpg', // Shutter Island
-  'https://image.tmdb.org/t/p/w500/q6y04m2gbybphm6478ifvsq6ov9.jpg', // The Shawshank Redemption
-  'https://image.tmdb.org/t/p/w500/1hRoyzDtpgE97AIu862v7b6S2Z9.jpg', // The Dark Knight
-  'https://image.tmdb.org/t/p/w500/f8ST60S9gXy98C498X75y8gS2Z9.jpg', // The Matrix
-  'https://image.tmdb.org/t/p/w500/arw27XRY7p66zAoZgXy98C498X75.jpg', // Forrest Gump
-  'https://image.tmdb.org/t/p/w500/sF1u40YvVWSUX760f64CFCH6lST.jpg', // Schindler's List
-  'https://image.tmdb.org/t/p/w500/ow3wq89sw8unEXEX91s8s2zovov.jpg', // 12 Angry Men
-  'https://image.tmdb.org/t/p/w500/ob7m6vKshYv42N7C93S8v4vBfHh.jpg', // Goodfellas
-  'https://image.tmdb.org/t/p/w500/rP2hy76vXk916669D7G5mN606vv.jpg', // The Silence of the Lambs
-  'https://image.tmdb.org/t/p/w500/5gjg6p66H918gS2Z9.jpg', // Eternal Sunshine of the Spotless Mind
-  'https://image.tmdb.org/t/p/w500/bZ9866g606v9S7Yg0Ywj1v79.jpg', // The Truman Show
-  'https://image.tmdb.org/t/p/w500/9g5D7G5mN606vv.jpg', // Psycho
-  'https://image.tmdb.org/t/p/w500/8XjK6K8L780v9S6S6S8qFf8FThW.jpg', // Amélie
-  'https://image.tmdb.org/t/p/w500/3K6g606v9S7Yg0Ywj1v79.jpg', // Casablanca
-  'https://image.tmdb.org/t/p/w500/y66z76RtTYHTU76nTuO.jpg'  // Citizen Kane
-];
+const BACKGROUND_POSTERS = DISTINCT_FALLBACK_POSTERS;
 
-const FALLBACK_POSTERS = [
-  'https://images.unsplash.com/photo-1489599849927-2ee91cede3ba?q=80&w=400', // Cinema theatre
-  'https://images.unsplash.com/photo-1517604931442-7e0c8ed2963c?q=80&w=400', // Cinema seats
-  'https://images.unsplash.com/photo-1440404653325-ab127d49abc1?q=80&w=400', // Classic projector
-  'https://images.unsplash.com/photo-1536440136628-849c177e76a1?q=80&w=400', // Movie reel
-  'https://images.unsplash.com/photo-1478720143033-6a97267843d4?q=80&w=400', // Film photography
-  'https://images.unsplash.com/photo-1542204172-e7052809a850?q=80&w=400', // Camera lens
-  'https://images.unsplash.com/photo-1509198397868-475647b2a1e5?q=80&w=400', // Retro neon
-  'https://images.unsplash.com/photo-1598899134739-24c46f58b8c0?q=80&w=400', // Movie slate
-  'https://images.unsplash.com/photo-1513151233558-d860c5398176?q=80&w=400', // Abstract lights
-  'https://images.unsplash.com/photo-1518709268805-4e9042af9f23?q=80&w=400', // Vintage camera
-];
+const FALLBACK_POSTERS = DISTINCT_FALLBACK_POSTERS;
 
 // Use database-level seeding markers to prevent unwanted re-seeding on fresh page load/hard refresh
 
@@ -256,23 +212,21 @@ export default function App() {
       });
     });
 
-    // Merge with high-res standard ones to guarantee a diverse selection of at least 32 posters
-    const combinedPool = Array.from(activeUrls);
+    // Merge with high-res standard ones to guarantee a diverse selection of unique posters
+    const combinedSet = new Set<string>();
+    Array.from(activeUrls).forEach(url => {
+      if (isValidUrl(url)) combinedSet.add(url.trim());
+    });
     BACKGROUND_POSTERS.forEach(url => {
-      if (isValidUrl(url) && !activeUrls.has(url.trim())) {
-        combinedPool.push(url.trim());
-      }
+      if (isValidUrl(url)) combinedSet.add(url.trim());
+    });
+    DISTINCT_FALLBACK_POSTERS.forEach(url => {
+      if (isValidUrl(url)) combinedSet.add(url.trim());
     });
 
-    // Pad with FALLBACK_POSTERS if we still need more to hit 32 unique/semi-unique reliable sources
-    let fallbackIdx = 0;
-    while (combinedPool.length < 32) {
-      const fb = FALLBACK_POSTERS[fallbackIdx % FALLBACK_POSTERS.length];
-      combinedPool.push(fb);
-      fallbackIdx++;
-    }
+    const combinedPool = Array.from(combinedSet);
 
-    // Initialize or update 32 elements
+    // Initialize or update 32 elements ensuring all 32 items are UNIQUE
     setGridPosters(prev => {
       if (prev.length === 32) {
         // If we already have 32 posters, detect newly added active club posters that are not yet displayed
@@ -290,13 +244,9 @@ export default function App() {
         }
         return prev;
       }
-      // Populate 32 slots randomly from the pool on first load for a fresh look every time
+      // Populate 32 slots uniquely from the pool on first load
       const shuffledPool = [...combinedPool].sort(() => Math.random() - 0.5);
-      const initial: string[] = [];
-      for (let i = 0; i < 32; i++) {
-        initial.push(shuffledPool[i % shuffledPool.length]);
-      }
-      return initial;
+      return shuffledPool.slice(0, 32);
     });
 
     // Start a periodic background theater ticker that randomly flips 1 random poster card to represent the living flow of the cinephile community
@@ -1292,11 +1242,11 @@ export default function App() {
         <div className="absolute inset-0 bg-gradient-to-b from-[#0a090d]/15 via-[#0a090d]/70 to-[#0a090d]"></div>
         <div className="absolute inset-0 bg-radial-gradient from-transparent to-[#0a090d]/90"></div>
         
-        {/* Dynamic organic warm theatrical lighting glows */}
-        <div className="absolute top-[-5%] left-1/4 h-[600px] w-[600px] bg-amber-500/12 rounded-full blur-[140px] mix-blend-screen animate-pulse duration-[8000ms]"></div>
-        <div className="absolute top-[35%] right-[5%] h-[700px] w-[700px] bg-purple-600/8 rounded-full blur-[160px] mix-blend-screen"></div>
-        <div className="absolute bottom-[20%] left-[-5%] h-[700px] w-[700px] bg-rose-500/8 rounded-full blur-[160px] mix-blend-screen"></div>
-        <div className="absolute bottom-[-5%] right-[10%] h-[600px] w-[600px] bg-amber-500/8 rounded-full blur-[140px] mix-blend-screen animate-pulse duration-[10000ms]"></div>
+        {/* Ambient lighting backdrop */}
+        <div className="absolute top-[-5%] left-1/4 h-[500px] w-[500px] bg-amber-500/5 rounded-full blur-[160px] pointer-events-none"></div>
+        <div className="absolute top-[35%] right-[5%] h-[600px] w-[600px] bg-purple-600/5 rounded-full blur-[180px] pointer-events-none"></div>
+        <div className="absolute bottom-[20%] left-[-5%] h-[600px] w-[600px] bg-rose-500/5 rounded-full blur-[180px] pointer-events-none"></div>
+        <div className="absolute bottom-[-5%] right-[10%] h-[500px] w-[500px] bg-amber-500/4 rounded-full blur-[160px] pointer-events-none"></div>
       </div>
 
       {/* Upper Navigation Row */}
@@ -1324,7 +1274,7 @@ export default function App() {
                 <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 relative">
                   <div className="max-w-3xl">
                     <div className="inline-flex items-center space-x-1.5 bg-zinc-900/90 border border-zinc-800/80 px-3.5 py-1.5 rounded-full text-xs font-mono text-amber-500 mb-6 font-semibold shadow-inner shadow-amber-500/5">
-                      <span className="h-1.5 w-1.5 rounded-full bg-amber-500 animate-ping"></span>
+                      <span className="h-1.5 w-1.5 rounded-full bg-amber-500"></span>
                       <span>MOVIE CLUB • IISER KOLKATA</span>
                     </div>
 

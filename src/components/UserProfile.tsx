@@ -15,6 +15,7 @@ import {
   UserCheck
 } from 'lucide-react';
 import { User, PastMovie, ClubDiscussion, Recommendation, Poll, UserReview } from '../types';
+import { getPolishedPosterUrl, getDeterministicPoster } from '../letterboxdDb';
 
 interface UserProfileProps {
   currentUser: User | null;
@@ -285,9 +286,13 @@ export default function UserProfile({
                       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
                         <div className="flex items-center space-x-3.5">
                           <img 
-                            src={rev.posterUrl} 
+                            src={getPolishedPosterUrl(rev.movieTitle, rev.posterUrl)} 
                             alt={rev.movieTitle} 
                             className="h-14 w-10 object-cover rounded-md border border-zinc-800 shadow shrink-0" 
+                            referrerPolicy="no-referrer"
+                            onError={(e) => {
+                              e.currentTarget.src = getDeterministicPoster(rev.movieTitle);
+                            }}
                           />
                           <div>
                             <h4 className="text-sm font-serif font-bold text-zinc-100">

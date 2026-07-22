@@ -5,7 +5,7 @@ import {
 } from 'lucide-react';
 import { motion } from 'motion/react';
 import { Screening } from '../types';
-import { letterboxdMovies, LetterboxdMovie, findMovieByUrlOrSlug, parseLetterboxdUrlToMovie, getPolishedPosterUrl } from '../letterboxdDb';
+import { letterboxdMovies, LetterboxdMovie, findMovieByUrlOrSlug, parseLetterboxdUrlToMovie, getPolishedPosterUrl, getDeterministicPoster } from '../letterboxdDb';
 import { compressAndResizeImage } from '../utils/imageCompressor';
 import MovieClubLogo from './MovieClubLogo';
 import { getMovieDetails, searchMovies } from '../utils/movieApi';
@@ -566,7 +566,7 @@ export default function ScreeningSchedule({
                   referrerPolicy="no-referrer"
                   className="w-full h-full object-cover object-center transition-transform duration-700 group-hover:scale-103"
                   onError={(e) => {
-                    e.currentTarget.src = 'https://images.unsplash.com/photo-1489599849927-2ee91cede3ba?q=80&w=600';
+                    e.currentTarget.src = getDeterministicPoster(screening.title);
                   }}
                 />
                 <div className="absolute inset-0 bg-gradient-to-t lg:bg-gradient-to-r from-[#121019] via-[#121019]/40 to-transparent"></div>
@@ -697,7 +697,7 @@ export default function ScreeningSchedule({
                         </>
                       ) : (
                         <>
-                          <Bell className="h-3.5 w-3.5 text-amber-400 animate-pulse" />
+                          <Bell className="h-3.5 w-3.5 text-amber-400" />
                           <span>Remind Me</span>
                         </>
                       )}

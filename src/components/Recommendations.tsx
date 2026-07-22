@@ -6,7 +6,7 @@ import {
 } from 'lucide-react';
 import { motion } from 'motion/react';
 import { Recommendation } from '../types';
-import { letterboxdMovies, LetterboxdMovie, findMovieByUrlOrSlug, parseLetterboxdUrlToMovie, getPolishedPosterUrl } from '../letterboxdDb';
+import { letterboxdMovies, LetterboxdMovie, findMovieByUrlOrSlug, parseLetterboxdUrlToMovie, getPolishedPosterUrl, getDeterministicPoster } from '../letterboxdDb';
 import { compressAndResizeImage } from '../utils/imageCompressor';
 import { getMovieDetails, searchMovies } from '../utils/movieApi';
 
@@ -480,7 +480,7 @@ export default function Recommendations({
                       referrerPolicy="no-referrer"
                       className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                       onError={(e) => {
-                        e.currentTarget.src = 'https://images.unsplash.com/photo-1489599849927-2ee91cede3ba?q=80&w=300';
+                        e.currentTarget.src = getDeterministicPoster(rec.title);
                       }}
                     />
                   </div>
@@ -510,7 +510,7 @@ export default function Recommendations({
                             : 'bg-zinc-900/60 border-zinc-800 hover:border-amber-500/30 text-zinc-400 hover:text-amber-400'
                         }`}
                       >
-                        <ArrowUp className={`h-4.5 w-4.5 ${hasUpvoted ? 'stroke-[3]' : 'animate-bounce'}`} />
+                        <ArrowUp className={`h-4.5 w-4.5 ${hasUpvoted ? 'stroke-[3]' : ''}`} />
                         <span className="text-xs font-extrabold font-mono mt-0.5">{rec.votes.length}</span>
                       </button>
                     </div>

@@ -7,7 +7,7 @@ import { motion, AnimatePresence } from 'motion/react';
 import { Poll, PollMovieOption, User as AppUser } from '../types';
 import { db, sanitizeDoc } from '../firebase';
 import { doc, setDoc, updateDoc, deleteDoc } from 'firebase/firestore';
-import { getPolishedPosterUrl } from '../letterboxdDb';
+import { getPolishedPosterUrl, getDeterministicPoster } from '../letterboxdDb';
 
 const COLLAGE_POSTERS = [
   'https://upload.wikimedia.org/wikipedia/en/2/2e/Inception_%282010%29_theatrical_poster.jpg', // Inception
@@ -523,7 +523,7 @@ export default function PollsSection({
                           🎯 SURVEY CONCLUDED
                         </span>
                       ) : !hasStarted ? (
-                        <span className="flex items-center gap-1 text-[9px] font-bold font-mono tracking-wider uppercase text-cyan-400 bg-cyan-500/5 px-2 py-0.5 rounded border border-cyan-500/10 animate-pulse">
+                        <span className="flex items-center gap-1 text-[9px] font-bold font-mono tracking-wider uppercase text-cyan-400 bg-cyan-500/5 px-2 py-0.5 rounded border border-cyan-500/10">
                           ⏳ STARTS AT SCHEDULED DATE
                         </span>
                       ) : (
@@ -593,7 +593,7 @@ export default function PollsSection({
                             className="w-24 h-36 sm:w-28 sm:h-42 object-cover rounded-lg bg-zinc-900 border border-amber-500/20 shrink-0 shadow-lg"
                             referrerPolicy="no-referrer"
                             onError={(e) => {
-                              e.currentTarget.src = 'https://images.unsplash.com/photo-1489599849927-2ee91cede3ba?q=80&w=300';
+                              e.currentTarget.src = getDeterministicPoster(winner.title);
                             }}
                           />
                           <div className="space-y-2 flex-1">
@@ -648,7 +648,7 @@ export default function PollsSection({
                                   className="w-14 h-20 object-cover rounded bg-zinc-950 border border-zinc-800 shrink-0"
                                   referrerPolicy="no-referrer"
                                   onError={(e) => {
-                                    e.currentTarget.src = 'https://images.unsplash.com/photo-1489599849927-2ee91cede3ba?q=80&w=150';
+                                    e.currentTarget.src = getDeterministicPoster(runner.title);
                                   }}
                                 />
                                 <div className="space-y-1.5 min-w-0 flex-1">
@@ -713,7 +713,7 @@ export default function PollsSection({
                                 className="w-16 h-24 object-cover rounded-md bg-zinc-950 border border-zinc-800/80 shrink-0 shadow"
                                 referrerPolicy="no-referrer"
                                 onError={(e) => {
-                                  e.currentTarget.src = 'https://images.unsplash.com/photo-1489599849927-2ee91cede3ba?q=80&w=200';
+                                  e.currentTarget.src = getDeterministicPoster(option.title);
                                 }}
                               />
                               <div className="min-w-0 space-y-1">

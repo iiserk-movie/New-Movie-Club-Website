@@ -5,7 +5,7 @@ import {
   Edit3, Trash2, Plus, Search, X, AlertCircle, FileSpreadsheet, Upload
 } from 'lucide-react';
 import { PastMovie, UserReview } from '../types';
-import { getPolishedPosterUrl } from '../letterboxdDb';
+import { getPolishedPosterUrl, getDeterministicPoster } from '../letterboxdDb';
 import { syncLetterboxdRSS, extractLetterboxdUsername } from '../utils/movieApi';
 
 const COLLAGE_POSTERS = [
@@ -514,9 +514,6 @@ export default function PastScreenings({
           <h2 className="font-serif text-2xl md:text-3xl lg:text-4xl font-bold text-zinc-100 tracking-tight">
             Past Screenings
           </h2>
-          <p className="text-zinc-400 text-xs md:text-sm font-sans font-medium line-clamp-2 leading-relaxed">
-            Browse our historical screenings archive, student rating distributions, and Letterboxd diary logs synchronized directly from our film society curators.
-          </p>
         </div>
       </div>
 
@@ -594,7 +591,7 @@ export default function PastScreenings({
                         referrerPolicy="no-referrer"
                         className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
                         onError={(e) => {
-                          e.currentTarget.src = 'https://images.unsplash.com/photo-1489599849927-2ee91cede3ba?q=80&w=300';
+                          e.currentTarget.src = getDeterministicPoster(movie.title);
                         }}
                       />
                       <div className="absolute inset-0 bg-gradient-to-t from-zinc-950/80 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity flex items-end p-2">
@@ -640,7 +637,7 @@ export default function PastScreenings({
                     referrerPolicy="no-referrer"
                     className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-102"
                     onError={(e) => {
-                      e.currentTarget.src = 'https://images.unsplash.com/photo-1489599849927-2ee91cede3ba?q=80&w=300';
+                      e.currentTarget.src = getDeterministicPoster(movie.title);
                     }}
                   />
                   <div className="absolute inset-0 bg-gradient-to-t from-zinc-950/20 to-transparent"></div>
@@ -924,7 +921,7 @@ export default function PastScreenings({
               <div className="p-6 border-b border-zinc-900 flex justify-between items-center bg-zinc-950">
                 <div className="flex items-center space-x-3">
                   <div className="h-9 w-9 bg-amber-500/10 rounded-xl flex items-center justify-center text-amber-400 font-bold border border-amber-500/20">
-                    <RefreshCw className="h-4 w-4 animate-pulse" />
+                    <RefreshCw className="h-4 w-4" />
                   </div>
                   <div>
                     <h3 className="text-sm font-bold text-zinc-100 font-mono flex items-center gap-1.5 uppercase tracking-wide">
