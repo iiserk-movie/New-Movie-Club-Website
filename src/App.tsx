@@ -1571,16 +1571,10 @@ export default function App() {
             <h3 className="font-serif text-sm font-semibold tracking-wide text-zinc-300 uppercase">
               Movie Club IISER Kolkata
             </h3>
-            <p className="text-[11px] font-mono text-zinc-500 uppercase tracking-wider">
-              The Film Studies Society • IISER Kolkata
-            </p>
           </div>
 
           <div className="flex flex-wrap items-center justify-center gap-x-6 gap-y-2 text-xs font-mono text-zinc-500">
             <a href="https://letterboxd.com/ikmc/diary/" target="_blank" rel="noreferrer" className="hover:text-amber-400 transition-colors">Letterboxd Diary</a>
-            <span className="text-zinc-800">•</span>
-            <a href="https://iiserkol.ac.in" target="_blank" rel="noreferrer" className="hover:text-amber-400 transition-colors">IISER Kolkata Main</a>
-            <span className="text-zinc-800">•</span>
             <span className="text-zinc-600">M.N. Saha Auditorium, Ground Floor, TRC building, Mohanpur, West Bengal 741246</span>
           </div>
 
