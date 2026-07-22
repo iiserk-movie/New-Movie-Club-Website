@@ -1573,9 +1573,9 @@ export default function App() {
             </h3>
           </div>
 
-          <div className="flex flex-wrap items-center justify-center gap-x-6 gap-y-2 text-xs font-mono text-zinc-500">
-            <a href="https://letterboxd.com/ikmc/diary/" target="_blank" rel="noreferrer" className="hover:text-amber-400 transition-colors">Letterboxd Diary</a>
-            <span className="text-zinc-600">M.N. Saha Auditorium, Ground Floor, TRC building, Mohanpur, West Bengal 741246</span>
+          <div className="flex flex-col items-center justify-center text-center gap-1.5 text-xs font-mono text-zinc-500">
+            <a href="https://letterboxd.com/ikmc/diary/" target="_blank" rel="noreferrer" className="hover:text-amber-400 transition-colors font-medium">Letterboxd Diary</a>
+            <span className="text-zinc-600 text-[11px]">M.N. Saha Auditorium, Ground Floor, TRC building, Mohanpur, West Bengal 741246</span>
           </div>
 
           <div className="text-center md:text-right">
