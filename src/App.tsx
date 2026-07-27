@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef, useMemo } from 'react';
+import React, { useState, useEffect, useRef, useMemo, useCallback } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { 
   Film, Sparkles, MapPin, Users, Clapperboard, Calendar, Clock, Play, Bell, ChevronRight, ChevronLeft, ExternalLink, MessageSquare, Volume2, X, ChevronDown, ChevronUp, ThumbsUp, Check, Instagram
@@ -58,57 +58,51 @@ const isScreeningFullyPast = (dateStr: string, timeStr: string): boolean => {
 };
 
 interface BackgroundPosterItemProps {
+  key?: string;
   src: string;
   index: number;
-  key?: React.Key;
+  onError?: (failedUrl: string) => void;
 }
 
-function BackgroundPosterItem({ src, index }: BackgroundPosterItemProps) {
-  const getInitialSrc = (inputSrc: string) => {
-    if (!inputSrc || typeof inputSrc !== 'string' || !inputSrc.trim().startsWith('http')) {
-      return DISTINCT_FALLBACK_POSTERS[index % DISTINCT_FALLBACK_POSTERS.length];
-    }
-    return inputSrc;
-  };
-
-  const [currentSrc, setCurrentSrc] = useState(() => getInitialSrc(src));
-  const [fade, setFade] = useState(true);
+function BackgroundPosterItem({ src, index, onError }: BackgroundPosterItemProps) {
+  const [isLoaded, setIsLoaded] = useState(false);
 
   useEffect(() => {
-    const nextSrc = getInitialSrc(src);
-    if (nextSrc !== currentSrc) {
-      setFade(false);
-      const timeout = setTimeout(() => {
-        setCurrentSrc(nextSrc);
-        setFade(true);
-      }, 600);
-      return () => clearTimeout(timeout);
-    }
+    setIsLoaded(false);
   }, [src]);
 
   const handleError = () => {
-    const fallback = DISTINCT_FALLBACK_POSTERS[index % DISTINCT_FALLBACK_POSTERS.length];
-    if (currentSrc !== fallback) {
-      setCurrentSrc(fallback);
-      setFade(true);
+    setIsLoaded(false);
+    if (onError) {
+      onError(src);
     }
+  };
+
+  const handleLoad = () => {
+    setIsLoaded(true);
   };
 
   return (
     <div 
-      className="aspect-[2/3] w-full rounded-2xl bg-zinc-900/40 border border-zinc-800/30 overflow-hidden shadow-2xl transition-transform duration-700 relative"
+      className="aspect-[2/3] w-full rounded-2xl bg-zinc-900/80 border border-zinc-800/40 overflow-hidden shadow-2xl transition-all duration-700 relative flex items-center justify-center"
       style={{
         transform: `translateY(${(index % 4) * 10}px) rotate(${(index % 2 === 0 ? 1 : -1) * (index % 3 + 1) * 1.2}deg)`
       }}
     >
+      {/* Cinematic fallback placeholder container - ensures panel is never empty */}
+      <div className="absolute inset-0 bg-gradient-to-br from-zinc-900 via-zinc-950 to-black flex flex-col items-center justify-center p-2 text-center select-none">
+        <Film className="h-5 w-5 text-amber-500/30 mb-1" />
+      </div>
+
       <img 
-        src={currentSrc} 
+        src={src} 
         alt="" 
-        className="w-full h-full object-cover transition-opacity duration-700"
+        className="w-full h-full object-cover transition-opacity duration-700 relative z-10"
         style={{
-          opacity: fade ? 1 : 0.25
+          opacity: isLoaded ? 1 : 0
         }}
         onError={handleError}
+        onLoad={handleLoad}
         loading="lazy"
         referrerPolicy="no-referrer"
       />
@@ -175,72 +169,86 @@ export default function App() {
     return merged;
   }, [screenings, pastMovies]);
 
-  // Dynamic Background Posters state representing real active club selections changing organically over time
-  const [gridPosters, setGridPosters] = useState<string[]>([]);
+  // Dynamic Background Posters state ensuring 100% strictly unique posters across grid with zero duplicates
+  const [masterPool, setMasterPool] = useState<string[]>(() => DISTINCT_FALLBACK_POSTERS);
+  const [gridPosters, setGridPosters] = useState<string[]>(() => DISTINCT_FALLBACK_POSTERS.slice(0, 32));
+
+  const handlePosterError = useCallback((failedUrl: string) => {
+    setGridPosters(prev => {
+      if (!prev.includes(failedUrl)) return prev;
+      const currentSet = new Set(prev);
+      // Find candidate URLs from masterPool that are NOT currently shown anywhere in grid
+      const available = masterPool.filter(url => url !== failedUrl && !currentSet.has(url));
+      if (available.length === 0) {
+        const fallbackAvailable = DISTINCT_FALLBACK_POSTERS.filter(url => url !== failedUrl && !currentSet.has(url));
+        if (fallbackAvailable.length === 0) return prev;
+        const replacement = fallbackAvailable[Math.floor(Math.random() * fallbackAvailable.length)];
+        return prev.map(u => (u === failedUrl ? replacement : u));
+      }
+      const replacement = available[Math.floor(Math.random() * available.length)];
+      return prev.map(u => (u === failedUrl ? replacement : u));
+    });
+  }, [masterPool]);
 
   useEffect(() => {
     // Collect all valid unique poster URLs across our active collections & database catalogs
     const poolSet = new Set<string>();
     
-    const isValidUrl = (url: any): url is string => {
-      return !!url && typeof url === 'string' && url.trim().startsWith('http');
+    const isValidPosterUrl = (url: any): url is string => {
+      return !!url && typeof url === 'string' && url.trim().startsWith('http') && !url.includes('images.unsplash.com');
     };
 
-    // 1. Include full Letterboxd movie catalog
-    letterboxdMovies.forEach(m => {
-      if (isValidUrl(m.posterUrl)) poolSet.add(m.posterUrl.trim());
+    // 1. Include DISTINCT_FALLBACK_POSTERS
+    DISTINCT_FALLBACK_POSTERS.forEach(url => {
+      if (isValidPosterUrl(url)) poolSet.add(url.trim());
     });
 
-    // 2. Include DISTINCT_FALLBACK_POSTERS
-    DISTINCT_FALLBACK_POSTERS.forEach(url => {
-      if (isValidUrl(url)) poolSet.add(url.trim());
+    // 2. Include full Letterboxd movie catalog using getPolishedPosterUrl
+    letterboxdMovies.forEach(m => {
+      const polished = getPolishedPosterUrl(m.title, m.posterUrl);
+      if (isValidPosterUrl(polished)) poolSet.add(polished.trim());
     });
 
     // 3. Include active screenings, past screenings, recommendations, and polls
     screenings.forEach(s => {
       const polished = getPolishedPosterUrl(s.title, s.posterUrl);
-      if (isValidUrl(polished)) poolSet.add(polished.trim());
+      if (isValidPosterUrl(polished)) poolSet.add(polished.trim());
     });
     
     computedPastMovies.forEach(pm => {
       const polished = getPolishedPosterUrl(pm.title, pm.posterUrl);
-      if (isValidUrl(polished)) poolSet.add(polished.trim());
+      if (isValidPosterUrl(polished)) poolSet.add(polished.trim());
     });
     
     recommendations.forEach(r => {
       const polished = getPolishedPosterUrl(r.title, r.posterUrl);
-      if (isValidUrl(polished)) poolSet.add(polished.trim());
+      if (isValidPosterUrl(polished)) poolSet.add(polished.trim());
     });
 
     polls.forEach(p => {
       p.options?.forEach(o => {
         if (o.posterUrl) {
           const polished = getPolishedPosterUrl(o.text, o.posterUrl);
-          if (isValidUrl(polished)) poolSet.add(polished.trim());
+          if (isValidPosterUrl(polished)) poolSet.add(polished.trim());
         }
       });
     });
 
-    const masterPool = Array.from(poolSet);
-    const GRID_SIZE = 40;
+    const fullPool = Array.from(poolSet);
+    setMasterPool(fullPool);
 
-    // Initialize or update GRID_SIZE elements ensuring ALL items shown in grid are strictly UNIQUE
+    const GRID_SIZE = 32;
+
     setGridPosters(prev => {
-      if (prev.length === GRID_SIZE) {
-        // Check if any newly added active poster is not yet shown in the grid
-        const currentSet = new Set(prev);
-        const unshownActive = masterPool.filter(url => !currentSet.has(url));
-        if (unshownActive.length > 0) {
-          const next = [...prev];
-          const randomSlot = Math.floor(Math.random() * GRID_SIZE);
-          next[randomSlot] = unshownActive[Math.floor(Math.random() * unshownActive.length)];
-          return next;
-        }
-        return prev;
+      const currentValid = prev.filter(url => poolSet.has(url));
+      const usedSet = new Set(currentValid);
+
+      if (currentValid.length === GRID_SIZE && usedSet.size === GRID_SIZE) {
+        return currentValid;
       }
 
-      // First initialization: shuffle masterPool and pick GRID_SIZE 100% UNIQUE poster URLs
-      const shuffled = [...masterPool].sort(() => Math.random() - 0.5);
+      // Pick GRID_SIZE 100% strictly UNIQUE posters
+      const shuffled = [...fullPool].sort(() => Math.random() - 0.5);
       const initial: string[] = [];
       const used = new Set<string>();
 
@@ -252,17 +260,6 @@ export default function App() {
         }
       }
 
-      // Fill remaining slots if needed from DISTINCT_FALLBACK_POSTERS guaranteed unique
-      if (initial.length < GRID_SIZE) {
-        for (const url of DISTINCT_FALLBACK_POSTERS) {
-          if (initial.length >= GRID_SIZE) break;
-          if (!used.has(url)) {
-            initial.push(url);
-            used.add(url);
-          }
-        }
-      }
-
       return initial;
     });
 
@@ -271,8 +268,8 @@ export default function App() {
       setGridPosters(current => {
         if (current.length < GRID_SIZE) return current;
         const currentSet = new Set(current);
-        // Find posters in masterPool that are NOT currently displayed anywhere in the grid
-        const unusedInGrid = masterPool.filter(url => !currentSet.has(url));
+        // Find posters in fullPool that are NOT currently displayed anywhere in the grid
+        const unusedInGrid = fullPool.filter(url => !currentSet.has(url));
         if (unusedInGrid.length === 0) return current;
 
         const next = [...current];
@@ -1248,15 +1245,14 @@ export default function App() {
       <div className="fixed inset-0 pointer-events-none overflow-hidden z-0 select-none">
         {/* Subtle grid of hand-selected cinematic poster frames representing real human cinephile soul */}
         <div className="absolute inset-0 grid grid-cols-2 sm:grid-cols-4 md:grid-cols-6 lg:grid-cols-8 gap-6 p-6 opacity-[0.24] filter saturate-[0.85] contrast-[1.1]">
-          {(gridPosters.length === 40 ? gridPosters : DISTINCT_FALLBACK_POSTERS.slice(0, 40)).map((imgUrl, i) => {
-            return (
-              <BackgroundPosterItem 
-                key={i} 
-                src={imgUrl} 
-                index={i} 
-              />
-            );
-          })}
+          {gridPosters.map((imgUrl, i) => (
+            <BackgroundPosterItem 
+              key={`${i}-${imgUrl}`} 
+              src={imgUrl} 
+              index={i} 
+              onError={handlePosterError}
+            />
+          ))}
         </div>
         {/* Cinematic gradient overlay to fade the poster grid elegantly and ensure high contrast readability */}
         <div className="absolute inset-0 bg-gradient-to-b from-[#0a090d]/15 via-[#0a090d]/70 to-[#0a090d]"></div>

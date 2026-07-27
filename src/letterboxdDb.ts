@@ -402,7 +402,7 @@ const realMoviePosters: Record<string, string> = {
 
 export const DISTINCT_FALLBACK_POSTERS = [
   "https://upload.wikimedia.org/wikipedia/en/b/bc/Interstellar_film_poster.jpg",
-  "https://upload.wikimedia.org/wikipedia/en/5/53/Parasite_%282019_film%29_poster.gif",
+  "https://upload.wikimedia.org/wikipedia/en/5/53/Parasite_%282019_film%29_poster.jpg",
   "https://upload.wikimedia.org/wikipedia/en/1/11/Everything_Everywhere_All_at_Once.png",
   "https://upload.wikimedia.org/wikipedia/en/0/01/Whiplash_poster.jpg",
   "https://upload.wikimedia.org/wikipedia/en/d/db/Spirited_Away_Japanese_poster.png",
@@ -440,7 +440,17 @@ export const DISTINCT_FALLBACK_POSTERS = [
   "https://upload.wikimedia.org/wikipedia/en/0/00/Mulholland_Drive_%28poster%29.jpg",
   "https://upload.wikimedia.org/wikipedia/en/5/53/Amelie_poster.jpg",
   "https://upload.wikimedia.org/wikipedia/en/3/33/Taxi_Driver_%281976_film_poster%29.jpg",
-  "https://upload.wikimedia.org/wikipedia/en/1/10/Cid_de_Deus.jpg"
+  "https://upload.wikimedia.org/wikipedia/en/9/93/Eternal_Sunshine_of_the_Spotless_Mind.png",
+  "https://upload.wikimedia.org/wikipedia/en/9/9f/Matrix_poster.jpg",
+  "https://upload.wikimedia.org/wikipedia/en/c/c1/The_Shining_%281980%29_U.K._release_poster.jpg",
+  "https://upload.wikimedia.org/wikipedia/en/c/c0/Psycho_%281960%29_theatrical_poster.jpg",
+  "https://upload.wikimedia.org/wikipedia/commons/c/c0/CasablancaPoster-root.jpg",
+  "https://upload.wikimedia.org/wikipedia/en/c/c3/Alien_movie_poster.jpg",
+  "https://upload.wikimedia.org/wikipedia/en/1/18/Seven_Samurai_poster.jpg",
+  "https://upload.wikimedia.org/wikipedia/en/4/48/Goodfellas.jpg",
+  "https://upload.wikimedia.org/wikipedia/en/7/70/Ran_poster.jpg",
+  "https://upload.wikimedia.org/wikipedia/commons/b/ba/Citizen_Kane_poster_%281941%29.jpg",
+  "https://upload.wikimedia.org/wikipedia/en/c/c2/Modern_Times_poster.jpg"
 ];
 
 export function getDeterministicPoster(identifier: string): string {
