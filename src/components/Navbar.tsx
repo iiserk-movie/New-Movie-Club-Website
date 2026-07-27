@@ -446,47 +446,82 @@ export default function Navbar({
 
   return (
     <>
-      <header className="sticky top-0 z-40 w-full border-b border-zinc-900/80 bg-[#12111a]/95 backdrop-blur-md shadow-lg shadow-black/30">
-        <div className="mx-auto flex max-w-7xl h-20 items-center justify-between px-4 sm:px-6 lg:px-8">
+      <header className="sticky top-0 z-40 w-full border-b border-zinc-800/80 bg-[#12111a]/98 backdrop-blur-lg shadow-xl shadow-black/40">
+        <div className="mx-auto flex max-w-7xl min-h-[84px] py-3 items-center justify-between px-4 sm:px-6 lg:px-8">
           {/* Logo Brand */}
-          <div className="flex items-center space-x-3 cursor-pointer" onClick={() => setActiveTab('schedule')}>
-            <div className="relative flex h-11 w-11 items-center justify-center">
-              <MovieClubLogo className="h-11 w-11" />
-              <div className="absolute -top-0.5 -right-0.5 flex h-2.5 w-2.5 rounded-full bg-amber-500 animate-pulse"></div>
+          <div className="flex items-center space-x-3.5 cursor-pointer group" onClick={() => setActiveTab('schedule')}>
+            <div className="relative flex h-12 w-12 items-center justify-center shrink-0 group-hover:scale-105 transition-transform duration-300">
+              <MovieClubLogo className="h-12 w-12" />
+              <div className="absolute -top-0.5 -right-0.5 flex h-3 w-3 rounded-full bg-amber-500 animate-pulse ring-2 ring-zinc-950"></div>
             </div>
             <div>
-              <h1 className="font-serif text-lg font-extrabold tracking-wide text-transparent bg-clip-text bg-gradient-to-r from-zinc-100 via-amber-200 to-amber-400 sm:text-xl drop-shadow-[0_2px_8px_rgba(245,158,11,0.2)] uppercase">
+              <h1 className="font-serif text-xl sm:text-2xl font-black tracking-wide text-transparent bg-clip-text bg-gradient-to-r from-zinc-100 via-amber-200 to-amber-400 drop-shadow-[0_2px_10px_rgba(245,158,11,0.25)] uppercase">
                 Movie Club
               </h1>
-              <p className="font-mono text-[10px] tracking-wider text-amber-500/80 uppercase">
+              <p className="font-mono text-xs tracking-widest text-amber-400/90 font-bold uppercase">
                 IISER Kolkata
               </p>
             </div>
           </div>
 
           {/* Navigation Items */}
-          <nav className="hidden md:flex items-center bg-[#181622]/60 border border-zinc-900/60 p-1 rounded-xl shadow-inner shadow-black/40">
+          <nav className="hidden lg:flex items-center bg-[#181628]/80 border border-zinc-800/80 p-1.5 rounded-2xl shadow-lg shadow-black/50 backdrop-blur-md gap-1">
             {[
-              { id: 'schedule', label: 'Screenings' },
-              { id: 'past', label: 'Past Screenings' },
-              { id: 'discussions', label: 'Discussions' },
-              { id: 'recommendations', label: 'Recommendations' },
-              { id: 'polls', label: 'Polls' },
-              ...(currentUser ? [{ id: 'profile', label: 'My Profile' }] : [])
-            ].map((tab) => (
-              <button
-                key={tab.id}
-                id={`tab-${tab.id}`}
-                onClick={() => setActiveTab(tab.id)}
-                className={`relative px-4 py-1.5 rounded-lg text-xs font-semibold tracking-wide uppercase transition-all duration-300 cursor-pointer ${
-                  activeTab === tab.id
-                    ? 'text-amber-400 bg-zinc-900 shadow-md shadow-black/50 border border-zinc-800/40 font-bold'
-                    : 'text-zinc-400 hover:text-zinc-200 hover:bg-zinc-900/30 border border-transparent'
-                }`}
-              >
-                {tab.label}
-              </button>
-            ))}
+              { id: 'schedule', label: 'Screenings', icon: Calendar },
+              { id: 'past', label: 'Past Screenings', icon: History },
+              { id: 'discussions', label: 'Discussions', icon: MessageSquare },
+              { id: 'recommendations', label: 'Recommendations', icon: Sparkles },
+              { id: 'polls', label: 'Polls', icon: BarChart2 },
+              ...(currentUser ? [{ id: 'profile', label: 'My Profile', icon: UserIcon }] : [])
+            ].map((tab) => {
+              const IconComponent = tab.icon;
+              const isActive = activeTab === tab.id;
+              return (
+                <button
+                  key={tab.id}
+                  id={`tab-${tab.id}`}
+                  onClick={() => setActiveTab(tab.id)}
+                  className={`relative px-4 py-2.5 rounded-xl text-xs sm:text-sm font-semibold tracking-wider uppercase transition-all duration-300 flex items-center gap-2 cursor-pointer ${
+                    isActive
+                      ? 'text-amber-300 bg-zinc-900/95 shadow-lg shadow-amber-500/10 border border-amber-500/30 font-bold scale-[1.02]'
+                      : 'text-zinc-300 hover:text-white hover:bg-zinc-800/60 border border-transparent'
+                  }`}
+                >
+                  <IconComponent className={`h-4 w-4 ${isActive ? 'text-amber-400' : 'text-zinc-400'}`} />
+                  <span>{tab.label}</span>
+                </button>
+              );
+            })}
+          </nav>
+
+          {/* Medium screen simplified navigation pills */}
+          <nav className="hidden md:flex lg:hidden items-center bg-[#181628]/80 border border-zinc-800/80 p-1 rounded-xl shadow-lg shadow-black/50 gap-0.5">
+            {[
+              { id: 'schedule', label: 'Screenings', icon: Calendar },
+              { id: 'past', label: 'Past', icon: History },
+              { id: 'discussions', label: 'Forum', icon: MessageSquare },
+              { id: 'recommendations', label: 'Wishlist', icon: Sparkles },
+              { id: 'polls', label: 'Polls', icon: BarChart2 },
+              ...(currentUser ? [{ id: 'profile', label: 'Profile', icon: UserIcon }] : [])
+            ].map((tab) => {
+              const IconComponent = tab.icon;
+              const isActive = activeTab === tab.id;
+              return (
+                <button
+                  key={tab.id}
+                  id={`tab-${tab.id}`}
+                  onClick={() => setActiveTab(tab.id)}
+                  className={`relative px-3 py-2 rounded-lg text-xs font-semibold tracking-wider uppercase transition-all duration-300 flex items-center gap-1.5 cursor-pointer ${
+                    isActive
+                      ? 'text-amber-300 bg-zinc-900 shadow-md border border-amber-500/30 font-bold'
+                      : 'text-zinc-300 hover:text-white hover:bg-zinc-800/60 border border-transparent'
+                  }`}
+                >
+                  <IconComponent className={`h-3.5 w-3.5 ${isActive ? 'text-amber-400' : 'text-zinc-400'}`} />
+                  <span>{tab.label}</span>
+                </button>
+              );
+            })}
           </nav>
 
           {/* User Session Auth Actions */}
@@ -494,9 +529,9 @@ export default function Navbar({
             {/* Quick Admin Toggler for ease of editing schedules */}
             {adminMode && (
               <div className="flex items-center space-x-2">
-                <div className="flex items-center space-x-1.5 bg-amber-500/10 text-amber-400 border border-amber-500/20 px-2.5 py-1.5 rounded-lg text-xs font-mono">
+                <div className="flex items-center space-x-1.5 bg-amber-500/10 text-amber-400 border border-amber-500/20 px-3 py-2 rounded-xl text-xs font-mono font-semibold">
                   <ShieldCheck className="h-4 w-4 text-amber-500" />
-                  <span className="hidden sm:inline">Admin Mode Active</span>
+                  <span className="hidden sm:inline">Admin Active</span>
                   <button
                     onClick={() => {
                       setAdminMode(false);
@@ -516,27 +551,27 @@ export default function Navbar({
                     setGeminiKeyInput(getLocalGeminiKey());
                     setShowGeminiModal(true);
                   }}
-                  className="bg-zinc-905/60 border border-zinc-800 text-zinc-400 hover:text-amber-400 hover:border-amber-500/40 p-1.5 rounded-lg text-xs font-mono transition-colors flex items-center justify-center cursor-pointer"
+                  className="bg-zinc-900 border border-zinc-700 text-zinc-300 hover:text-amber-400 hover:border-amber-500/50 p-2 rounded-xl text-xs font-mono transition-colors flex items-center justify-center cursor-pointer shadow-md"
                   title="Configure local Gemini API key (Required for GitHub Pages hosting)"
                 >
-                  <Settings className="h-3.5 w-3.5" />
+                  <Settings className="h-4 w-4" />
                 </button>
               </div>
             )}
 
             {currentUser ? (
-              <div className="flex items-center space-x-3 pl-2 border-l border-zinc-800">
+              <div className="flex items-center space-x-3 pl-3 border-l border-zinc-800">
                 <div className="hidden sm:block text-right">
-                  <p className="text-xs font-medium text-zinc-200 text-ellipsis max-w-[120px] overflow-hidden">
+                  <p className="text-xs font-semibold text-zinc-100 text-ellipsis max-w-[130px] overflow-hidden">
                     {currentUser.name}
                   </p>
-                  <p className="text-[10px] text-zinc-500 font-mono">
+                  <p className="text-[10px] text-amber-400/80 font-mono font-medium">
                     {currentUser.role === 'admin' ? 'Club Coordinator' : 'IISER-K Member'}
                   </p>
                 </div>
                 <div 
                   onClick={() => setShowProfileDropdown(!showProfileDropdown)}
-                  className="relative h-9 w-9 rounded-full bg-zinc-800 border border-zinc-700 flex items-center justify-center text-amber-400 font-semibold cursor-pointer group"
+                  className="relative h-10 w-10 rounded-full bg-zinc-800 border-2 border-zinc-700 hover:border-amber-500/60 flex items-center justify-center text-amber-400 font-bold cursor-pointer group shadow-lg transition-colors"
                 >
                   {currentUser.photoURL ? (
                     <img 
@@ -549,9 +584,9 @@ export default function Navbar({
                       }}
                     />
                   ) : (
-                    <span>{currentUser.name.charAt(0).toUpperCase()}</span>
+                    <span className="text-sm">{currentUser.name.charAt(0).toUpperCase()}</span>
                   )}
-                  <div className="absolute right-0 bottom-0 h-2.5 w-2.5 rounded-full bg-green-500 border border-zinc-950"></div>
+                  <div className="absolute right-0 bottom-0 h-3 w-3 rounded-full bg-emerald-500 border-2 border-zinc-950"></div>
                   
                   {showProfileDropdown && (
                     <div 
@@ -566,11 +601,11 @@ export default function Navbar({
                   {/* Hover dropdown simulated plus touch toggle support */}
                   <div 
                     onClick={(e) => e.stopPropagation()}
-                    className={`absolute right-0 top-10 bg-zinc-900 border border-zinc-800 rounded-lg py-1.5 px-2 w-48 text-left shadow-xl ${
+                    className={`absolute right-0 top-12 bg-zinc-900 border border-zinc-800 rounded-xl py-2 px-2.5 w-52 text-left shadow-2xl ${
                       showProfileDropdown ? 'block' : 'hidden md:group-hover:block'
                     } z-50 animate-fadeIn`}
                   >
-                    <p className="text-[11px] font-mono text-zinc-400 border-b border-zinc-800 pb-1.5 mb-1.5 truncate">
+                    <p className="text-[11px] font-mono text-zinc-400 border-b border-zinc-800 pb-2 mb-2 truncate">
                       {currentUser.email}
                     </p>
                     <button
@@ -578,9 +613,9 @@ export default function Navbar({
                         setActiveTab('profile');
                         setShowProfileDropdown(false);
                       }}
-                      className="w-full flex items-center space-x-2 text-zinc-350 hover:bg-zinc-800 p-1.5 rounded text-xs mb-1 transition-colors cursor-pointer"
+                      className="w-full flex items-center space-x-2 text-zinc-200 hover:bg-zinc-800 p-2 rounded-lg text-xs mb-1 transition-colors cursor-pointer"
                     >
-                      <UserIcon className="h-3.5 w-3.5 text-amber-500 shrink-0" />
+                      <UserIcon className="h-4 w-4 text-amber-500 shrink-0" />
                       <span>My Profile</span>
                     </button>
                     <button
@@ -589,9 +624,9 @@ export default function Navbar({
                         setShowEditProfilePic(true);
                         setShowProfileDropdown(false);
                       }}
-                      className="w-full flex items-center space-x-2 text-zinc-300 hover:bg-zinc-800 p-1.5 rounded text-xs mb-1 transition-colors"
+                      className="w-full flex items-center space-x-2 text-zinc-200 hover:bg-zinc-800 p-2 rounded-lg text-xs mb-1 transition-colors cursor-pointer"
                     >
-                      <Camera className="h-3.5 w-3.5 text-amber-500 shrink-0" />
+                      <Camera className="h-4 w-4 text-amber-500 shrink-0" />
                       <span>Update Avatar</span>
                     </button>
                     <button
@@ -599,9 +634,9 @@ export default function Navbar({
                         handleSignOut();
                         setShowProfileDropdown(false);
                       }}
-                      className="w-full flex items-center space-x-2 text-red-400 hover:bg-zinc-855 p-1.5 rounded text-xs transition-colors"
+                      className="w-full flex items-center space-x-2 text-red-400 hover:bg-zinc-800 p-2 rounded-lg text-xs transition-colors cursor-pointer"
                     >
-                      <LogOut className="h-3.5 w-3.5 shrink-0" />
+                      <LogOut className="h-4 w-4 shrink-0" />
                       <span>Sign Out</span>
                     </button>
                   </div>
@@ -609,7 +644,7 @@ export default function Navbar({
                 <button
                   onClick={handleSignOut}
                   id="btn-signout"
-                  className="p-2 text-zinc-500 hover:text-red-400 rounded-lg transition-colors hidden sm:inline-block"
+                  className="p-2.5 text-zinc-400 hover:text-red-400 hover:bg-zinc-900 rounded-xl transition-colors hidden sm:inline-block cursor-pointer"
                   title="Sign Out"
                 >
                   <LogOut className="h-4 w-4" />
@@ -619,9 +654,9 @@ export default function Navbar({
               <button
                 onClick={() => setShowLoginModal(true)}
                 id="btn-login-trigger"
-                className="flex items-center space-x-2 bg-amber-500 hover:bg-amber-600 text-zinc-950 px-4 py-2 h-10 rounded-lg text-sm font-semibold transition-colors shadow-lg shadow-amber-500/10 cursor-pointer"
+                className="flex items-center space-x-2 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-zinc-950 px-5 py-2.5 h-11 rounded-xl text-sm font-bold transition-all shadow-lg shadow-amber-500/20 active:scale-95 cursor-pointer"
               >
-                <UserIcon className="h-4 w-4" />
+                <UserIcon className="h-4 w-4 stroke-[2.5]" />
                 <span>Login</span>
               </button>
             )}
@@ -629,126 +664,180 @@ export default function Navbar({
             {/* Mobile Hamburger toggle button */}
             <button
               onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-              className="md:hidden flex items-center justify-center p-2 rounded-xl text-zinc-400 hover:text-white hover:bg-zinc-900 border border-zinc-800 focus:outline-none focus:ring-1 focus:ring-amber-500 cursor-pointer transition-all"
+              className="md:hidden flex items-center justify-center p-2.5 rounded-xl text-zinc-200 hover:text-white hover:bg-zinc-800 border border-zinc-700/80 focus:outline-none focus:ring-1 focus:ring-amber-500 cursor-pointer transition-all shadow-md"
               title="Toggle Menu"
             >
               {isMobileMenuOpen ? (
-                <X className="h-5 w-5 stroke-[2.5]" />
+                <X className="h-6 w-6 stroke-[2.5]" />
               ) : (
-                <Menu className="h-5 w-5 stroke-[2.5]" />
+                <Menu className="h-6 w-6 stroke-[2.5]" />
               )}
             </button>
           </div>
         </div>
       </header>
 
-      {/* Mobile Beautiful Side Menu Bar Drawer */}
+      {/* Mobile Side Menu Bar Drawer */}
       {isMobileMenuOpen && (
-        <div className="fixed inset-0 z-55 md:hidden">
+        <div className="fixed inset-0 z-50 md:hidden">
           {/* Dark Glass Overlay */}
           <div 
-            className="fixed inset-0 bg-black/75 backdrop-blur-[6px] transition-opacity duration-300"
-            style={{ backdropFilter: 'blur(6px)', WebkitBackdropFilter: 'blur(6px)' }}
+            className="fixed inset-0 bg-black/80 backdrop-blur-md transition-opacity duration-300"
             onClick={() => setIsMobileMenuOpen(false)}
           />
-          {/* Side Drawer Body with solid translucent glass styling & safe hardware-accelerated blur support */}
+          {/* Side Drawer Body */}
           <div 
-            className="fixed right-0 top-0 bottom-0 w-80 max-w-[85vw] border-l border-zinc-800/80 p-6 flex flex-col space-y-6 shadow-2xl transition-all duration-300 ease-out z-50 text-zinc-100"
-            style={{
-              backgroundColor: 'rgba(8, 9, 20, 0.96)',
-              backdropFilter: 'blur(20px)',
-              WebkitBackdropFilter: 'blur(20px)',
-            }}
+            className="fixed right-0 top-0 bottom-0 w-80 max-w-[85vw] border-l border-zinc-800 p-6 flex flex-col justify-between shadow-2xl transition-all duration-300 ease-out z-50 text-zinc-100 bg-[#0c0a14]/98 backdrop-blur-xl"
           >
-            <div className="flex items-center justify-between border-b border-zinc-900/60 pb-5">
-              <div className="flex items-center space-x-3">
-                <div className="relative flex h-9 w-9 items-center justify-center shrink-0">
-                  <MovieClubLogo className="h-full w-full" />
-                </div>
-                <div>
-                  <span className="font-serif text-sm font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-zinc-100 to-amber-400 uppercase tracking-wide block">
-                    Movie Club
-                  </span>
-                  <span className="font-mono text-[9px] text-amber-500/80 block uppercase tracking-wider font-semibold">
-                    IISER Kolkata
-                  </span>
-                </div>
-              </div>
-              <button
-                onClick={() => setIsMobileMenuOpen(false)}
-                className="p-1.5 text-zinc-500 hover:text-zinc-200 hover:bg-zinc-900/40 rounded-xl transition-all cursor-pointer"
-              >
-                <X className="h-5 w-5" />
-              </button>
-            </div>
-
-            {/* Navigation Tabs List */}
-            <div className="flex flex-col space-y-2 flex-grow overflow-y-auto no-scrollbar py-2">
-              {[
-                { id: 'schedule', label: 'Upcoming Screenings', icon: Calendar },
-                { id: 'past', label: 'Past Screenings', icon: History },
-                { id: 'discussions', label: 'Club Discussions', icon: MessageSquare },
-                { id: 'recommendations', label: 'Recommendations', icon: Sparkles },
-                { id: 'polls', label: 'Interactive Polls', icon: BarChart2 },
-                ...(currentUser ? [{ id: 'profile', label: 'My Member Profile', icon: UserIcon }] : [])
-              ].map((tab) => {
-                const Icon = tab.icon;
-                return (
-                  <button
-                    key={tab.id}
-                    onClick={() => {
-                      setActiveTab(tab.id);
-                      setIsMobileMenuOpen(false);
-                    }}
-                    className={`w-full text-left px-4 py-3.5 rounded-xl text-xs font-semibold tracking-wide transition-all flex items-center space-x-4 border ${
-                      activeTab === tab.id
-                        ? 'text-amber-400 bg-amber-500/10 border-amber-500/25 shadow-[0_2px_12px_rgba(245,158,11,0.05)]'
-                        : 'text-zinc-350 hover:text-zinc-100 bg-transparent border-transparent hover:bg-zinc-900/30'
-                    }`}
-                  >
-                    <Icon className={`h-4.5 w-4.5 shrink-0 ${activeTab === tab.id ? 'text-amber-500' : 'text-zinc-550'}`} />
-                    <span>{tab.label}</span>
-                  </button>
-                );
-              })}
-            </div>
-
-            {/* Profile snapshot in Drawer */}
-            {currentUser && (
-              <div className="border-t border-zinc-900/80 pt-5 flex flex-col space-y-3.5">
-                <div className="flex items-center space-x-3 bg-zinc-950/40 p-3 rounded-2xl border border-zinc-900/60">
-                  <div className="h-9 w-9 rounded-full bg-zinc-800 border border-zinc-700 overflow-hidden shrink-0">
-                    {currentUser.photoURL ? (
-                      <img 
-                        src={currentUser.photoURL} 
-                        alt={currentUser.name} 
-                        className="h-full w-full object-cover" 
-                      />
-                    ) : (
-                      <div className="h-full w-full flex items-center justify-center font-bold text-amber-500 text-sm">
-                        {currentUser.name.charAt(0).toUpperCase()}
-                      </div>
-                    )}
+            <div className="space-y-6">
+              <div className="flex items-center justify-between border-b border-zinc-800/80 pb-5">
+                <div className="flex items-center space-x-3">
+                  <div className="relative flex h-10 w-10 items-center justify-center shrink-0">
+                    <MovieClubLogo className="h-full w-full" />
                   </div>
-                  <div className="min-w-0 flex-1">
-                    <p className="text-xs font-bold text-zinc-200 truncate pr-1">{currentUser.name}</p>
-                    <p className="text-[9px] text-zinc-550 truncate font-mono uppercase tracking-wider">{currentUser.role === 'admin' ? 'Coordinator' : 'IISER-K Member'}</p>
+                  <div>
+                    <span className="font-serif text-base font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-zinc-100 to-amber-400 uppercase tracking-wide block">
+                      Movie Club
+                    </span>
+                    <span className="font-mono text-[10px] text-amber-400 block uppercase tracking-wider font-bold">
+                      IISER Kolkata
+                    </span>
                   </div>
                 </div>
                 <button
-                  onClick={() => {
-                    handleSignOut();
-                    setIsMobileMenuOpen(false);
-                  }}
-                  className="w-full py-3 rounded-xl text-xs font-mono font-bold text-center border border-red-500/15 text-red-400 bg-red-950/5 hover:bg-red-950/15 transition-all cursor-pointer"
+                  onClick={() => setIsMobileMenuOpen(false)}
+                  className="p-2 text-zinc-400 hover:text-white hover:bg-zinc-800 rounded-xl transition-all cursor-pointer"
                 >
-                  Sign Out
+                  <X className="h-5 w-5" />
                 </button>
               </div>
-            )}
+
+              {/* Navigation Tabs List */}
+              <div className="flex flex-col space-y-2 overflow-y-auto max-h-[50vh] no-scrollbar py-1">
+                {[
+                  { id: 'schedule', label: 'Upcoming Screenings', icon: Calendar },
+                  { id: 'past', label: 'Past Screenings', icon: History },
+                  { id: 'discussions', label: 'Club Discussions', icon: MessageSquare },
+                  { id: 'recommendations', label: 'Student Wishlist', icon: Sparkles },
+                  { id: 'polls', label: 'Interactive Polls', icon: BarChart2 },
+                  ...(currentUser ? [{ id: 'profile', label: 'My Member Profile', icon: UserIcon }] : [])
+                ].map((tab) => {
+                  const Icon = tab.icon;
+                  const isActive = activeTab === tab.id;
+                  return (
+                    <button
+                      key={tab.id}
+                      onClick={() => {
+                        setActiveTab(tab.id);
+                        setIsMobileMenuOpen(false);
+                      }}
+                      className={`w-full text-left px-4 py-3.5 rounded-xl text-sm font-semibold tracking-wide transition-all flex items-center space-x-4 border ${
+                        isActive
+                          ? 'text-amber-300 bg-amber-500/15 border-amber-500/40 font-bold shadow-md shadow-amber-500/10'
+                          : 'text-zinc-200 hover:text-white bg-zinc-900/40 border-zinc-800/60 hover:bg-zinc-800/80'
+                      }`}
+                    >
+                      <Icon className={`h-5 w-5 shrink-0 ${isActive ? 'text-amber-400' : 'text-zinc-400'}`} />
+                      <span>{tab.label}</span>
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+
+            {/* Profile snapshot & controls in Drawer Footer */}
+            <div className="border-t border-zinc-800/80 pt-4 space-y-3">
+              {currentUser ? (
+                <>
+                  <div className="flex items-center space-x-3 bg-zinc-900/90 p-3 rounded-2xl border border-zinc-800">
+                    <div className="h-10 w-10 rounded-full bg-zinc-800 border-2 border-zinc-700 overflow-hidden shrink-0 flex items-center justify-center text-amber-400 font-bold">
+                      {currentUser.photoURL ? (
+                        <img 
+                          src={currentUser.photoURL} 
+                          alt={currentUser.name} 
+                          className="h-full w-full object-cover" 
+                        />
+                      ) : (
+                        <span className="text-sm">{currentUser.name.charAt(0).toUpperCase()}</span>
+                      )}
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <p className="text-xs font-bold text-zinc-100 truncate">{currentUser.name}</p>
+                      <p className="text-[10px] text-amber-400 font-mono font-medium truncate uppercase tracking-wider">
+                        {currentUser.role === 'admin' ? 'Club Coordinator' : 'IISER-K Member'}
+                      </p>
+                    </div>
+                  </div>
+                  <button
+                    onClick={() => {
+                      handleSignOut();
+                      setIsMobileMenuOpen(false);
+                    }}
+                    className="w-full py-3 rounded-xl text-xs font-mono font-bold text-center border border-red-500/30 text-red-400 bg-red-950/20 hover:bg-red-950/40 transition-all cursor-pointer flex items-center justify-center gap-2"
+                  >
+                    <LogOut className="h-4 w-4" />
+                    <span>Sign Out</span>
+                  </button>
+                </>
+              ) : (
+                <button
+                  onClick={() => {
+                    setShowLoginModal(true);
+                    setIsMobileMenuOpen(false);
+                  }}
+                  className="w-full py-3.5 rounded-xl text-sm font-bold text-zinc-950 bg-gradient-to-r from-amber-400 to-amber-500 shadow-lg shadow-amber-500/20 transition-all cursor-pointer flex items-center justify-center gap-2"
+                >
+                  <UserIcon className="h-4 w-4" />
+                  <span>Log In / Register</span>
+                </button>
+              )}
+            </div>
           </div>
         </div>
       )}
+
+      {/* Mobile Floating Bottom Navigation Bar */}
+      <nav className="fixed bottom-0 left-0 right-0 z-40 md:hidden bg-[#0c0b15]/95 border-t border-zinc-800/90 backdrop-blur-xl px-2 py-1.5 shadow-[0_-8px_30px_rgba(0,0,0,0.85)]">
+        <div className="flex items-center justify-around max-w-md mx-auto">
+          {[
+            { id: 'schedule', label: 'Screenings', icon: Calendar },
+            { id: 'past', label: 'Past', icon: History },
+            { id: 'discussions', label: 'Forum', icon: MessageSquare },
+            { id: 'recommendations', label: 'Wishlist', icon: Sparkles },
+            { id: 'polls', label: 'Polls', icon: BarChart2 },
+            ...(currentUser 
+              ? [{ id: 'profile', label: 'Profile', icon: UserIcon }] 
+              : [{ id: 'login', label: 'Login', icon: UserIcon }]
+            )
+          ].map((item) => {
+            const IconComponent = item.icon;
+            const isActive = activeTab === item.id || (item.id === 'login' && showLoginModal);
+            return (
+              <button
+                key={item.id}
+                onClick={() => {
+                  if (item.id === 'login') {
+                    setShowLoginModal(true);
+                  } else {
+                    setActiveTab(item.id);
+                  }
+                }}
+                className={`relative flex flex-col items-center justify-center py-1.5 px-2 rounded-xl transition-all duration-200 cursor-pointer min-w-[56px] min-h-[48px] ${
+                  isActive
+                    ? 'text-amber-400 font-bold scale-105'
+                    : 'text-zinc-400 hover:text-zinc-200'
+                }`}
+              >
+                {isActive && (
+                  <span className="absolute -top-1.5 w-6 h-1 bg-amber-400 rounded-full shadow-[0_0_10px_rgba(245,158,11,0.9)]" />
+                )}
+                <IconComponent className={`h-5 w-5 mb-0.5 transition-transform duration-200 ${isActive ? 'text-amber-400 stroke-[2.5]' : 'text-zinc-400'}`} />
+                <span className="text-[10px] tracking-tight leading-none font-sans font-semibold">{item.label}</span>
+              </button>
+            );
+          })}
+        </div>
+      </nav>
 
       {/* Login Modal */}
       {showLoginModal && (
