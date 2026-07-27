@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { motion } from 'motion/react';
 import { Film, User as UserIcon, LogOut, Shield, ShieldCheck, HelpCircle, GraduationCap, Camera, UploadCloud, Image as ImageIcon, Settings, Key, Eye, EyeOff, RefreshCw, Menu, X, Calendar, MessageSquare, Sparkles, BarChart2, History, Instagram, ExternalLink } from 'lucide-react';
 import { User, PastMovie } from '../types';
 import { auth, googleProvider, db } from '../firebase';
@@ -482,12 +483,19 @@ export default function Navbar({
                     key={tab.id}
                     id={`tab-${tab.id}`}
                     onClick={() => setActiveTab(tab.id)}
-                    className={`relative px-2.5 py-2 xl:px-3.5 xl:py-2.5 rounded-xl text-xs font-bold tracking-wider uppercase transition-all duration-300 flex items-center gap-1.5 xl:gap-2 cursor-pointer whitespace-nowrap ${
+                    className={`relative px-2.5 py-2 xl:px-3.5 xl:py-2.5 rounded-xl text-xs font-bold tracking-wider uppercase transition-colors duration-200 flex items-center gap-1.5 xl:gap-2 cursor-pointer whitespace-nowrap z-10 ${
                       isActive
-                        ? 'text-amber-300 bg-[#211d38] shadow-lg shadow-amber-500/15 border border-amber-500/50 scale-[1.02]'
-                        : 'text-zinc-300 hover:text-white hover:bg-zinc-800/80 border border-transparent'
+                        ? 'text-amber-300'
+                        : 'text-zinc-300 hover:text-white hover:bg-zinc-800/50'
                     }`}
                   >
+                    {isActive && (
+                      <motion.div
+                        layoutId="activeNavbarPill"
+                        className="absolute inset-0 bg-[#211d38] border border-amber-500/50 rounded-xl shadow-lg shadow-amber-500/20 -z-10"
+                        transition={{ type: "spring", stiffness: 450, damping: 32 }}
+                      />
+                    )}
                     <IconComponent className={`h-3.5 w-3.5 xl:h-4 xl:w-4 ${isActive ? 'text-amber-400' : 'text-zinc-400'}`} />
                     <span className="hidden xl:inline">{tab.label}</span>
                     <span className="inline xl:hidden">{tab.shortLabel || tab.label}</span>

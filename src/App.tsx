@@ -133,6 +133,10 @@ export default function App() {
     setRandomQuote(CINEMA_QUOTES[randomIndex]);
   };
 
+  useEffect(() => {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }, [activeTab]);
+
   // Core schedules, past screenings, recommendations pools with initial empty state to prevent deleted default items flashing on load
   const [screenings, setScreenings] = useState<Screening[]>([]);
   const [dbLoaded, setDbLoaded] = useState<boolean>(false);
@@ -1348,7 +1352,7 @@ export default function App() {
                     </span>
                   </div>
 
-                  <h2 className="font-serif text-4xl sm:text-6xl font-black text-transparent bg-clip-text bg-gradient-to-r from-zinc-550 via-zinc-150 to-amber-250 tracking-tight leading-[1.05] animate-glow">
+                  <h2 className="font-serif text-4xl sm:text-6xl font-black text-transparent bg-clip-text bg-gradient-to-r from-zinc-100 via-zinc-200 to-amber-300 tracking-tight leading-[1.05]">
                     {featured.title}
                   </h2>
 
@@ -1362,12 +1366,12 @@ export default function App() {
                     <span>Language: <span className="text-zinc-200">{featured.language}</span></span>
                   </p>
 
-                  <p className="text-sm sm:text-base text-zinc-350 max-w-2xl leading-relaxed italic font-serif">
+                  <p className="text-sm sm:text-base text-zinc-300 max-w-2xl leading-relaxed italic font-serif">
                     "{featured.description}"
                   </p>
 
                   <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 max-w-3xl pt-2 font-sans">
-                    <div className="flex items-center space-x-2.5 bg-zinc-900/60 backdrop-blur-md px-3.5 py-2.5 rounded-xl border border-zinc-850">
+                    <div className="flex items-center space-x-2.5 bg-zinc-900/60 backdrop-blur-md px-3.5 py-2.5 rounded-xl border border-zinc-800">
                       <Calendar className="h-4.5 w-4.5 text-amber-400" />
                       <div>
                         <span className="text-zinc-500 block text-[9px] uppercase tracking-wider font-mono">Screen Date</span>
@@ -1375,7 +1379,7 @@ export default function App() {
                       </div>
                     </div>
 
-                    <div className="flex items-center space-x-2.5 bg-zinc-900/60 backdrop-blur-md px-3.5 py-2.5 rounded-xl border border-zinc-850">
+                    <div className="flex items-center space-x-2.5 bg-zinc-900/60 backdrop-blur-md px-3.5 py-2.5 rounded-xl border border-zinc-800">
                       <Clock className="h-4.5 w-4.5 text-rose-400" />
                       <div>
                         <span className="text-zinc-500 block text-[9px] uppercase tracking-wider font-mono">Showtime</span>
@@ -1383,9 +1387,9 @@ export default function App() {
                       </div>
                     </div>
 
-                    <div className="flex items-center space-x-2.5 bg-zinc-900/60 backdrop-blur-md px-3.5 py-2.5 rounded-xl border border-zinc-850">
+                    <div className="flex items-center space-x-2.5 bg-zinc-900/60 backdrop-blur-md px-3.5 py-2.5 rounded-xl border border-zinc-800">
                       <MapPin className="h-4.5 w-4.5 text-emerald-400" />
-                      <div className="min-w-0">
+                      <div>
                         <span className="text-zinc-500 block text-[9px] uppercase tracking-wider font-mono">Venue Lounge</span>
                         <span className="text-zinc-200 text-xs font-bold truncate block" title={featured.venue}>
                           {featured.venue.split(',')[0]}
@@ -1483,10 +1487,10 @@ export default function App() {
         <AnimatePresence mode="wait">
           <motion.div
             key={activeTab}
-            initial={{ opacity: 0, y: 12, scale: 0.99 }}
-            animate={{ opacity: 1, y: 0, scale: 1 }}
-            exit={{ opacity: 0, y: -8, scale: 0.995 }}
-            transition={{ duration: 0.28, ease: [0.16, 1, 0.3, 1] }}
+            initial={{ opacity: 0, y: 8 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -6 }}
+            transition={{ duration: 0.22, ease: [0.25, 1, 0.5, 1] }}
           >
             {activeTab === 'schedule' && (
               <ScreeningSchedule
@@ -1569,7 +1573,7 @@ export default function App() {
       </main>
 
       {/* Primary Footer Section adhering to strict branding limits */}
-      <footer className="border-t border-zinc-900 bg-zinc-980/80 backdrop-blur-md py-12 relative z-10">
+      <footer className="border-t border-zinc-900 bg-zinc-950/80 backdrop-blur-md py-12 relative z-10">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 flex flex-col md:flex-row items-center justify-between gap-6">
           <div className="text-center md:text-left space-y-1">
             <h3 className="font-serif text-sm font-semibold tracking-wide text-zinc-300 uppercase">
