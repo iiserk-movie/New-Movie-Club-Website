@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { 
-  Film, Sparkles, MapPin, Users, Clapperboard, Calendar, Clock, Play, Bell, ChevronRight, ChevronLeft, ExternalLink, MessageSquare, Volume2, X, ChevronDown, ChevronUp, ThumbsUp, Check
+  Film, Sparkles, MapPin, Users, Clapperboard, Calendar, Clock, Play, Bell, ChevronRight, ChevronLeft, ExternalLink, MessageSquare, Volume2, X, ChevronDown, ChevronUp, ThumbsUp, Check, Instagram
 } from 'lucide-react';
 
 import { Screening, PastMovie, Recommendation, User, UserReview, ClubDiscussion, Poll } from './types';
@@ -1578,7 +1578,14 @@ export default function App() {
           </div>
 
           <div className="flex flex-col items-center justify-center text-center gap-1.5 text-xs font-mono text-zinc-500">
-            <a href="https://letterboxd.com/ikmc/diary/" target="_blank" rel="noreferrer" className="hover:text-amber-400 transition-colors font-medium">Letterboxd Diary</a>
+            <div className="flex items-center gap-3">
+              <a href="https://letterboxd.com/ikmc/diary/" target="_blank" rel="noreferrer" className="hover:text-amber-400 transition-colors font-medium">Letterboxd Diary</a>
+              <span className="text-zinc-700">•</span>
+              <a href="https://www.instagram.com/movieclub.iiserk/" target="_blank" rel="noreferrer" className="hover:text-pink-400 transition-colors font-medium inline-flex items-center gap-1">
+                <Instagram className="h-3.5 w-3.5" />
+                <span>Instagram</span>
+              </a>
+            </div>
             <span className="text-zinc-600 text-[11px]">M.N. Saha Auditorium, Ground Floor, TRC building, Mohanpur, West Bengal 741246</span>
           </div>
 
