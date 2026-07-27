@@ -448,84 +448,87 @@ export default function Navbar({
     <>
       <header className="sticky top-0 z-40 w-full border-b border-zinc-800/90 bg-[#100e19]/98 backdrop-blur-xl shadow-2xl shadow-black/60">
         <div className="mx-auto flex max-w-7xl min-h-[92px] py-3.5 items-center justify-between px-4 sm:px-6 lg:px-8">
-          {/* Logo Brand */}
-          <div className="flex items-center space-x-4 cursor-pointer group" onClick={() => setActiveTab('schedule')}>
-            <div className="relative flex h-14 w-14 items-center justify-center shrink-0 group-hover:scale-105 transition-transform duration-300">
-              <MovieClubLogo className="h-14 w-14" />
+          {/* Logo Brand (Left) */}
+          <div className="flex items-center space-x-4 cursor-pointer group shrink-0 lg:flex-1" onClick={() => setActiveTab('schedule')}>
+            <div className="relative flex h-12 w-12 sm:h-13 sm:w-13 items-center justify-center shrink-0 group-hover:scale-105 transition-transform duration-300">
+              <MovieClubLogo className="h-12 w-12 sm:h-13 sm:w-13" />
               <div className="absolute -top-0.5 -right-0.5 flex h-3.5 w-3.5 rounded-full bg-amber-500 animate-pulse ring-2 ring-zinc-950"></div>
             </div>
             <div>
-              <h1 className="font-serif text-2xl sm:text-3xl font-black tracking-wide text-transparent bg-clip-text bg-gradient-to-r from-zinc-100 via-amber-200 to-amber-400 drop-shadow-[0_2px_12px_rgba(245,158,11,0.3)] uppercase">
+              <h1 className="font-serif text-xl sm:text-2xl font-black tracking-wide text-transparent bg-clip-text bg-gradient-to-r from-zinc-100 via-amber-200 to-amber-400 drop-shadow-[0_2px_12px_rgba(245,158,11,0.3)] uppercase">
                 Movie Club
               </h1>
-              <p className="font-mono text-xs tracking-[0.2em] text-amber-400 font-bold uppercase">
+              <p className="font-mono text-[11px] tracking-[0.2em] text-amber-400 font-bold uppercase">
                 IISER Kolkata
               </p>
             </div>
           </div>
 
-          {/* Navigation Items - Desktop */}
-          <nav className="hidden lg:flex items-center bg-[#171426]/90 border border-zinc-700/60 p-2 rounded-2xl shadow-xl shadow-black/60 backdrop-blur-md gap-1.5">
-            {[
-              { id: 'schedule', label: 'Screenings', icon: Calendar },
-              { id: 'past', label: 'Past Screenings', icon: History },
-              { id: 'discussions', label: 'Discussions', icon: MessageSquare },
-              { id: 'recommendations', label: 'Recommendations', icon: Sparkles },
-              { id: 'polls', label: 'Polls', icon: BarChart2 },
-              ...(currentUser ? [{ id: 'profile', label: 'My Profile', icon: UserIcon }] : [])
-            ].map((tab) => {
-              const IconComponent = tab.icon;
-              const isActive = activeTab === tab.id;
-              return (
-                <button
-                  key={tab.id}
-                  id={`tab-${tab.id}`}
-                  onClick={() => setActiveTab(tab.id)}
-                  className={`relative px-5 py-3 rounded-xl text-xs sm:text-sm font-bold tracking-wider uppercase transition-all duration-300 flex items-center gap-2.5 cursor-pointer ${
-                    isActive
-                      ? 'text-amber-300 bg-[#211d38] shadow-lg shadow-amber-500/15 border border-amber-500/50 scale-[1.03]'
-                      : 'text-zinc-300 hover:text-white hover:bg-zinc-800/80 border border-transparent'
-                  }`}
-                >
-                  <IconComponent className={`h-4.5 w-4.5 ${isActive ? 'text-amber-400' : 'text-zinc-400'}`} />
-                  <span>{tab.label}</span>
-                </button>
-              );
-            })}
-          </nav>
+          {/* Navigation Items (Center) - Truly Centered */}
+          <div className="hidden md:flex items-center justify-center lg:flex-1">
+            {/* Desktop Navigation Items */}
+            <nav className="hidden lg:flex items-center bg-[#171426]/90 border border-zinc-700/60 p-1.5 rounded-2xl shadow-xl shadow-black/60 backdrop-blur-md gap-1">
+              {[
+                { id: 'schedule', label: 'Screenings', icon: Calendar },
+                { id: 'past', label: 'Past Screenings', icon: History },
+                { id: 'discussions', label: 'Discussions', icon: MessageSquare },
+                { id: 'recommendations', label: 'Recommendations', icon: Sparkles },
+                { id: 'polls', label: 'Polls', icon: BarChart2 },
+                ...(currentUser ? [{ id: 'profile', label: 'My Profile', icon: UserIcon }] : [])
+              ].map((tab) => {
+                const IconComponent = tab.icon;
+                const isActive = activeTab === tab.id;
+                return (
+                  <button
+                    key={tab.id}
+                    id={`tab-${tab.id}`}
+                    onClick={() => setActiveTab(tab.id)}
+                    className={`relative px-4 py-2.5 rounded-xl text-xs sm:text-xs font-bold tracking-wider uppercase transition-all duration-300 flex items-center gap-2 cursor-pointer whitespace-nowrap ${
+                      isActive
+                        ? 'text-amber-300 bg-[#211d38] shadow-lg shadow-amber-500/15 border border-amber-500/50 scale-[1.02]'
+                        : 'text-zinc-300 hover:text-white hover:bg-zinc-800/80 border border-transparent'
+                    }`}
+                  >
+                    <IconComponent className={`h-4 w-4 ${isActive ? 'text-amber-400' : 'text-zinc-400'}`} />
+                    <span>{tab.label}</span>
+                  </button>
+                );
+              })}
+            </nav>
 
-          {/* Medium screen navigation pills */}
-          <nav className="hidden md:flex lg:hidden items-center bg-[#171426]/90 border border-zinc-700/60 p-1.5 rounded-xl shadow-xl shadow-black/60 gap-1">
-            {[
-              { id: 'schedule', label: 'Screenings', icon: Calendar },
-              { id: 'past', label: 'Past', icon: History },
-              { id: 'discussions', label: 'Forum', icon: MessageSquare },
-              { id: 'recommendations', label: 'Wishlist', icon: Sparkles },
-              { id: 'polls', label: 'Polls', icon: BarChart2 },
-              ...(currentUser ? [{ id: 'profile', label: 'Profile', icon: UserIcon }] : [])
-            ].map((tab) => {
-              const IconComponent = tab.icon;
-              const isActive = activeTab === tab.id;
-              return (
-                <button
-                  key={tab.id}
-                  id={`tab-${tab.id}`}
-                  onClick={() => setActiveTab(tab.id)}
-                  className={`relative px-3.5 py-2.5 rounded-lg text-xs font-bold tracking-wider uppercase transition-all duration-300 flex items-center gap-1.5 cursor-pointer ${
-                    isActive
-                      ? 'text-amber-300 bg-[#211d38] shadow-md border border-amber-500/40'
-                      : 'text-zinc-300 hover:text-white hover:bg-zinc-800/80 border border-transparent'
-                  }`}
-                >
-                  <IconComponent className={`h-4 w-4 ${isActive ? 'text-amber-400' : 'text-zinc-400'}`} />
-                  <span>{tab.label}</span>
-                </button>
-              );
-            })}
-          </nav>
+            {/* Medium screen navigation pills */}
+            <nav className="hidden md:flex lg:hidden items-center bg-[#171426]/90 border border-zinc-700/60 p-1.5 rounded-xl shadow-xl shadow-black/60 gap-1">
+              {[
+                { id: 'schedule', label: 'Screenings', icon: Calendar },
+                { id: 'past', label: 'Past', icon: History },
+                { id: 'discussions', label: 'Forum', icon: MessageSquare },
+                { id: 'recommendations', label: 'Wishlist', icon: Sparkles },
+                { id: 'polls', label: 'Polls', icon: BarChart2 },
+                ...(currentUser ? [{ id: 'profile', label: 'Profile', icon: UserIcon }] : [])
+              ].map((tab) => {
+                const IconComponent = tab.icon;
+                const isActive = activeTab === tab.id;
+                return (
+                  <button
+                    key={tab.id}
+                    id={`tab-${tab.id}`}
+                    onClick={() => setActiveTab(tab.id)}
+                    className={`relative px-3 py-2 rounded-lg text-xs font-bold tracking-wider uppercase transition-all duration-300 flex items-center gap-1.5 cursor-pointer whitespace-nowrap ${
+                      isActive
+                        ? 'text-amber-300 bg-[#211d38] shadow-md border border-amber-500/40'
+                        : 'text-zinc-300 hover:text-white hover:bg-zinc-800/80 border border-transparent'
+                    }`}
+                  >
+                    <IconComponent className={`h-3.5 w-3.5 ${isActive ? 'text-amber-400' : 'text-zinc-400'}`} />
+                    <span>{tab.label}</span>
+                  </button>
+                );
+              })}
+            </nav>
+          </div>
 
-          {/* User Session Auth Actions */}
-          <div className="flex items-center space-x-4">
+          {/* User Session Auth Actions (Right) */}
+          <div className="flex items-center space-x-3 justify-end shrink-0 lg:flex-1">
             {/* Quick Admin Toggler for ease of editing schedules */}
             {adminMode && (
               <div className="flex items-center space-x-2">
