@@ -397,34 +397,23 @@ export default function UserProfile({
                     onClick={() => jumpToDiscussion(disc.id)}
                     className="bg-zinc-955 border border-zinc-900 rounded-xl p-5 hover:border-zinc-800 transition-all cursor-pointer group flex flex-col sm:flex-row justify-between items-start gap-4"
                   >
-                    <div className="flex items-start gap-4 flex-1 min-w-0">
-                      <img
-                        src={getPolishedPosterUrl(disc.movieTitle || disc.title, '')}
-                        alt={disc.movieTitle || disc.title}
-                        className="w-14 h-20 object-cover rounded-md border border-zinc-850 shrink-0 bg-zinc-900 shadow"
-                        referrerPolicy="no-referrer"
-                        onError={(e) => {
-                          e.currentTarget.src = getDeterministicPoster(disc.movieTitle || disc.title);
-                        }}
-                      />
-                      <div className="space-y-1.5 flex-1 min-w-0">
-                        <div className="flex items-center gap-2 flex-wrap">
-                          <span className="text-[10px] font-mono bg-zinc-900 border border-zinc-800 text-zinc-400 px-2 py-0.5 rounded-md uppercase tracking-wider block">
-                            {disc.category}
+                    <div className="space-y-1.5">
+                      <div className="flex items-center gap-2">
+                        <span className="text-[10px] font-mono bg-zinc-900 border border-zinc-800 text-zinc-400 px-2 py-0.5 rounded-md uppercase tracking-wider block">
+                          {disc.category}
+                        </span>
+                        {disc.movieTitle && (
+                          <span className="text-[11px] font-mono text-amber-500 block max-w-xs truncate">
+                            🍿 {disc.movieTitle}
                           </span>
-                          {disc.movieTitle && (
-                            <span className="text-[11px] font-mono text-amber-500 block max-w-xs truncate">
-                              🍿 {disc.movieTitle}
-                            </span>
-                          )}
-                        </div>
-                        <h4 className="text-sm font-sans font-bold text-zinc-100 group-hover:text-amber-400 transition-colors leading-snug">
-                          {disc.title}
-                        </h4>
-                        <p className="text-xs text-zinc-400 line-clamp-2 max-w-3xl">
-                          {disc.content}
-                        </p>
+                        )}
                       </div>
+                      <h4 className="text-sm font-sans font-bold text-zinc-100 group-hover:text-amber-400 transition-colors leading-snug">
+                        {disc.title}
+                      </h4>
+                      <p className="text-xs text-zinc-400 line-clamp-2 max-w-3xl">
+                        {disc.content}
+                      </p>
                     </div>
 
                     <div className="flex items-center space-x-4 self-end sm:self-center shrink-0">
@@ -458,41 +447,30 @@ export default function UserProfile({
                   <div 
                     key={comment.id}
                     onClick={() => jumpToDiscussion(comment.discussionId)}
-                    className="bg-zinc-950 border border-zinc-900 rounded-xl p-5 hover:border-zinc-800 transition-all cursor-pointer group flex items-start gap-4"
+                    className="bg-zinc-950 border border-zinc-900 rounded-xl p-5 hover:border-zinc-800 transition-all cursor-pointer group flex flex-col gap-3"
                   >
-                    <img
-                      src={getPolishedPosterUrl(comment.discussionTitle, '')}
-                      alt={comment.discussionTitle}
-                      className="w-12 h-16 object-cover rounded border border-zinc-850 shrink-0 bg-zinc-900 shadow"
-                      referrerPolicy="no-referrer"
-                      onError={(e) => {
-                        e.currentTarget.src = getDeterministicPoster(comment.discussionTitle);
-                      }}
-                    />
-                    <div className="flex-1 flex flex-col gap-2 min-w-0">
-                      <div className="flex items-start sm:items-center justify-between flex-wrap gap-2 text-zinc-450 border-b border-zinc-900/70 pb-2">
-                        <div className="flex items-center gap-1.5 min-w-0">
-                          <MessageSquare className="h-3.5 w-3.5 text-amber-500/80 shrink-0" />
-                          <span className="text-xs font-mono text-zinc-400 shrink-0">
-                            Commented in:
-                          </span>
-                          <span className="text-xs font-sans font-bold text-zinc-200 group-hover:text-amber-400 transition-colors leading-tight truncate max-w-sm sm:max-w-md">
-                            {comment.discussionTitle}
-                          </span>
-                        </div>
-                        <span className="text-[10px] font-mono text-zinc-500">
-                          {new Date(comment.createdAt).toLocaleDateString()}
+                    <div className="flex items-start sm:items-center justify-between flex-wrap gap-2 text-zinc-450 border-b border-zinc-900/70 pb-2">
+                      <div className="flex items-center gap-1.5">
+                        <MessageSquare className="h-3.5 w-3.5 text-amber-500/80" />
+                        <span className="text-xs font-mono text-zinc-400">
+                          Commented inside:
+                        </span>
+                        <span className="text-xs font-sans font-bold text-zinc-200 group-hover:text-amber-400 transition-colors leading-tight truncate max-w-sm sm:max-w-md">
+                          {comment.discussionTitle}
                         </span>
                       </div>
-
-                      <div className="text-xs text-zinc-300 italic pl-3 border-l-2 border-zinc-800 py-1">
-                        "{comment.content}"
-                      </div>
-
-                      <span className="text-[10px] font-mono text-amber-500/70 flex items-center gap-0.5 justify-end">
-                        Open Thread <ChevronRight className="h-3 w-3 mt-0.5" />
+                      <span className="text-[10px] font-mono text-zinc-500">
+                        {new Date(comment.createdAt).toLocaleDateString()}
                       </span>
                     </div>
+
+                    <div className="text-xs text-zinc-300 italic pl-3 border-l-2 border-zinc-800 py-1">
+                      "{comment.content}"
+                    </div>
+
+                    <span className="text-[10px] font-mono text-amber-500/70 flex items-center gap-0.5 justify-end">
+                      Open Thread <ChevronRight className="h-3 w-3 mt-0.5" />
+                    </span>
                   </div>
                 ))
               )}
@@ -514,42 +492,31 @@ export default function UserProfile({
                 </div>
               ) : (
                 userRecommendations.map((rec) => (
-                  <div key={rec.id} className="bg-zinc-950 border border-zinc-900 rounded-xl p-5 flex flex-col md:flex-row justify-between items-start md:items-center gap-5">
-                    <div className="flex items-start gap-4 min-w-0 flex-1">
-                      <img
-                        src={getPolishedPosterUrl(rec.title, rec.posterUrl)}
-                        alt={rec.title}
-                        className="w-14 h-20 object-cover rounded-md border border-zinc-850 shrink-0 bg-zinc-900 shadow"
-                        referrerPolicy="no-referrer"
-                        onError={(e) => {
-                          e.currentTarget.src = getDeterministicPoster(rec.title);
-                        }}
-                      />
-                      <div className="space-y-1.5 min-w-0 flex-1">
-                        <div className="flex items-center gap-2 flex-wrap">
-                          <span className="text-xs font-serif font-bold text-zinc-100">
-                            {rec.title} <span className="text-zinc-500 font-normal">({rec.year})</span>
-                          </span>
-                          <span className="text-[10px] bg-zinc-900 border border-zinc-800 text-zinc-400 font-mono px-2 py-0.5 rounded uppercase">
-                            {rec.genre}
-                          </span>
-                        </div>
-                        
-                        <p className="text-xs text-zinc-400">
-                          Directed by <b className="text-zinc-300">{rec.director}</b>
-                        </p>
-                        <p className="text-xs text-zinc-500 bg-zinc-900/35 p-3 rounded-lg italic">
-                          "{rec.notes}"
-                        </p>
+                  <div key={rec.id} className="bg-zinc-950 border border-zinc-900 rounded-xl p-5 flex flex-col md:flex-row justify-between gap-5">
+                    <div className="space-y-2">
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <span className="text-xs font-serif font-bold text-zinc-100">
+                          {rec.title} <span className="text-zinc-500 font-normal">({rec.year})</span>
+                        </span>
+                        <span className="text-[10px] bg-zinc-900 border border-zinc-800 text-zinc-400 font-mono px-2 py-0.5 rounded uppercase">
+                          {rec.genre}
+                        </span>
                       </div>
+                      
+                      <p className="text-xs text-zinc-400">
+                        Directed by <b className="text-zinc-300">{rec.director}</b>
+                      </p>
+                      <p className="text-xs text-zinc-500 bg-zinc-900/35 p-3 rounded-lg italic">
+                        "{rec.notes}"
+                      </p>
                     </div>
 
-                    <div className="flex flex-row md:flex-col items-end justify-between font-mono text-[10px] text-zinc-500 shrink-0 border-t md:border-t-0 border-zinc-900 pt-3 md:pt-0 w-full md:w-auto">
+                    <div className="flex flex-row md:flex-col items-end justify-between font-mono text-[10px] text-zinc-500 shrink-0 border-t md:border-t-0 border-zinc-900 pt-3 md:pt-0">
                       <div className="flex items-center gap-1.5">
                         <Clock className="h-3.5 w-3.5" />
                         <span>Suggested {new Date(rec.suggestedAt).toLocaleDateString()}</span>
                       </div>
-                      <div className="flex items-center gap-1 text-sm bg-amber-500/5 text-amber-400 border border-amber-500/10 rounded-lg px-2.5 py-1 mt-1">
+                      <div className="flex items-center gap-1 text-sm bg-amber-500/5 text-amber-400 border border-amber-500/10 rounded-lg px-2.5 py-1">
                         <Heart className="h-3.5 w-3.5 fill-amber-500/10 text-amber-400" />
                         <b>{rec.votes.length} votes</b>
                       </div>
@@ -575,17 +542,8 @@ export default function UserProfile({
                 </div>
               ) : (
                 userVotes.map((vote, idx) => (
-                  <div key={idx} className="bg-zinc-950 border border-zinc-900 rounded-xl p-5 flex items-start gap-4 justify-between">
-                    <img
-                      src={getPolishedPosterUrl(vote.optionTitle, '')}
-                      alt={vote.optionTitle}
-                      className="w-14 h-20 object-cover rounded-md border border-zinc-850 shrink-0 bg-zinc-900 shadow"
-                      referrerPolicy="no-referrer"
-                      onError={(e) => {
-                        e.currentTarget.src = getDeterministicPoster(vote.optionTitle);
-                      }}
-                    />
-                    <div className="space-y-1.5 flex-1 min-w-0">
+                  <div key={idx} className="bg-zinc-950 border border-zinc-903 rounded-xl p-5 flex items-start gap-4 justify-between">
+                    <div className="space-y-1.5">
                       <span className="text-[10px] font-mono text-zinc-550 uppercase tracking-wider block">
                         Casted Vote inside:
                       </span>
