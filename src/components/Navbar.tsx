@@ -448,26 +448,26 @@ export default function Navbar({
   return (
     <>
       <header className="sticky top-0 z-40 w-full border-b border-zinc-800/90 bg-[#100e19]/98 backdrop-blur-xl shadow-2xl shadow-black/60">
-        <div className="mx-auto flex items-center justify-between min-h-[80px] sm:min-h-[88px] py-2.5 px-4 sm:px-6 lg:px-8 max-w-7xl gap-3">
+        <div className="mx-auto flex items-center justify-between min-h-[80px] sm:min-h-[88px] py-2.5 px-3 sm:px-6 lg:px-8 max-w-[1440px] gap-2 sm:gap-3">
           {/* Logo Brand (Left) - Always un-truncated */}
-          <div className="flex items-center space-x-3 sm:space-x-3.5 cursor-pointer group shrink-0" onClick={() => setActiveTab('schedule')}>
-            <div className="relative flex h-11 w-11 sm:h-12 sm:w-12 items-center justify-center shrink-0 group-hover:scale-105 transition-transform duration-300">
-              <MovieClubLogo className="h-11 w-11 sm:h-12 sm:w-12" />
-              <div className="absolute -top-0.5 -right-0.5 flex h-3.5 w-3.5 rounded-full bg-amber-500 animate-pulse ring-2 ring-zinc-950"></div>
+          <div className="flex items-center space-x-2.5 sm:space-x-3.5 cursor-pointer group shrink-0" onClick={() => setActiveTab('schedule')}>
+            <div className="relative flex h-10 w-10 sm:h-12 sm:w-12 items-center justify-center shrink-0 group-hover:scale-105 transition-transform duration-300">
+              <MovieClubLogo className="h-10 w-10 sm:h-12 sm:w-12" />
+              <div className="absolute -top-0.5 -right-0.5 flex h-3 w-3 sm:h-3.5 sm:w-3.5 rounded-full bg-amber-500 animate-pulse ring-2 ring-zinc-950"></div>
             </div>
             <div className="shrink-0">
-              <h1 className="font-serif text-lg sm:text-xl font-black tracking-wide text-transparent bg-clip-text bg-gradient-to-r from-zinc-100 via-amber-200 to-amber-400 drop-shadow-[0_2px_12px_rgba(245,158,11,0.3)] uppercase whitespace-nowrap">
+              <h1 className="font-serif text-base sm:text-xl font-black tracking-wide text-transparent bg-clip-text bg-gradient-to-r from-zinc-100 via-amber-200 to-amber-400 drop-shadow-[0_2px_12px_rgba(245,158,11,0.3)] uppercase whitespace-nowrap">
                 Movie Club
               </h1>
-              <p className="font-mono text-[10px] sm:text-[11px] tracking-[0.2em] text-amber-400 font-bold uppercase whitespace-nowrap">
+              <p className="font-mono text-[9px] sm:text-[11px] tracking-[0.2em] text-amber-400 font-bold uppercase whitespace-nowrap">
                 IISER Kolkata
               </p>
             </div>
           </div>
 
           {/* Navigation Items (Center) - Centered & Responsive */}
-          <div className="hidden md:flex items-center justify-center flex-1 max-w-fit mx-auto px-1">
-            <nav className="flex items-center bg-[#171426]/90 border border-zinc-700/60 p-1.5 rounded-2xl shadow-xl shadow-black/60 backdrop-blur-md gap-0.5 xl:gap-1.5">
+          <div className="hidden md:flex items-center justify-center min-w-0 mx-1">
+            <nav className="flex items-center bg-[#171426]/90 border border-zinc-700/60 p-1 rounded-2xl shadow-xl shadow-black/60 backdrop-blur-md gap-0.5 2xl:gap-1.5">
               {[
                 { id: 'schedule', label: 'Screenings', icon: Calendar },
                 { id: 'past', label: 'Past Screenings', shortLabel: 'Past', icon: History },
@@ -483,7 +483,7 @@ export default function Navbar({
                     key={tab.id}
                     id={`tab-${tab.id}`}
                     onClick={() => setActiveTab(tab.id)}
-                    className={`relative px-2.5 py-2 xl:px-3.5 xl:py-2.5 rounded-xl text-xs font-bold tracking-wider uppercase transition-colors duration-200 flex items-center gap-1.5 xl:gap-2 cursor-pointer whitespace-nowrap z-10 ${
+                    className={`relative px-2 py-1.5 xl:px-3 xl:py-2 2xl:px-3.5 2xl:py-2.5 rounded-xl text-[11px] xl:text-xs font-bold tracking-wider uppercase transition-colors duration-200 flex items-center gap-1 xl:gap-1.5 2xl:gap-2 cursor-pointer whitespace-nowrap z-10 ${
                       isActive
                         ? 'text-amber-300'
                         : 'text-zinc-300 hover:text-white hover:bg-zinc-800/50'
@@ -497,8 +497,8 @@ export default function Navbar({
                       />
                     )}
                     <IconComponent className={`h-3.5 w-3.5 xl:h-4 xl:w-4 ${isActive ? 'text-amber-400' : 'text-zinc-400'}`} />
-                    <span className="hidden xl:inline">{tab.label}</span>
-                    <span className="inline xl:hidden">{tab.shortLabel || tab.label}</span>
+                    <span className="hidden 2xl:inline">{tab.label}</span>
+                    <span className="inline 2xl:hidden">{tab.shortLabel || tab.label}</span>
                   </button>
                 );
               })}
@@ -506,12 +506,12 @@ export default function Navbar({
           </div>
 
           {/* User Session Auth Actions (Right) */}
-          <div className="flex items-center space-x-2 sm:space-x-3 justify-end shrink-0">
+          <div className="flex items-center space-x-2 sm:space-x-2.5 justify-end shrink-0">
             {/* Quick Admin Toggler for ease of editing schedules */}
             {adminMode && (
               <div className="flex items-center space-x-1.5">
-                <div className="flex items-center space-x-1.5 bg-amber-500/10 text-amber-400 border border-amber-500/20 px-2.5 py-1.5 rounded-xl text-xs font-mono font-semibold whitespace-nowrap">
-                  <ShieldCheck className="h-4 w-4 text-amber-500 shrink-0" />
+                <div className="flex items-center space-x-1.5 bg-amber-500/10 text-amber-400 border border-amber-500/20 px-2 py-1 sm:px-2.5 sm:py-1.5 rounded-xl text-xs font-mono font-semibold whitespace-nowrap">
+                  <ShieldCheck className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-amber-500 shrink-0" />
                   <span className="hidden sm:inline">Admin</span>
                   <button
                     onClick={() => {
@@ -520,7 +520,7 @@ export default function Navbar({
                         onLogin(currentUser.email, currentUser.name, 'student');
                       }
                     }}
-                    className="ml-1 underline hover:text-white cursor-pointer"
+                    className="ml-0.5 underline hover:text-white cursor-pointer"
                   >
                     Exit
                   </button>
@@ -541,9 +541,9 @@ export default function Navbar({
             )}
 
             {currentUser ? (
-              <div className="flex items-center space-x-2.5 sm:space-x-3 pl-2 sm:pl-3 border-l border-zinc-800 shrink-0">
-                <div className="hidden lg:block text-right">
-                  <p className="text-xs font-semibold text-zinc-100 whitespace-nowrap truncate max-w-[130px] xl:max-w-[170px]">
+              <div className="flex items-center space-x-2 sm:space-x-2.5 pl-2 border-l border-zinc-800 shrink-0">
+                <div className="hidden 2xl:block text-right">
+                  <p className="text-xs font-semibold text-zinc-100 whitespace-nowrap truncate max-w-[140px]">
                     {currentUser.name}
                   </p>
                   <p className="text-[10px] text-amber-400/80 font-mono font-medium whitespace-nowrap">
