@@ -564,8 +564,8 @@ export default function PastScreenings({
               <h3 className="font-serif text-lg sm:text-xl font-bold text-zinc-200 tracking-tight truncate">
                 Cinephile Favorites & Recent Screenings
               </h3>
-              <span className="hidden sm:inline-block text-[11px] font-mono text-zinc-500 bg-zinc-900/80 border border-zinc-800/80 px-2.5 py-0.5 rounded-full font-semibold shrink-0">
-                {pastMovies.length} Screenings
+              <span className="hidden sm:inline-block text-[11px] font-mono text-amber-400/90 bg-amber-500/10 border border-amber-500/20 px-2.5 py-0.5 rounded-full font-semibold shrink-0">
+                Recent Highlights
               </span>
             </div>
 
@@ -591,7 +591,7 @@ export default function PastScreenings({
             ref={reelScrollRef}
             className="flex gap-4 overflow-x-auto pb-4 pt-1 px-1 scrollbar-thin scrollbar-thumb-zinc-800 scrollbar-track-transparent snap-x snap-mandatory scroll-smooth w-full"
           >
-            {pastMovies.slice(0, 12).map((movie, idx) => {
+            {pastMovies.slice(0, 6).map((movie, idx) => {
               const avgRating = calculateAverageRating(movie);
               return (
                 <div
