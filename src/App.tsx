@@ -66,7 +66,7 @@ interface BackgroundPosterItemProps {
 function BackgroundPosterItem({ src, index }: BackgroundPosterItemProps) {
   const getInitialSrc = (inputSrc: string) => {
     if (!inputSrc || typeof inputSrc !== 'string' || !inputSrc.trim().startsWith('http')) {
-      return FALLBACK_POSTERS[index % FALLBACK_POSTERS.length];
+      return DISTINCT_FALLBACK_POSTERS[index % DISTINCT_FALLBACK_POSTERS.length];
     }
     return inputSrc;
   };
@@ -81,32 +81,32 @@ function BackgroundPosterItem({ src, index }: BackgroundPosterItemProps) {
       const timeout = setTimeout(() => {
         setCurrentSrc(nextSrc);
         setFade(true);
-      }, 1000);
+      }, 600);
       return () => clearTimeout(timeout);
     }
   }, [src]);
 
   const handleError = () => {
-    const fallback = FALLBACK_POSTERS[index % FALLBACK_POSTERS.length];
+    const fallback = DISTINCT_FALLBACK_POSTERS[index % DISTINCT_FALLBACK_POSTERS.length];
     if (currentSrc !== fallback) {
       setCurrentSrc(fallback);
+      setFade(true);
     }
   };
 
   return (
     <div 
-      className="aspect-[2/3] w-full rounded-2xl bg-zinc-950 border border-zinc-800/20 overflow-hidden shadow-2xl transition-transform duration-700"
+      className="aspect-[2/3] w-full rounded-2xl bg-zinc-900/40 border border-zinc-800/30 overflow-hidden shadow-2xl transition-transform duration-700 relative"
       style={{
-        transform: `translateY(${(index % 4) * 12}px) rotate(${(index % 2 === 0 ? 1 : -1) * (index % 3 + 1) * 1.5}deg)`
+        transform: `translateY(${(index % 4) * 10}px) rotate(${(index % 2 === 0 ? 1 : -1) * (index % 3 + 1) * 1.2}deg)`
       }}
     >
       <img 
         src={currentSrc} 
         alt="" 
-        className="w-full h-full object-cover transition-opacity"
+        className="w-full h-full object-cover transition-opacity duration-700"
         style={{
-          transition: 'opacity 1500ms ease-in-out',
-          opacity: fade ? 1 : 0
+          opacity: fade ? 1 : 0.25
         }}
         onError={handleError}
         loading="lazy"
@@ -179,93 +179,109 @@ export default function App() {
   const [gridPosters, setGridPosters] = useState<string[]>([]);
 
   useEffect(() => {
-    // Collect all valid unique poster URLs across our active collections
-    const activeUrls = new Set<string>();
+    // Collect all valid unique poster URLs across our active collections & database catalogs
+    const poolSet = new Set<string>();
     
     const isValidUrl = (url: any): url is string => {
       return !!url && typeof url === 'string' && url.trim().startsWith('http');
     };
 
+    // 1. Include full Letterboxd movie catalog
+    letterboxdMovies.forEach(m => {
+      if (isValidUrl(m.posterUrl)) poolSet.add(m.posterUrl.trim());
+    });
+
+    // 2. Include DISTINCT_FALLBACK_POSTERS
+    DISTINCT_FALLBACK_POSTERS.forEach(url => {
+      if (isValidUrl(url)) poolSet.add(url.trim());
+    });
+
+    // 3. Include active screenings, past screenings, recommendations, and polls
     screenings.forEach(s => {
-      if (isValidUrl(s.posterUrl)) {
-        activeUrls.add(s.posterUrl.trim());
-      }
+      const polished = getPolishedPosterUrl(s.title, s.posterUrl);
+      if (isValidUrl(polished)) poolSet.add(polished.trim());
     });
     
     computedPastMovies.forEach(pm => {
-      if (isValidUrl(pm.posterUrl)) {
-        activeUrls.add(pm.posterUrl.trim());
-      }
+      const polished = getPolishedPosterUrl(pm.title, pm.posterUrl);
+      if (isValidUrl(polished)) poolSet.add(polished.trim());
     });
     
     recommendations.forEach(r => {
-      if (isValidUrl(r.posterUrl)) {
-        activeUrls.add(r.posterUrl.trim());
-      }
+      const polished = getPolishedPosterUrl(r.title, r.posterUrl);
+      if (isValidUrl(polished)) poolSet.add(polished.trim());
     });
 
     polls.forEach(p => {
       p.options?.forEach(o => {
-        if (isValidUrl(o.posterUrl)) {
-          activeUrls.add(o.posterUrl.trim());
+        if (o.posterUrl) {
+          const polished = getPolishedPosterUrl(o.text, o.posterUrl);
+          if (isValidUrl(polished)) poolSet.add(polished.trim());
         }
       });
     });
 
-    // Merge with high-res standard ones to guarantee a diverse selection of unique posters
-    const combinedSet = new Set<string>();
-    Array.from(activeUrls).forEach(url => {
-      if (isValidUrl(url)) combinedSet.add(url.trim());
-    });
-    BACKGROUND_POSTERS.forEach(url => {
-      if (isValidUrl(url)) combinedSet.add(url.trim());
-    });
-    DISTINCT_FALLBACK_POSTERS.forEach(url => {
-      if (isValidUrl(url)) combinedSet.add(url.trim());
-    });
+    const masterPool = Array.from(poolSet);
+    const GRID_SIZE = 40;
 
-    const combinedPool = Array.from(combinedSet);
-
-    // Initialize or update 32 elements ensuring all 32 items are UNIQUE
+    // Initialize or update GRID_SIZE elements ensuring ALL items shown in grid are strictly UNIQUE
     setGridPosters(prev => {
-      if (prev.length === 32) {
-        // If we already have 32 posters, detect newly added active club posters that are not yet displayed
+      if (prev.length === GRID_SIZE) {
+        // Check if any newly added active poster is not yet shown in the grid
         const currentSet = new Set(prev);
-        const newlyAdded = Array.from(activeUrls).filter(url => !currentSet.has(url));
-        
-        if (newlyAdded.length > 0) {
+        const unshownActive = masterPool.filter(url => !currentSet.has(url));
+        if (unshownActive.length > 0) {
           const next = [...prev];
-          // Immediately inject newly added posters into random slots in the background grid so they show up instantly!
-          newlyAdded.forEach(newUrl => {
-            const randomSlot = Math.floor(Math.random() * 32);
-            next[randomSlot] = newUrl;
-          });
+          const randomSlot = Math.floor(Math.random() * GRID_SIZE);
+          next[randomSlot] = unshownActive[Math.floor(Math.random() * unshownActive.length)];
           return next;
         }
         return prev;
       }
-      // Populate 32 slots uniquely from the pool on first load
-      const shuffledPool = [...combinedPool].sort(() => Math.random() - 0.5);
+
+      // First initialization: shuffle masterPool and pick GRID_SIZE 100% UNIQUE poster URLs
+      const shuffled = [...masterPool].sort(() => Math.random() - 0.5);
       const initial: string[] = [];
-      for (let i = 0; i < 32; i++) {
-        initial.push(shuffledPool[i % shuffledPool.length] || DISTINCT_FALLBACK_POSTERS[i % DISTINCT_FALLBACK_POSTERS.length]);
+      const used = new Set<string>();
+
+      for (const url of shuffled) {
+        if (initial.length >= GRID_SIZE) break;
+        if (!used.has(url)) {
+          initial.push(url);
+          used.add(url);
+        }
       }
+
+      // Fill remaining slots if needed from DISTINCT_FALLBACK_POSTERS guaranteed unique
+      if (initial.length < GRID_SIZE) {
+        for (const url of DISTINCT_FALLBACK_POSTERS) {
+          if (initial.length >= GRID_SIZE) break;
+          if (!used.has(url)) {
+            initial.push(url);
+            used.add(url);
+          }
+        }
+      }
+
       return initial;
     });
 
-    // Start a periodic background theater ticker that randomly flips 1 random poster card to represent the living flow of the cinephile community
+    // Periodic ambient ticker: flips 1 poster card randomly, selecting exclusively an unused poster to prevent duplicates
     const interval = setInterval(() => {
       setGridPosters(current => {
-        if (current.length === 0) return current;
+        if (current.length < GRID_SIZE) return current;
+        const currentSet = new Set(current);
+        // Find posters in masterPool that are NOT currently displayed anywhere in the grid
+        const unusedInGrid = masterPool.filter(url => !currentSet.has(url));
+        if (unusedInGrid.length === 0) return current;
+
         const next = [...current];
-        // Select exactly 1 random position in the grid to flip
-        const randomGridIndex = Math.floor(Math.random() * 32);
-        // Pick a random poster from the entire combined pool (which includes latest database items)
-        const randomNewPoster = combinedPool[Math.floor(Math.random() * combinedPool.length)];
-        next[randomGridIndex] = randomNewPoster;
+        const randomSlot = Math.floor(Math.random() * GRID_SIZE);
+        const randomNewPoster = unusedInGrid[Math.floor(Math.random() * unusedInGrid.length)];
+        next[randomSlot] = randomNewPoster;
         return next;
       });
-    }, 10000); // Shift every 10 seconds for a super slow, smooth, ambient cinematic experience
+    }, 12000);
 
     return () => clearInterval(interval);
   }, [screenings, computedPastMovies, recommendations, polls]);
@@ -1232,7 +1248,7 @@ export default function App() {
       <div className="fixed inset-0 pointer-events-none overflow-hidden z-0 select-none">
         {/* Subtle grid of hand-selected cinematic poster frames representing real human cinephile soul */}
         <div className="absolute inset-0 grid grid-cols-2 sm:grid-cols-4 md:grid-cols-6 lg:grid-cols-8 gap-6 p-6 opacity-[0.24] filter saturate-[0.85] contrast-[1.1]">
-          {(gridPosters.length === 32 ? gridPosters : Array.from({ length: 32 }).map((_, idx) => BACKGROUND_POSTERS[idx % BACKGROUND_POSTERS.length])).map((imgUrl, i) => {
+          {(gridPosters.length === 40 ? gridPosters : DISTINCT_FALLBACK_POSTERS.slice(0, 40)).map((imgUrl, i) => {
             return (
               <BackgroundPosterItem 
                 key={i} 
@@ -1569,30 +1585,49 @@ export default function App() {
       </main>
 
       {/* Primary Footer Section adhering to strict branding limits */}
-      <footer className="border-t border-zinc-900 bg-zinc-980/80 backdrop-blur-md py-12 relative z-10">
+      <footer className="border-t border-zinc-900 bg-zinc-950/80 backdrop-blur-md py-8 relative z-10">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 flex flex-col md:flex-row items-center justify-between gap-6">
-          <div className="text-center md:text-left space-y-1">
-            <h3 className="font-serif text-sm font-semibold tracking-wide text-zinc-300 uppercase">
-              Movie Club IISER Kolkata
-            </h3>
-          </div>
-
-          <div className="flex flex-col items-center justify-center text-center gap-1.5 text-xs font-mono text-zinc-500">
-            <div className="flex items-center gap-3">
-              <a href="https://letterboxd.com/ikmc/diary/" target="_blank" rel="noreferrer" className="hover:text-amber-400 transition-colors font-medium">Letterboxd Diary</a>
-              <span className="text-zinc-700">•</span>
-              <a href="https://www.instagram.com/movieclub.iiserk/" target="_blank" rel="noreferrer" className="hover:text-pink-400 transition-colors font-medium inline-flex items-center gap-1">
-                <Instagram className="h-3.5 w-3.5" />
-                <span>Instagram</span>
-              </a>
+          {/* Left: Brand Title */}
+          <div className="flex flex-col items-center md:items-start text-center md:text-left gap-1">
+            <div className="flex items-center gap-2">
+              <Film className="h-4 w-4 text-amber-500" />
+              <h3 className="font-serif text-sm font-semibold tracking-wider text-zinc-300 uppercase">
+                Movie Club IISER Kolkata
+              </h3>
             </div>
-            <span className="text-zinc-600 text-[11px]">M.N. Saha Auditorium, Ground Floor, TRC building, Mohanpur, West Bengal 741246</span>
+            <p className="text-[11px] text-zinc-600">Cinema & Screening Society</p>
           </div>
 
-          <div className="text-center md:text-right">
-            <p className="text-[10px] text-zinc-600">
-              © 2026 Movie Club IISER Kolkata. Created for cinema lovers of Indian Institute of Science Education and Research, Kolkata.
-            </p>
+          {/* Middle: Links */}
+          <div className="flex items-center justify-center gap-3 text-xs font-mono text-zinc-400">
+            <a 
+              href="https://letterboxd.com/ikmc/diary/" 
+              target="_blank" 
+              rel="noreferrer" 
+              className="hover:text-amber-400 transition-colors font-medium inline-flex items-center gap-1.5"
+            >
+              <Film className="h-3.5 w-3.5 text-amber-500/80" />
+              <span>Letterboxd</span>
+            </a>
+            <span className="text-zinc-700">•</span>
+            <a 
+              href="https://www.instagram.com/movieclub.iiserk/" 
+              target="_blank" 
+              rel="noreferrer" 
+              className="hover:text-pink-400 transition-colors font-medium inline-flex items-center gap-1.5"
+            >
+              <Instagram className="h-3.5 w-3.5 text-pink-500/80" />
+              <span>Instagram</span>
+            </a>
+          </div>
+
+          {/* Right: Location & Info */}
+          <div className="flex flex-col items-center md:items-end text-center md:text-right gap-1 text-[11px] text-zinc-500 font-mono">
+            <div className="flex items-center gap-1.5 text-zinc-400">
+              <MapPin className="h-3.5 w-3.5 text-zinc-500 shrink-0" />
+              <span>M.N. Saha Auditorium, TRC, Mohanpur</span>
+            </div>
+            <p className="text-zinc-600">© 2026 Movie Club IISER Kolkata</p>
           </div>
         </div>
       </footer>

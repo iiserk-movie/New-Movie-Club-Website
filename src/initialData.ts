@@ -11,7 +11,7 @@ export const initialScreenings: Screening[] = [
     time: '18:30',
     venue: 'MND Auditorium',
     description: 'After discovering a mysterious artifact buried beneath the Lunar surface, mankind sets off on a quest to find its origins with the help of H.A.L. 9000, a sentient supercomputer.',
-    posterUrl: 'https://image.tmdb.org/t/p/w500/ve72g09mXZN0fI5gO6Xj6Z97M5n.jpg', // 2001 Space Odyssey official poster
+    posterUrl: 'https://upload.wikimedia.org/wikipedia/en/a/a2/2001_A_Space_Odyssey_Poster.jpg', // 2001 Space Odyssey official poster
     backdropUrl: 'https://images.unsplash.com/photo-1541185933-ef5d8ed016c2?q=80&w=1200&auto=format&fit=crop',
     runtime: '149 min',
     genre: ['Sci-Fi', 'Adventure', 'Mystery'],
@@ -27,7 +27,7 @@ export const initialScreenings: Screening[] = [
     time: '19:00',
     venue: 'M.N. Saha Auditorium, Ground Floor, TRC building',
     description: 'A mythological story about a goddess who created the entire universe and her first-born son, Hastar, a monster who wants to consume all the gold and grain. A family built a shrine for Hastar, which brings about a terrible curse.',
-    posterUrl: 'https://image.tmdb.org/t/p/w500/sa72g09mXZN0fI5gO6Xj6Z97M5n.jpg', // Tumbbad official poster
+    posterUrl: 'https://upload.wikimedia.org/wikipedia/en/3/38/Tumbbad_poster.jpg', // Tumbbad official poster
     backdropUrl: 'https://images.unsplash.com/photo-1518709268805-4e9042af9f23?q=80&w=1200&auto=format&fit=crop',
     runtime: '104 min',
     genre: ['Horror', 'Fantasy', 'Drama'],
@@ -43,7 +43,7 @@ export const initialScreenings: Screening[] = [
     time: '18:00',
     venue: 'LHC G-02 Lecture Room',
     description: 'Hirayama seems utterly content with his simple life as a cleaner of toilets in Tokyo. Outside of his very structured everyday routine he enjoys his passion for music and for books. And he loves trees and takes photos of them.',
-    posterUrl: 'https://image.tmdb.org/t/p/w500/ptS60S9gXy98C498X75y8gS2Z9.jpg', // Perfect Days official poster fallback
+    posterUrl: 'https://upload.wikimedia.org/wikipedia/en/4/4b/Perfect_Days_poster.jpeg', // Perfect Days official poster fallback
     backdropUrl: 'https://images.unsplash.com/photo-1540959733332-eab4deceeaf7?q=80&w=1200&auto=format&fit=crop',
     runtime: '124 min',
     genre: ['Drama'],
@@ -61,7 +61,7 @@ export const initialPastMovies: PastMovie[] = [
     screenedDate: '2026-05-18',
     rating: 4.8,
     letterboxdUrl: 'https://letterboxd.com/film/oppenheimer-2023/',
-    posterUrl: 'https://image.tmdb.org/t/p/w500/8G138vZ76vKshYv42N7C93S8v4vBfHh.jpg', // Oppenheimer official poster
+    posterUrl: 'https://upload.wikimedia.org/wikipedia/en/8/8a/Oppenheimer_%28film%29.jpg', // Oppenheimer official poster
     synopsis: 'The story of American scientist J. Robert Oppenheimer and his role in the development of the atomic bomb during World War II.',
     genre: ['Biography', 'Drama', 'History'],
     reviews: [
@@ -91,7 +91,7 @@ export const initialPastMovies: PastMovie[] = [
     screenedDate: '2026-04-24',
     rating: 4.7,
     letterboxdUrl: 'https://letterboxd.com/film/stalker/',
-    posterUrl: 'https://image.tmdb.org/t/p/w500/l0K57XJAnx8K4N5gO6Xj6Z97M5n.jpg', // Stalker official poster
+    posterUrl: 'https://upload.wikimedia.org/wikipedia/en/d/d4/Stalker_poster.jpg', // Stalker official poster
     synopsis: 'An expedition led by a "Stalker" guides a writer and a scientist through a mysterious, post-apocalyptic wasteland known as the "Zone" to find a Room that grants your deepest desires.',
     genre: ['Sci-Fi', 'Drama', 'Art-House'],
     reviews: [
@@ -113,7 +113,7 @@ export const initialPastMovies: PastMovie[] = [
     screenedDate: '2026-03-12',
     rating: 4.9,
     letterboxdUrl: 'https://letterboxd.com/film/in-the-mood-for-love/',
-    posterUrl: 'https://image.tmdb.org/t/p/w500/i936Vv9mXZN0fI5gO6Xj6Z97M5n.jpg', // In the Mood for Love official poster
+    posterUrl: 'https://upload.wikimedia.org/wikipedia/en/f/fa/In_the_Mood_for_Love_poster.jpg', // In the Mood for Love official poster
     synopsis: 'Two neighbors, a woman and a man, form a strong bond after both suspect extramarital activities of their respective spouses. However, they agree to keep things platonic.',
     genre: ['Drama', 'Romance'],
     reviews: [
@@ -135,7 +135,7 @@ export const initialPastMovies: PastMovie[] = [
     screenedDate: '2026-02-14',
     rating: 4.6,
     letterboxdUrl: 'https://letterboxd.com/film/spider-man-into-the-spider-verse/',
-    posterUrl: 'https://image.tmdb.org/t/p/w500/iiZZNVt2f9ik6v0Y20CH7LcZCH.jpg', // Spider-Verse official poster
+    posterUrl: 'https://upload.wikimedia.org/wikipedia/en/0/02/Spider-Man_Into_the_Spider-Verse_poster.png', // Spider-Verse official poster
     synopsis: 'Teen Miles Morales becomes the Spider-Man of his universe, and must join with five spider-powered individuals from other dimensions to stop a threat for all realities.',
     genre: ['Animation', 'Action', 'Sci-Fi'],
     reviews: [
@@ -163,7 +163,7 @@ export const initialRecommendations: Recommendation[] = [
     suggestedByName: 'Ritoban Roy',
     suggestedAt: '2026-06-12T14:24:00Z',
     votes: ['arindam.phys@iiserkol.ac.in', 'soham.bio@iiserkol.ac.in'],
-    posterUrl: 'https://is1-ssl.mzstatic.com/image/thumb/Video116/v4/bf/1a/0d/bf1a0dc0-14e9-ae1e-7f61-bca88bf4fbfb/movie_image.jpg/600x900f.png'
+    posterUrl: 'https://upload.wikimedia.org/wikipedia/en/d/d4/The_Zone_of_Interest_poster.jpeg'
   },
   {
     id: 'rec-2',
@@ -176,7 +176,7 @@ export const initialRecommendations: Recommendation[] = [
     suggestedByName: 'Priya Banerjee',
     suggestedAt: '2026-06-13T10:15:00Z',
     votes: ['arindam.phys@iiserkol.ac.in'],
-    posterUrl: 'https://image.tmdb.org/t/p/w500/xYCoH36OofSg6fFvS6oVofYt78p.jpg'
+    posterUrl: 'https://upload.wikimedia.org/wikipedia/en/d/df/Arrival_film_poster.jpg'
   }
 ];
 
