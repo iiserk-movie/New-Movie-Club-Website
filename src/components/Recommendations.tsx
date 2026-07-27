@@ -472,19 +472,17 @@ export default function Recommendations({
                 key={rec.id}
                 className="group flex flex-col sm:flex-row gap-4 justify-between rounded-3xl border border-zinc-900/60 bg-[#121019]/65 backdrop-blur-md p-5 shadow-2xl card-hover animate-fadeIn"
               >
-                {rec.posterUrl && (
-                  <div className="w-24 h-36 shrink-0 rounded-lg overflow-hidden border border-zinc-900 bg-zinc-900 shadow-md self-center sm:self-start">
-                    <img 
-                      src={getPolishedPosterUrl(rec.title, rec.posterUrl)} 
-                      alt={rec.title} 
-                      referrerPolicy="no-referrer"
-                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                      onError={(e) => {
-                        e.currentTarget.src = getDeterministicPoster(rec.title);
-                      }}
-                    />
-                  </div>
-                )}
+                <div className="w-24 h-36 shrink-0 rounded-lg overflow-hidden border border-zinc-900 bg-zinc-900 shadow-md self-center sm:self-start">
+                  <img 
+                    src={getPolishedPosterUrl(rec.title, rec.posterUrl)} 
+                    alt={rec.title} 
+                    referrerPolicy="no-referrer"
+                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                    onError={(e) => {
+                      e.currentTarget.src = getDeterministicPoster(rec.title);
+                    }}
+                  />
+                </div>
                 
                 <div className="flex-1 flex flex-col justify-between">
                   <div>

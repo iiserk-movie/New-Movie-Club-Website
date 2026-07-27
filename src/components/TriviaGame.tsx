@@ -5,6 +5,7 @@ import {
 } from 'lucide-react';
 import { TriviaQuestion } from '../types';
 import { triviaQuestions } from '../initialData';
+import { getPolishedPosterUrl, getDeterministicPoster } from '../letterboxdDb';
 
 export default function TriviaGame() {
   const [questions, setQuestions] = useState<TriviaQuestion[]>(triviaQuestions);
@@ -147,14 +148,27 @@ export default function TriviaGame() {
           </div>
         ) : (
           <div className="space-y-6">
-            {/* Question Text */}
-            <div className="space-y-2">
-              <span className="text-[9.5px] font-mono uppercase bg-zinc-900 border border-zinc-850 text-zinc-400 px-2 py-0.5 rounded">
-                Master Class Trivia
-              </span>
-              <h3 className="font-serif text-lg sm:text-xl font-semibold text-zinc-100 leading-snug">
-                {activeQuestion.question}
-              </h3>
+            {/* Question Text & Poster */}
+            <div className="flex flex-col sm:flex-row gap-4 items-start">
+              <div className="w-20 h-28 shrink-0 rounded-lg overflow-hidden border border-zinc-900 bg-zinc-900 shadow-md">
+                <img 
+                  src={getPolishedPosterUrl(activeQuestion.question, '')} 
+                  alt="Quiz Cinema" 
+                  referrerPolicy="no-referrer"
+                  className="w-full h-full object-cover"
+                  onError={(e) => {
+                    e.currentTarget.src = getDeterministicPoster(activeQuestion.question);
+                  }}
+                />
+              </div>
+              <div className="space-y-2 flex-1 min-w-0">
+                <span className="text-[9.5px] font-mono uppercase bg-zinc-900 border border-zinc-850 text-amber-500 font-semibold px-2 py-0.5 rounded">
+                  Master Class Trivia
+                </span>
+                <h3 className="font-serif text-lg sm:text-xl font-semibold text-zinc-100 leading-snug">
+                  {activeQuestion.question}
+                </h3>
+              </div>
             </div>
 
             {/* Options list */}

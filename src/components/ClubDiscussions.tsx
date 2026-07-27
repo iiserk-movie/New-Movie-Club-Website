@@ -4,7 +4,7 @@ import {
   Plus, ArrowLeft, Star, Trash2, Send, Clapperboard, CheckCircle2, MessageCircle
 } from 'lucide-react';
 import { ClubDiscussion, DiscussionComment, User as UserType } from '../types';
-import { letterboxdMovies } from '../letterboxdDb';
+import { letterboxdMovies, getPolishedPosterUrl, getDeterministicPoster } from '../letterboxdDb';
 
 const COLLAGE_POSTERS = [
   'https://upload.wikimedia.org/wikipedia/en/5/53/Parasite_%282019_film%29_poster.gif', // Parasite
@@ -529,58 +529,72 @@ export default function ClubDiscussions({
                 <div
                   key={disc.id}
                   onClick={() => handleSetSelectedDiscId(disc.id)}
-                  className="group flex flex-col justify-between rounded-3xl border border-zinc-900/60 bg-[#121019]/65 backdrop-blur-md p-5 shadow-2xl card-hover cursor-pointer"
+                  className="group flex flex-col sm:flex-row gap-4 justify-between rounded-3xl border border-zinc-900/60 bg-[#121019]/65 backdrop-blur-md p-5 shadow-2xl card-hover cursor-pointer"
                 >
-                  <div className="space-y-3.5">
-                    {/* Header line: Category tag & rating info */}
-                    <div className="flex items-center justify-between">
-                      <span className={`text-[9px] uppercase font-mono px-2 py-0.5 rounded border tracking-wider font-bold ${getCategoryColor(disc.category)}`}>
-                        {disc.category}
-                      </span>
-                      {disc.createdAt && (
-                        <span className="text-[10px] text-zinc-500 font-mono">
-                          {new Date(disc.createdAt).toLocaleDateString(undefined, {month: 'short', day: 'numeric'})}
-                        </span>
-                      )}
-                    </div>
-
-                    {/* Thread Title & subject film */}
-                    <div className="space-y-1">
-                      <h3 className="font-serif text-base font-bold text-zinc-200 group-hover:text-amber-400 transition-colors line-clamp-1">
-                        {disc.title}
-                      </h3>
-                      {disc.movieTitle && (
-                        <p className="text-[11px] text-zinc-500 font-mono leading-none">
-                          Subject: <span className="font-bold text-zinc-300 font-sans">{disc.movieTitle}</span>
-                          {disc.rating && <span className="text-zinc-600 font-normal"> ({disc.rating} ★)</span>}
-                        </p>
-                      )}
-                    </div>
-
-                    {/* Synopsis content preview */}
-                    <p className="text-xs text-zinc-400 leading-relaxed line-clamp-3 font-sans">
-                      {disc.content}
-                    </p>
+                  <div className="w-20 h-28 shrink-0 rounded-lg overflow-hidden border border-zinc-900 bg-zinc-900 shadow-md self-center sm:self-start">
+                    <img 
+                      src={getPolishedPosterUrl(disc.movieTitle || disc.title, '')} 
+                      alt={disc.movieTitle || disc.title} 
+                      referrerPolicy="no-referrer"
+                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                      onError={(e) => {
+                        e.currentTarget.src = getDeterministicPoster(disc.movieTitle || disc.title);
+                      }}
+                    />
                   </div>
 
-                  {/* Footing detail row */}
-                  <div className="flex items-center justify-between border-t border-zinc-900/60 mt-4 pt-3 text-[11px] text-zinc-500">
-                    <div className="flex items-center space-x-1 font-sans">
-                      <div className="h-5 w-5 rounded-full border border-zinc-850 bg-zinc-900 flex items-center justify-center font-bold text-amber-500 text-[10px]">
-                        {disc.authorName.charAt(0).toUpperCase()}
+                  <div className="flex-1 flex flex-col justify-between min-w-0">
+                    <div className="space-y-3.5">
+                      {/* Header line: Category tag & rating info */}
+                      <div className="flex items-center justify-between">
+                        <span className={`text-[9px] uppercase font-mono px-2 py-0.5 rounded border tracking-wider font-bold ${getCategoryColor(disc.category)}`}>
+                          {disc.category}
+                        </span>
+                        {disc.createdAt && (
+                          <span className="text-[10px] text-zinc-500 font-mono">
+                            {new Date(disc.createdAt).toLocaleDateString(undefined, {month: 'short', day: 'numeric'})}
+                          </span>
+                        )}
                       </div>
-                      <span className="text-zinc-400 truncate max-w-[100px]">{disc.authorName}</span>
+
+                      {/* Thread Title & subject film */}
+                      <div className="space-y-1">
+                        <h3 className="font-serif text-base font-bold text-zinc-200 group-hover:text-amber-400 transition-colors line-clamp-1">
+                          {disc.title}
+                        </h3>
+                        {disc.movieTitle && (
+                          <p className="text-[11px] text-zinc-500 font-mono leading-none">
+                            Subject: <span className="font-bold text-zinc-300 font-sans">{disc.movieTitle}</span>
+                            {disc.rating && <span className="text-zinc-600 font-normal"> ({disc.rating} ★)</span>}
+                          </p>
+                        )}
+                      </div>
+
+                      {/* Synopsis content preview */}
+                      <p className="text-xs text-zinc-400 leading-relaxed line-clamp-3 font-sans">
+                        {disc.content}
+                      </p>
                     </div>
 
-                    <div className="flex items-center space-x-3 font-mono">
-                      <span className="flex items-center gap-1">
-                        <ThumbsUp className="h-3 w-3" />
-                        {disc.votes.length}
-                      </span>
-                      <span className="flex items-center gap-1">
-                        <MessageSquare className="h-3 w-3" />
-                        {disc.comments.length}
-                      </span>
+                    {/* Footing detail row */}
+                    <div className="flex items-center justify-between border-t border-zinc-900/60 mt-4 pt-3 text-[11px] text-zinc-500">
+                      <div className="flex items-center space-x-1 font-sans">
+                        <div className="h-5 w-5 rounded-full border border-zinc-850 bg-zinc-900 flex items-center justify-center font-bold text-amber-500 text-[10px]">
+                          {disc.authorName.charAt(0).toUpperCase()}
+                        </div>
+                        <span className="text-zinc-400 truncate max-w-[100px]">{disc.authorName}</span>
+                      </div>
+
+                      <div className="flex items-center space-x-3 font-mono">
+                        <span className="flex items-center gap-1">
+                          <ThumbsUp className="h-3 w-3" />
+                          {disc.votes.length}
+                        </span>
+                        <span className="flex items-center gap-1">
+                          <MessageSquare className="h-3 w-3" />
+                          {disc.comments.length}
+                        </span>
+                      </div>
                     </div>
                   </div>
                 </div>

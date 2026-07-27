@@ -246,7 +246,11 @@ export default function App() {
       }
       // Populate 32 slots uniquely from the pool on first load
       const shuffledPool = [...combinedPool].sort(() => Math.random() - 0.5);
-      return shuffledPool.slice(0, 32);
+      const initial: string[] = [];
+      for (let i = 0; i < 32; i++) {
+        initial.push(shuffledPool[i % shuffledPool.length] || DISTINCT_FALLBACK_POSTERS[i % DISTINCT_FALLBACK_POSTERS.length]);
+      }
+      return initial;
     });
 
     // Start a periodic background theater ticker that randomly flips 1 random poster card to represent the living flow of the cinephile community
