@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Film, User as UserIcon, LogOut, Shield, ShieldCheck, HelpCircle, GraduationCap, Camera, UploadCloud, Image as ImageIcon, Settings, Key, Eye, EyeOff, RefreshCw, Menu, X, Calendar, MessageSquare, Sparkles, BarChart2, History } from 'lucide-react';
+import { Film, User as UserIcon, LogOut, Shield, ShieldCheck, HelpCircle, GraduationCap, Camera, UploadCloud, Image as ImageIcon, Settings, Key, Eye, EyeOff, RefreshCw, Menu, X, Calendar, MessageSquare, Sparkles, BarChart2, History, Instagram, ExternalLink } from 'lucide-react';
 import { User, PastMovie } from '../types';
 import { auth, googleProvider, db } from '../firebase';
 import { doc, setDoc } from 'firebase/firestore';
@@ -747,6 +747,19 @@ export default function Navbar({
 
             {/* Profile snapshot & controls in Drawer Footer */}
             <div className="border-t border-zinc-800/80 pt-4 space-y-3">
+              <a
+                href="https://www.instagram.com/movieclub.iiserk/"
+                target="_blank"
+                rel="noreferrer"
+                className="w-full flex items-center justify-between bg-gradient-to-r from-pink-500/10 via-purple-500/10 to-amber-500/10 border border-amber-500/30 p-3 rounded-2xl text-xs font-bold text-zinc-100 hover:text-amber-300 transition-all shadow-md group cursor-pointer"
+              >
+                <div className="flex items-center space-x-2.5">
+                  <Instagram className="h-4 w-4 text-pink-400 group-hover:scale-110 transition-transform" />
+                  <span>Instagram @movieclub.iiserk</span>
+                </div>
+                <ExternalLink className="h-3.5 w-3.5 text-zinc-400 group-hover:text-amber-400" />
+              </a>
+
               {currentUser ? (
                 <>
                   <div className="flex items-center space-x-3 bg-zinc-900/90 p-3 rounded-2xl border border-zinc-800">

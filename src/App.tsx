@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { 
-  Film, Sparkles, MapPin, Users, Clapperboard, Calendar, Clock, Play, Bell, ChevronRight, ChevronLeft, ExternalLink, MessageSquare, Volume2, X, ChevronDown, ChevronUp, ThumbsUp, Check
+  Film, Sparkles, MapPin, Users, Clapperboard, Calendar, Clock, Play, Bell, ChevronRight, ChevronLeft, ExternalLink, MessageSquare, Volume2, X, ChevronDown, ChevronUp, ThumbsUp, Check, Instagram
 } from 'lucide-react';
 
 import { Screening, PastMovie, Recommendation, User, UserReview, ClubDiscussion, Poll } from './types';
@@ -1483,10 +1483,10 @@ export default function App() {
         <AnimatePresence mode="wait">
           <motion.div
             key={activeTab}
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -10 }}
-            transition={{ duration: 0.25, ease: 'easeOut' }}
+            initial={{ opacity: 0, y: 12, scale: 0.99 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: -8, scale: 0.995 }}
+            transition={{ duration: 0.28, ease: [0.16, 1, 0.3, 1] }}
           >
             {activeTab === 'schedule' && (
               <ScreeningSchedule
@@ -1575,15 +1575,40 @@ export default function App() {
             <h3 className="font-serif text-sm font-semibold tracking-wide text-zinc-300 uppercase">
               Movie Club IISER Kolkata
             </h3>
+            <p className="text-[11px] text-zinc-500 font-mono">
+              Indian Institute of Science Education and Research, Kolkata
+            </p>
           </div>
 
-          <div className="flex flex-col items-center justify-center text-center gap-1.5 text-xs font-mono text-zinc-500">
-            <a href="https://letterboxd.com/ikmc/diary/" target="_blank" rel="noreferrer" className="hover:text-amber-400 transition-colors font-medium">Letterboxd Diary</a>
-            <span className="text-zinc-600 text-[11px]">M.N. Saha Auditorium, Ground Floor, TRC building, Mohanpur, West Bengal 741246</span>
+          <div className="flex flex-col items-center justify-center text-center gap-2.5">
+            <div className="flex items-center gap-3">
+              <a 
+                href="https://www.instagram.com/movieclub.iiserk/" 
+                target="_blank" 
+                rel="noreferrer" 
+                className="flex items-center gap-2 bg-gradient-to-r from-pink-500/10 via-purple-500/10 to-amber-500/10 hover:from-pink-500/20 hover:via-purple-500/20 hover:to-amber-500/20 text-zinc-200 hover:text-amber-300 border border-amber-500/30 px-3.5 py-1.5 rounded-xl text-xs font-semibold tracking-wide transition-all shadow-md group cursor-pointer"
+              >
+                <Instagram className="h-4 w-4 text-pink-400 group-hover:scale-110 transition-transform" />
+                <span>@movieclub.iiserk</span>
+                <ExternalLink className="h-3 w-3 text-zinc-500 group-hover:text-amber-400" />
+              </a>
+
+              <a 
+                href="https://letterboxd.com/ikmc/diary/" 
+                target="_blank" 
+                rel="noreferrer" 
+                className="flex items-center gap-2 bg-zinc-900/80 hover:bg-zinc-800 text-zinc-300 hover:text-amber-400 border border-zinc-800 px-3.5 py-1.5 rounded-xl text-xs font-semibold tracking-wide transition-all shadow-md group cursor-pointer"
+              >
+                <span>Letterboxd Diary</span>
+                <ExternalLink className="h-3 w-3 text-zinc-500 group-hover:text-amber-400" />
+              </a>
+            </div>
+
+            <span className="text-zinc-500 text-[11px] font-mono">M.N. Saha Auditorium, Ground Floor, TRC building, Mohanpur, West Bengal 741246</span>
           </div>
 
           <div className="text-center md:text-right">
-            <p className="text-[10px] text-zinc-600">
+            <p className="text-[10px] text-zinc-600 max-w-xs">
               © 2026 Movie Club IISER Kolkata. Created for cinema lovers of Indian Institute of Science Education and Research, Kolkata.
             </p>
           </div>
