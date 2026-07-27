@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
-import { motion } from 'motion/react';
-import { Film, User as UserIcon, LogOut, Shield, ShieldCheck, HelpCircle, GraduationCap, Camera, UploadCloud, Image as ImageIcon, Settings, Key, Eye, EyeOff, RefreshCw, Menu, X, Calendar, MessageSquare, Sparkles, BarChart2, History, Instagram, ExternalLink } from 'lucide-react';
+import { Film, User as UserIcon, LogOut, Shield, ShieldCheck, HelpCircle, GraduationCap, Camera, UploadCloud, Image as ImageIcon, Settings, Key, Eye, EyeOff, RefreshCw, Menu, X, Calendar, MessageSquare, Sparkles, BarChart2, History } from 'lucide-react';
 import { User, PastMovie } from '../types';
 import { auth, googleProvider, db } from '../firebase';
 import { doc, setDoc } from 'firebase/firestore';
@@ -448,71 +447,91 @@ export default function Navbar({
   return (
     <>
       <header className="sticky top-0 z-40 w-full border-b border-zinc-800/90 bg-[#100e19]/98 backdrop-blur-xl shadow-2xl shadow-black/60">
-        <div className="mx-auto flex items-center justify-between min-h-[80px] sm:min-h-[88px] py-2.5 px-3 sm:px-6 lg:px-8 max-w-[1440px] gap-2 sm:gap-3">
-          {/* Logo Brand (Left) - Always un-truncated */}
-          <div className="flex items-center space-x-2.5 sm:space-x-3.5 cursor-pointer group shrink-0" onClick={() => setActiveTab('schedule')}>
-            <div className="relative flex h-10 w-10 sm:h-12 sm:w-12 items-center justify-center shrink-0 group-hover:scale-105 transition-transform duration-300">
-              <MovieClubLogo className="h-10 w-10 sm:h-12 sm:w-12" />
-              <div className="absolute -top-0.5 -right-0.5 flex h-3 w-3 sm:h-3.5 sm:w-3.5 rounded-full bg-amber-500 animate-pulse ring-2 ring-zinc-950"></div>
+        <div className="mx-auto flex max-w-7xl min-h-[92px] py-3.5 items-center justify-between px-4 sm:px-6 lg:px-8">
+          {/* Logo Brand */}
+          <div className="flex items-center space-x-4 cursor-pointer group" onClick={() => setActiveTab('schedule')}>
+            <div className="relative flex h-14 w-14 items-center justify-center shrink-0 group-hover:scale-105 transition-transform duration-300">
+              <MovieClubLogo className="h-14 w-14" />
+              <div className="absolute -top-0.5 -right-0.5 flex h-3.5 w-3.5 rounded-full bg-amber-500 animate-pulse ring-2 ring-zinc-950"></div>
             </div>
-            <div className="shrink-0">
-              <h1 className="font-serif text-base sm:text-xl font-black tracking-wide text-transparent bg-clip-text bg-gradient-to-r from-zinc-100 via-amber-200 to-amber-400 drop-shadow-[0_2px_12px_rgba(245,158,11,0.3)] uppercase whitespace-nowrap">
+            <div>
+              <h1 className="font-serif text-2xl sm:text-3xl font-black tracking-wide text-transparent bg-clip-text bg-gradient-to-r from-zinc-100 via-amber-200 to-amber-400 drop-shadow-[0_2px_12px_rgba(245,158,11,0.3)] uppercase">
                 Movie Club
               </h1>
-              <p className="font-mono text-[9px] sm:text-[11px] tracking-[0.2em] text-amber-400 font-bold uppercase whitespace-nowrap">
+              <p className="font-mono text-xs tracking-[0.2em] text-amber-400 font-bold uppercase">
                 IISER Kolkata
               </p>
             </div>
           </div>
 
-          {/* Navigation Items (Center) - Centered & Responsive */}
-          <div className="hidden md:flex items-center justify-center min-w-0 mx-1">
-            <nav className="flex items-center bg-[#171426]/90 border border-zinc-700/60 p-1 rounded-2xl shadow-xl shadow-black/60 backdrop-blur-md gap-0.5 2xl:gap-1.5">
-              {[
-                { id: 'schedule', label: 'Screenings', icon: Calendar },
-                { id: 'past', label: 'Past Screenings', shortLabel: 'Past', icon: History },
-                { id: 'discussions', label: 'Discussions', shortLabel: 'Forum', icon: MessageSquare },
-                { id: 'recommendations', label: 'Recommendations', shortLabel: 'Wishlist', icon: Sparkles },
-                { id: 'polls', label: 'Polls', icon: BarChart2 },
-                ...(currentUser ? [{ id: 'profile', label: 'My Profile', shortLabel: 'Profile', icon: UserIcon }] : [])
-              ].map((tab) => {
-                const IconComponent = tab.icon;
-                const isActive = activeTab === tab.id;
-                return (
-                  <button
-                    key={tab.id}
-                    id={`tab-${tab.id}`}
-                    onClick={() => setActiveTab(tab.id)}
-                    className={`relative px-2 py-1.5 xl:px-3 xl:py-2 2xl:px-3.5 2xl:py-2.5 rounded-xl text-[11px] xl:text-xs font-bold tracking-wider uppercase transition-colors duration-200 flex items-center gap-1 xl:gap-1.5 2xl:gap-2 cursor-pointer whitespace-nowrap z-10 ${
-                      isActive
-                        ? 'text-amber-300'
-                        : 'text-zinc-300 hover:text-white hover:bg-zinc-800/50'
-                    }`}
-                  >
-                    {isActive && (
-                      <motion.div
-                        layoutId="activeNavbarPill"
-                        className="absolute inset-0 bg-[#211d38] border border-amber-500/50 rounded-xl shadow-lg shadow-amber-500/20 -z-10"
-                        transition={{ type: "spring", stiffness: 450, damping: 32 }}
-                      />
-                    )}
-                    <IconComponent className={`h-3.5 w-3.5 xl:h-4 xl:w-4 ${isActive ? 'text-amber-400' : 'text-zinc-400'}`} />
-                    <span className="hidden 2xl:inline">{tab.label}</span>
-                    <span className="inline 2xl:hidden">{tab.shortLabel || tab.label}</span>
-                  </button>
-                );
-              })}
-            </nav>
-          </div>
+          {/* Navigation Items - Desktop */}
+          <nav className="hidden lg:flex items-center bg-[#171426]/90 border border-zinc-700/60 p-2 rounded-2xl shadow-xl shadow-black/60 backdrop-blur-md gap-1.5">
+            {[
+              { id: 'schedule', label: 'Screenings', icon: Calendar },
+              { id: 'past', label: 'Past Screenings', icon: History },
+              { id: 'discussions', label: 'Discussions', icon: MessageSquare },
+              { id: 'recommendations', label: 'Recommendations', icon: Sparkles },
+              { id: 'polls', label: 'Polls', icon: BarChart2 },
+              ...(currentUser ? [{ id: 'profile', label: 'My Profile', icon: UserIcon }] : [])
+            ].map((tab) => {
+              const IconComponent = tab.icon;
+              const isActive = activeTab === tab.id;
+              return (
+                <button
+                  key={tab.id}
+                  id={`tab-${tab.id}`}
+                  onClick={() => setActiveTab(tab.id)}
+                  className={`relative px-5 py-3 rounded-xl text-xs sm:text-sm font-bold tracking-wider uppercase transition-all duration-300 flex items-center gap-2.5 cursor-pointer ${
+                    isActive
+                      ? 'text-amber-300 bg-[#211d38] shadow-lg shadow-amber-500/15 border border-amber-500/50 scale-[1.03]'
+                      : 'text-zinc-300 hover:text-white hover:bg-zinc-800/80 border border-transparent'
+                  }`}
+                >
+                  <IconComponent className={`h-4.5 w-4.5 ${isActive ? 'text-amber-400' : 'text-zinc-400'}`} />
+                  <span>{tab.label}</span>
+                </button>
+              );
+            })}
+          </nav>
 
-          {/* User Session Auth Actions (Right) */}
-          <div className="flex items-center space-x-2 sm:space-x-2.5 justify-end shrink-0">
+          {/* Medium screen navigation pills */}
+          <nav className="hidden md:flex lg:hidden items-center bg-[#171426]/90 border border-zinc-700/60 p-1.5 rounded-xl shadow-xl shadow-black/60 gap-1">
+            {[
+              { id: 'schedule', label: 'Screenings', icon: Calendar },
+              { id: 'past', label: 'Past', icon: History },
+              { id: 'discussions', label: 'Forum', icon: MessageSquare },
+              { id: 'recommendations', label: 'Wishlist', icon: Sparkles },
+              { id: 'polls', label: 'Polls', icon: BarChart2 },
+              ...(currentUser ? [{ id: 'profile', label: 'Profile', icon: UserIcon }] : [])
+            ].map((tab) => {
+              const IconComponent = tab.icon;
+              const isActive = activeTab === tab.id;
+              return (
+                <button
+                  key={tab.id}
+                  id={`tab-${tab.id}`}
+                  onClick={() => setActiveTab(tab.id)}
+                  className={`relative px-3.5 py-2.5 rounded-lg text-xs font-bold tracking-wider uppercase transition-all duration-300 flex items-center gap-1.5 cursor-pointer ${
+                    isActive
+                      ? 'text-amber-300 bg-[#211d38] shadow-md border border-amber-500/40'
+                      : 'text-zinc-300 hover:text-white hover:bg-zinc-800/80 border border-transparent'
+                  }`}
+                >
+                  <IconComponent className={`h-4 w-4 ${isActive ? 'text-amber-400' : 'text-zinc-400'}`} />
+                  <span>{tab.label}</span>
+                </button>
+              );
+            })}
+          </nav>
+
+          {/* User Session Auth Actions */}
+          <div className="flex items-center space-x-4">
             {/* Quick Admin Toggler for ease of editing schedules */}
             {adminMode && (
-              <div className="flex items-center space-x-1.5">
-                <div className="flex items-center space-x-1.5 bg-amber-500/10 text-amber-400 border border-amber-500/20 px-2 py-1 sm:px-2.5 sm:py-1.5 rounded-xl text-xs font-mono font-semibold whitespace-nowrap">
-                  <ShieldCheck className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-amber-500 shrink-0" />
-                  <span className="hidden sm:inline">Admin</span>
+              <div className="flex items-center space-x-2">
+                <div className="flex items-center space-x-1.5 bg-amber-500/10 text-amber-400 border border-amber-500/20 px-3 py-2 rounded-xl text-xs font-mono font-semibold">
+                  <ShieldCheck className="h-4 w-4 text-amber-500" />
+                  <span className="hidden sm:inline">Admin Active</span>
                   <button
                     onClick={() => {
                       setAdminMode(false);
@@ -520,7 +539,7 @@ export default function Navbar({
                         onLogin(currentUser.email, currentUser.name, 'student');
                       }
                     }}
-                    className="ml-0.5 underline hover:text-white cursor-pointer"
+                    className="ml-1 underline hover:text-white cursor-pointer"
                   >
                     Exit
                   </button>
@@ -532,8 +551,8 @@ export default function Navbar({
                     setGeminiKeyInput(getLocalGeminiKey());
                     setShowGeminiModal(true);
                   }}
-                  className="bg-zinc-900 border border-zinc-700 text-zinc-300 hover:text-amber-400 hover:border-amber-500/50 p-2 rounded-xl text-xs font-mono transition-colors flex items-center justify-center cursor-pointer shadow-md shrink-0"
-                  title="Configure local Gemini API key"
+                  className="bg-zinc-900 border border-zinc-700 text-zinc-300 hover:text-amber-400 hover:border-amber-500/50 p-2 rounded-xl text-xs font-mono transition-colors flex items-center justify-center cursor-pointer shadow-md"
+                  title="Configure local Gemini API key (Required for GitHub Pages hosting)"
                 >
                   <Settings className="h-4 w-4" />
                 </button>
@@ -541,18 +560,18 @@ export default function Navbar({
             )}
 
             {currentUser ? (
-              <div className="flex items-center space-x-2 sm:space-x-2.5 pl-2 border-l border-zinc-800 shrink-0">
-                <div className="hidden 2xl:block text-right">
-                  <p className="text-xs font-semibold text-zinc-100 whitespace-nowrap truncate max-w-[140px]">
+              <div className="flex items-center space-x-3 pl-3 border-l border-zinc-800">
+                <div className="hidden sm:block text-right">
+                  <p className="text-xs font-semibold text-zinc-100 text-ellipsis max-w-[130px] overflow-hidden">
                     {currentUser.name}
                   </p>
-                  <p className="text-[10px] text-amber-400/80 font-mono font-medium whitespace-nowrap">
+                  <p className="text-[10px] text-amber-400/80 font-mono font-medium">
                     {currentUser.role === 'admin' ? 'Club Coordinator' : 'IISER-K Member'}
                   </p>
                 </div>
                 <div 
                   onClick={() => setShowProfileDropdown(!showProfileDropdown)}
-                  className="relative h-9 w-9 sm:h-10 sm:w-10 rounded-full bg-zinc-800 border-2 border-zinc-700 hover:border-amber-500/60 flex items-center justify-center text-amber-400 font-bold cursor-pointer group shadow-lg transition-colors shrink-0"
+                  className="relative h-10 w-10 rounded-full bg-zinc-800 border-2 border-zinc-700 hover:border-amber-500/60 flex items-center justify-center text-amber-400 font-bold cursor-pointer group shadow-lg transition-colors"
                 >
                   {currentUser.photoURL ? (
                     <img 
@@ -728,19 +747,6 @@ export default function Navbar({
 
             {/* Profile snapshot & controls in Drawer Footer */}
             <div className="border-t border-zinc-800/80 pt-4 space-y-3">
-              <a
-                href="https://www.instagram.com/movieclub.iiserk/"
-                target="_blank"
-                rel="noreferrer"
-                className="w-full flex items-center justify-between bg-gradient-to-r from-pink-500/10 via-purple-500/10 to-amber-500/10 border border-amber-500/30 p-3 rounded-2xl text-xs font-bold text-zinc-100 hover:text-amber-300 transition-all shadow-md group cursor-pointer"
-              >
-                <div className="flex items-center space-x-2.5">
-                  <Instagram className="h-4 w-4 text-pink-400 group-hover:scale-110 transition-transform" />
-                  <span>Instagram @movieclub.iiserk</span>
-                </div>
-                <ExternalLink className="h-3.5 w-3.5 text-zinc-400 group-hover:text-amber-400" />
-              </a>
-
               {currentUser ? (
                 <>
                   <div className="flex items-center space-x-3 bg-zinc-900/90 p-3 rounded-2xl border border-zinc-800">

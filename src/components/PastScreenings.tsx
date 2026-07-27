@@ -1,8 +1,8 @@
-import React, { useState, useRef } from 'react';
+import React, { useState } from 'react';
 import { 
   Star, MessageSquare, ExternalLink, RefreshCw, Calendar, 
   ChevronDown, ChevronUp, User, Clock, Send, MessageCircleCode, CheckCircle2,
-  Edit3, Trash2, Plus, Search, X, AlertCircle, FileSpreadsheet, Upload, ChevronLeft, ChevronRight
+  Edit3, Trash2, Plus, Search, X, AlertCircle, FileSpreadsheet, Upload
 } from 'lucide-react';
 import { PastMovie, UserReview } from '../types';
 import { getPolishedPosterUrl, getDeterministicPoster } from '../letterboxdDb';
@@ -39,15 +39,6 @@ export default function PastScreenings({
   onUpdatePastMovie,
   onDeletePastMovie
 }: PastScreeningsProps) {
-  const reelScrollRef = useRef<HTMLDivElement>(null);
-
-  const scrollReel = (direction: 'left' | 'right') => {
-    if (reelScrollRef.current) {
-      const scrollAmount = direction === 'left' ? -380 : 380;
-      reelScrollRef.current.scrollBy({ left: scrollAmount, behavior: 'smooth' });
-    }
-  };
-
   const [selectedMovieId, setSelectedMovieId] = useState<string | null>(null);
   const [expandedPastSynopses, setExpandedPastSynopses] = useState<Record<string, boolean>>({});
   const [isSyncing, setIsSyncing] = useState(false);
@@ -558,49 +549,23 @@ export default function PastScreenings({
       {/* Featured Marquee Showcase Carousel */}
       {pastMovies.length > 0 && (
         <div className="space-y-4 pt-2">
-          <div className="flex items-center justify-between pb-2 gap-4">
-            <div className="flex items-center space-x-2.5 min-w-0">
-              <div className="h-2 w-2 rounded-full bg-amber-400 animate-pulse shrink-0"></div>
-              <h3 className="font-serif text-lg sm:text-xl font-bold text-zinc-200 tracking-tight truncate">
-                Cinephile Favorites & Recent Screenings
-              </h3>
-              <span className="hidden sm:inline-block text-[11px] font-mono text-amber-400/90 bg-amber-500/10 border border-amber-500/20 px-2.5 py-0.5 rounded-full font-semibold shrink-0">
-                Recent Highlights
-              </span>
-            </div>
-
-            <div className="flex items-center space-x-1.5 shrink-0">
-              <button
-                onClick={() => scrollReel('left')}
-                className="p-2 rounded-xl bg-zinc-900/90 hover:bg-zinc-800 border border-zinc-800/80 text-zinc-400 hover:text-amber-400 transition-colors cursor-pointer shadow-md"
-                title="Scroll Previous"
-              >
-                <ChevronLeft className="h-4 w-4" />
-              </button>
-              <button
-                onClick={() => scrollReel('right')}
-                className="p-2 rounded-xl bg-zinc-900/90 hover:bg-zinc-800 border border-zinc-800/80 text-zinc-400 hover:text-amber-400 transition-colors cursor-pointer shadow-md"
-                title="Scroll Next"
-              >
-                <ChevronRight className="h-4 w-4" />
-              </button>
-            </div>
+          <div className="flex items-center justify-between pb-2">
+            <h3 className="font-serif text-lg font-bold text-zinc-300">
+              Cinephile Favorites & Recent Screenings
+            </h3>
           </div>
           
-          <div 
-            ref={reelScrollRef}
-            className="flex gap-4 overflow-x-auto pb-4 pt-1 px-1 scrollbar-thin scrollbar-thumb-zinc-800 scrollbar-track-transparent snap-x snap-mandatory scroll-smooth w-full"
-          >
-            {pastMovies.slice(0, 6).map((movie, idx) => {
+          <div className="flex gap-4 overflow-x-auto pb-4 scrollbar-thin scrollbar-thumb-zinc-800 scrollbar-track-transparent snap-x snap-mandatory">
+            {pastMovies.slice(0, 5).map((movie, idx) => {
               const avgRating = calculateAverageRating(movie);
               return (
                 <div
                   key={`marquee-${movie.id}`}
                   onClick={() => setSelectedMovieId(selectedMovieId === movie.id ? null : movie.id)}
-                  className={`group relative flex-1 min-w-[160px] xs:min-w-[180px] sm:min-w-[195px] md:min-w-[210px] max-w-[240px] shrink-0 snap-start cursor-pointer rounded-2xl border bg-zinc-900/40 backdrop-blur-md overflow-hidden transition-all duration-300 hover:scale-[1.02] ${
+                  className={`group relative flex-shrink-0 w-[160px] xs:w-[180px] sm:w-[200px] snap-start cursor-pointer rounded-2xl border bg-zinc-900/40 backdrop-blur-md overflow-hidden transition-all duration-500 hover:scale-[1.03] ${
                     selectedMovieId === movie.id 
                       ? 'border-amber-500/80 shadow-[0_0_20px_rgba(245,158,11,0.25)] ring-1 ring-amber-500/30' 
-                      : 'border-zinc-900 hover:border-zinc-800'
+                      : 'border-zinc-900 hover:border-zinc-850'
                   }`}
                 >
                   <div className="absolute inset-0 z-0 opacity-10 filter blur-[4px] group-hover:opacity-20 transition-opacity">
@@ -613,13 +578,13 @@ export default function PastScreenings({
 
                   <div className="relative z-10 p-4 space-y-3 flex flex-col justify-between h-full">
                     <div className="flex items-center justify-between">
-                      <span className="text-[9px] font-mono text-zinc-500 font-bold">REEL #{String(idx + 1).padStart(2, '0')}</span>
-                      <span className="text-[10px] font-mono text-amber-500 font-bold flex items-center gap-0.5 bg-amber-500/10 px-1.5 py-0.5 rounded-md border border-amber-500/20">
+                      <span className="text-[9px] font-mono text-zinc-600 font-bold">REEL #0{idx + 1}</span>
+                      <span className="text-[10px] font-mono text-amber-500 font-bold flex items-center gap-0.5 bg-amber-500/5 px-1.5 py-0.5 rounded border border-amber-500/10">
                         ★ {avgRating}
                       </span>
                     </div>
 
-                    <div className="aspect-[2/3] w-full rounded-xl overflow-hidden border border-zinc-800/80 bg-zinc-950 shadow-md relative">
+                    <div className="aspect-[2/3] w-full rounded-lg overflow-hidden border border-zinc-900 bg-zinc-950 shadow-md relative">
                       <img
                         src={getPolishedPosterUrl(movie.title, movie.posterUrl)}
                         alt={movie.title}
@@ -629,8 +594,8 @@ export default function PastScreenings({
                           e.currentTarget.src = getDeterministicPoster(movie.title);
                         }}
                       />
-                      <div className="absolute inset-0 bg-gradient-to-t from-zinc-950/90 via-zinc-950/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity flex items-end p-2.5">
-                        <span className="text-[9px] font-mono font-bold text-amber-400 uppercase tracking-wider block w-full text-center bg-zinc-950/80 py-1 rounded border border-amber-500/30 backdrop-blur-sm">
+                      <div className="absolute inset-0 bg-gradient-to-t from-zinc-950/80 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity flex items-end p-2">
+                        <span className="text-[9px] font-mono font-bold text-amber-400 uppercase tracking-wider block w-full text-center">
                           Read Logs & Reviews
                         </span>
                       </div>

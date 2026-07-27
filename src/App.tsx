@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { 
-  Film, Sparkles, MapPin, Users, Clapperboard, Calendar, Clock, Play, Bell, ChevronRight, ChevronLeft, ExternalLink, MessageSquare, Volume2, X, ChevronDown, ChevronUp, ThumbsUp, Check, Instagram
+  Film, Sparkles, MapPin, Users, Clapperboard, Calendar, Clock, Play, Bell, ChevronRight, ChevronLeft, ExternalLink, MessageSquare, Volume2, X, ChevronDown, ChevronUp, ThumbsUp, Check
 } from 'lucide-react';
 
 import { Screening, PastMovie, Recommendation, User, UserReview, ClubDiscussion, Poll } from './types';
@@ -132,10 +132,6 @@ export default function App() {
     const randomIndex = Math.floor(Math.random() * CINEMA_QUOTES.length);
     setRandomQuote(CINEMA_QUOTES[randomIndex]);
   };
-
-  useEffect(() => {
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-  }, [activeTab]);
 
   // Core schedules, past screenings, recommendations pools with initial empty state to prevent deleted default items flashing on load
   const [screenings, setScreenings] = useState<Screening[]>([]);
@@ -1352,7 +1348,7 @@ export default function App() {
                     </span>
                   </div>
 
-                  <h2 className="font-serif text-4xl sm:text-6xl font-black text-transparent bg-clip-text bg-gradient-to-r from-zinc-100 via-zinc-200 to-amber-300 tracking-tight leading-[1.05]">
+                  <h2 className="font-serif text-4xl sm:text-6xl font-black text-transparent bg-clip-text bg-gradient-to-r from-zinc-550 via-zinc-150 to-amber-250 tracking-tight leading-[1.05] animate-glow">
                     {featured.title}
                   </h2>
 
@@ -1366,12 +1362,12 @@ export default function App() {
                     <span>Language: <span className="text-zinc-200">{featured.language}</span></span>
                   </p>
 
-                  <p className="text-sm sm:text-base text-zinc-300 max-w-2xl leading-relaxed italic font-serif">
+                  <p className="text-sm sm:text-base text-zinc-350 max-w-2xl leading-relaxed italic font-serif">
                     "{featured.description}"
                   </p>
 
                   <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 max-w-3xl pt-2 font-sans">
-                    <div className="flex items-center space-x-2.5 bg-zinc-900/60 backdrop-blur-md px-3.5 py-2.5 rounded-xl border border-zinc-800">
+                    <div className="flex items-center space-x-2.5 bg-zinc-900/60 backdrop-blur-md px-3.5 py-2.5 rounded-xl border border-zinc-850">
                       <Calendar className="h-4.5 w-4.5 text-amber-400" />
                       <div>
                         <span className="text-zinc-500 block text-[9px] uppercase tracking-wider font-mono">Screen Date</span>
@@ -1379,7 +1375,7 @@ export default function App() {
                       </div>
                     </div>
 
-                    <div className="flex items-center space-x-2.5 bg-zinc-900/60 backdrop-blur-md px-3.5 py-2.5 rounded-xl border border-zinc-800">
+                    <div className="flex items-center space-x-2.5 bg-zinc-900/60 backdrop-blur-md px-3.5 py-2.5 rounded-xl border border-zinc-850">
                       <Clock className="h-4.5 w-4.5 text-rose-400" />
                       <div>
                         <span className="text-zinc-500 block text-[9px] uppercase tracking-wider font-mono">Showtime</span>
@@ -1387,9 +1383,9 @@ export default function App() {
                       </div>
                     </div>
 
-                    <div className="flex items-center space-x-2.5 bg-zinc-900/60 backdrop-blur-md px-3.5 py-2.5 rounded-xl border border-zinc-800">
+                    <div className="flex items-center space-x-2.5 bg-zinc-900/60 backdrop-blur-md px-3.5 py-2.5 rounded-xl border border-zinc-850">
                       <MapPin className="h-4.5 w-4.5 text-emerald-400" />
-                      <div>
+                      <div className="min-w-0">
                         <span className="text-zinc-500 block text-[9px] uppercase tracking-wider font-mono">Venue Lounge</span>
                         <span className="text-zinc-200 text-xs font-bold truncate block" title={featured.venue}>
                           {featured.venue.split(',')[0]}
@@ -1487,10 +1483,10 @@ export default function App() {
         <AnimatePresence mode="wait">
           <motion.div
             key={activeTab}
-            initial={{ opacity: 0, y: 8 }}
+            initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -6 }}
-            transition={{ duration: 0.22, ease: [0.25, 1, 0.5, 1] }}
+            exit={{ opacity: 0, y: -10 }}
+            transition={{ duration: 0.25, ease: 'easeOut' }}
           >
             {activeTab === 'schedule' && (
               <ScreeningSchedule
@@ -1573,46 +1569,21 @@ export default function App() {
       </main>
 
       {/* Primary Footer Section adhering to strict branding limits */}
-      <footer className="border-t border-zinc-900 bg-zinc-950/80 backdrop-blur-md py-12 relative z-10">
+      <footer className="border-t border-zinc-900 bg-zinc-980/80 backdrop-blur-md py-12 relative z-10">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 flex flex-col md:flex-row items-center justify-between gap-6">
           <div className="text-center md:text-left space-y-1">
             <h3 className="font-serif text-sm font-semibold tracking-wide text-zinc-300 uppercase">
               Movie Club IISER Kolkata
             </h3>
-            <p className="text-[11px] text-zinc-500 font-mono">
-              Indian Institute of Science Education and Research, Kolkata
-            </p>
           </div>
 
-          <div className="flex flex-col items-center justify-center text-center gap-2.5">
-            <div className="flex items-center gap-3">
-              <a 
-                href="https://www.instagram.com/movieclub.iiserk/" 
-                target="_blank" 
-                rel="noreferrer" 
-                className="flex items-center gap-2 bg-gradient-to-r from-pink-500/10 via-purple-500/10 to-amber-500/10 hover:from-pink-500/20 hover:via-purple-500/20 hover:to-amber-500/20 text-zinc-200 hover:text-amber-300 border border-amber-500/30 px-3.5 py-1.5 rounded-xl text-xs font-semibold tracking-wide transition-all shadow-md group cursor-pointer"
-              >
-                <Instagram className="h-4 w-4 text-pink-400 group-hover:scale-110 transition-transform" />
-                <span>@movieclub.iiserk</span>
-                <ExternalLink className="h-3 w-3 text-zinc-500 group-hover:text-amber-400" />
-              </a>
-
-              <a 
-                href="https://letterboxd.com/ikmc/diary/" 
-                target="_blank" 
-                rel="noreferrer" 
-                className="flex items-center gap-2 bg-zinc-900/80 hover:bg-zinc-800 text-zinc-300 hover:text-amber-400 border border-zinc-800 px-3.5 py-1.5 rounded-xl text-xs font-semibold tracking-wide transition-all shadow-md group cursor-pointer"
-              >
-                <span>Letterboxd Diary</span>
-                <ExternalLink className="h-3 w-3 text-zinc-500 group-hover:text-amber-400" />
-              </a>
-            </div>
-
-            <span className="text-zinc-500 text-[11px] font-mono">M.N. Saha Auditorium, Ground Floor, TRC building, Mohanpur, West Bengal 741246</span>
+          <div className="flex flex-col items-center justify-center text-center gap-1.5 text-xs font-mono text-zinc-500">
+            <a href="https://letterboxd.com/ikmc/diary/" target="_blank" rel="noreferrer" className="hover:text-amber-400 transition-colors font-medium">Letterboxd Diary</a>
+            <span className="text-zinc-600 text-[11px]">M.N. Saha Auditorium, Ground Floor, TRC building, Mohanpur, West Bengal 741246</span>
           </div>
 
           <div className="text-center md:text-right">
-            <p className="text-[10px] text-zinc-600 max-w-xs">
+            <p className="text-[10px] text-zinc-600">
               © 2026 Movie Club IISER Kolkata. Created for cinema lovers of Indian Institute of Science Education and Research, Kolkata.
             </p>
           </div>
