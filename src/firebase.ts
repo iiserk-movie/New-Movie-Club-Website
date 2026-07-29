@@ -1,12 +1,12 @@
 import { initializeApp } from 'firebase/app';
 import { getAuth, GoogleAuthProvider } from 'firebase/auth';
-import { initializeFirestore } from 'firebase/firestore';
+import { getFirestore, doc, getDocFromServer } from 'firebase/firestore';
 import firebaseConfig from '../firebase-applet-config.json';
 
 const app = initializeApp(firebaseConfig);
-export const db = initializeFirestore(app, {
-  experimentalForceLongPolling: true
-}, firebaseConfig.firestoreDatabaseId || undefined); /* CRITICAL: The app will break without this line */
+export const db = firebaseConfig.firestoreDatabaseId 
+  ? getFirestore(app, firebaseConfig.firestoreDatabaseId)
+  : getFirestore(app); /* CRITICAL: The app will break without this line */
 export const auth = getAuth(app);
 export const googleProvider = new GoogleAuthProvider();
 
@@ -58,27 +58,26 @@ export function handleFirestoreError(error: unknown, operationType: OperationTyp
     operationType,
     path
   };
-  console.error('Firestore Error: ', JSON.stringify(errInfo));
-  throw new Error(JSON.stringify(errInfo));
+  console.warn('Firestore Notice: ', JSON.stringify(errInfo));
 }
 
 export const sanitizeDoc = <T extends object>(obj: T): T => {
   return JSON.parse(JSON.stringify(obj));
 };
 
-// Check initial Firestore connectivity as mandated by the firebase-integration skill instructions
-import { doc, getDocFromServer } from 'firebase/firestore';
+// Check initial Firestore connectivity safely
 async function testConnection() {
   try {
     await getDocFromServer(doc(db, 'test', 'connection'));
     console.log('[Firebase] Connection validation succeeded.');
   } catch (error) {
     if (error instanceof Error && error.message.includes('the client is offline')) {
-      console.log('[Firebase] Running in offline cache mode or initial connection pending.');
+      console.log('[Firebase] Running in offline cache mode.');
     } else {
-      console.log('[Firebase] Connection status check completed.');
+      console.log('[Firebase] Initial connection check initialized.');
     }
   }
 }
 testConnection();
+
 

@@ -1621,7 +1621,7 @@ export default function App() {
           <div className="flex flex-col items-center md:items-end text-center md:text-right gap-1 text-[11px] text-zinc-500 font-mono">
             <div className="flex items-center gap-1.5 text-zinc-400">
               <MapPin className="h-3.5 w-3.5 text-zinc-500 shrink-0" />
-              <span>M.N. Saha Auditorium, TRC, Mohanpur</span>
+              <span>M.N. Saha Auditorium, TRC, IISER Kolkata</span>
             </div>
             <p className="text-zinc-600">© 2026 Movie Club IISER Kolkata</p>
           </div>

@@ -396,7 +396,7 @@ export default function Recommendations({
             Student Wishlist
           </h2>
           <p className="text-zinc-400 text-xs md:text-sm font-sans font-medium line-clamp-2 leading-relaxed">
-            Suggest masterpieces for our next active club screening cycle! Search and find movie metadata automatically to cast wishlist entries.
+            Suggest masterpieces for our next active club screening cycle!
           </p>
         </div>
       </div>
@@ -623,13 +623,6 @@ export default function Recommendations({
             <form onSubmit={handleSubmit} className="space-y-4 text-sm text-zinc-300">
                   {/* Intelligent Cinema Autofill & Search Bar */}
               <div className="bg-zinc-900/80 border border-zinc-800 p-4 rounded-xl space-y-3">
-                <div className="flex items-center justify-between text-xs font-mono">
-                  <span className="text-amber-500 flex items-center gap-1.5 px-1.5 py-0.5 bg-amber-500/5 rounded border border-amber-500/10 font-bold uppercase tracking-wider text-[10px]">
-                    🍿 SMART MULTIMEDIA AUTOFILL & SEARCH
-                  </span>
-                  <span className="text-zinc-550 text-[10px]/none">Real-time API suggestions</span>
-                </div>
-                
                 <div className="relative">
                   <span className="absolute left-3 top-2.5 text-zinc-500">
                     <Link2 className="h-4 w-4" />
