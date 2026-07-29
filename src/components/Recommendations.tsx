@@ -668,10 +668,6 @@ export default function Recommendations({
                   )}
                 </div>
 
-                <p className="text-[10px] text-zinc-550 leading-normal leading-relaxed font-sans">
-                  💡 Hint: Search for any movie, TV show, anime, documentary, or series by name, or paste an IMDb / Letterboxd / MyAnimeList / TMDB link above, and we will automatically fill in the details for you!
-                </p>
-
                 {selectedMovie && (
                   <div className="flex items-start gap-4 bg-zinc-950/75 p-3 rounded-lg border border-zinc-800 animate-fadeIn">
                     <img 
