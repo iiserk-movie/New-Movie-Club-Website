@@ -34,7 +34,6 @@ export default function Navbar({
   const [showLoginModal, setShowLoginModal] = useState(false);
   const [emailInput, setEmailInput] = useState('');
   const [nameInput, setNameInput] = useState('');
-  const [passwordInput, setPasswordInput] = useState('');
   const [errorMsg, setErrorMsg] = useState('');
   const [showAdminVerify, setShowAdminVerify] = useState(false);
   const [isGoogleCustom, setIsGoogleCustom] = useState(false);
@@ -163,7 +162,6 @@ export default function Navbar({
     setShowLoginModal(false);
     setEmailInput('');
     setNameInput('');
-    setPasswordInput('');
     setErrorMsg('');
     setIsGoogleCustom(false);
   };
@@ -210,7 +208,6 @@ export default function Navbar({
       setShowLoginModal(false);
       setEmailInput('');
       setNameInput('');
-      setPasswordInput('');
       setErrorMsg('');
       setIsGoogleCustom(false);
     } catch (err: any) {
@@ -239,7 +236,7 @@ export default function Navbar({
           popupErr.code === 'auth/operation-not-supported-in-this-environment' ||
           /iPhone|iPad|iPod|Android/i.test(navigator.userAgent)
         ) {
-          setErrorMsg('Popup was blocked, closed, or not supported. Please try again or use the secure passcode validation below.');
+          setErrorMsg('Popup was blocked, closed, or not supported. Please try again or open the app in a new tab.');
           return;
         } else {
           throw popupErr;
@@ -260,7 +257,6 @@ export default function Navbar({
       setAdminMode(true);
       onLogin(email, name, 'admin', user.photoURL || undefined);
       setShowAdminVerify(false);
-      setPasswordInput('');
       setErrorMsg('');
     } catch (err: any) {
       console.error('Google Admin Sign-In Error:', err);
@@ -276,67 +272,25 @@ export default function Navbar({
 
   const handleGoogleAccountClick = (email: string, name: string) => {
     if (email === 'movie.activity@iiserkol.ac.in') {
-      setErrorMsg('For safety, simulating movie.activity@iiserkol.ac.in requires the coordinator passcode. Please click "Admin Access" below instead.');
+      setErrorMsg('For safety, accessing administrator capabilities requires official Google Sign-In with movie.activity@iiserkol.ac.in.');
       return;
     }
-    // Authenticate with Firebase anonymously to grant authorized database session
+    // Authenticate with Firebase anonymously for standard student interaction
     signInAnonymously(auth).catch((err) => {
       console.warn("[Firebase] Anonymous session click-init failed:", err);
     });
-    const role = email === 'movie.activity@iiserkol.ac.in' ? 'admin' : 'student';
+    const role = 'student';
     onLogin(email, name, role);
     setShowLoginModal(false);
     setEmailInput('');
     setNameInput('');
-    setPasswordInput('');
     setErrorMsg('');
     setIsGoogleCustom(false);
   };
 
   const handleAdminAuthSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (passwordInput === 'movie@2026') {
-      try {
-        // Sign out from any student/coordinated Google session to avoid sending a student auth token to Firestore rules
-        if (auth.currentUser) {
-          try {
-            await fbSignOut(auth);
-          } catch (signOutErr) {
-            console.warn("[Firebase] Pre-admin signout error, skipping:", signOutErr);
-          }
-        }
-
-        // Authenticate with Firebase anonymously to grant authorized database permission
-        let sessionUser = null;
-        try {
-          const authResult = await signInAnonymously(auth);
-          sessionUser = authResult.user;
-        } catch (authErr) {
-          console.warn("[Firebase] Anonymous session administration auth warning (Anonymous Sign-In might be disabled in Firebase console):", authErr);
-        }
-
-        if (sessionUser) {
-          // Write the secure verification document to Firestore to grant admin status to this anonymous UID
-          const sessionRef = doc(db, 'adminSessions', sessionUser.uid);
-          await setDoc(sessionRef, {
-            uid: sessionUser.uid,
-            passcodeHash: '032cc2334b28463ebeaadeed1da30d46be8606043379d3bc85cb848fbf276687',
-            createdAt: new Date().toISOString()
-          });
-        }
-        
-        setAdminMode(true);
-        onLogin('movie.activity@iiserkol.ac.in', 'Movie Club Administrator', 'admin');
-        setShowAdminVerify(false);
-        setPasswordInput('');
-        setErrorMsg('');
-      } catch (err: any) {
-        console.error('Anonymous Administration Auth error:', err);
-        setErrorMsg('Failed to establish administration database session.');
-      }
-    } else {
-      setErrorMsg('Incorrect passcode. Please enter the secure administrator passcode.');
-    }
+    await handleAdminGoogleSignIn();
   };
 
   const handleLetterboxdLoginAndSync = async (e: React.FormEvent) => {
@@ -347,41 +301,20 @@ export default function Navbar({
       return;
     }
 
-    // Require the correct passcode for sync authorization if not already logged in as admin
-    const hasAdminSession = currentUser?.email === 'movie.activity@iiserkol.ac.in';
-    if (!hasAdminSession && passwordInput !== 'movie@2026') {
-      setErrorMsg('Incorrect secure admin passcode. Please check and try again.');
+    // Require active Google OAuth session as movie.activity@iiserkol.ac.in
+    const hasAdminSession = auth.currentUser && auth.currentUser.email === 'movie.activity@iiserkol.ac.in';
+    if (!hasAdminSession) {
+      setErrorMsg('Administrator authentication required. Please sign in with Google using movie.activity@iiserkol.ac.in first.');
       return;
     }
 
     setIsLetterboxdSyncing(true);
     setErrorMsg('');
     setLetterboxdSuccessMsg('');
-    setSyncPhaseInfo('Authenticating with Firebase services of Movie Club...');
+    setSyncPhaseInfo('Authenticating coordinator session with Movie Club database...');
 
     try {
-      // 1. Establish database connection session safely
-      let sessionUser = auth.currentUser;
-      try {
-        if (!sessionUser) {
-          const authResult = await signInAnonymously(auth);
-          sessionUser = authResult.user;
-        }
-      } catch (authErr) {
-        console.warn("[Firebase] Anonymous authentication warning:", authErr);
-      }
-
-      if (sessionUser) {
-        // Write the secure verification document to Firestore to grant admin status to this anonymous UID
-        const sessionRef = doc(db, 'adminSessions', sessionUser.uid);
-        await setDoc(sessionRef, {
-          uid: sessionUser.uid,
-          passcodeHash: '032cc2334b28463ebeaadeed1da30d46be8606043379d3bc85cb848fbf276687',
-          createdAt: new Date().toISOString()
-        });
-      }
-
-      // 2. Fetch and parse the Letterboxd entries via our proxy RSS feed
+      // 1. Fetch and parse the Letterboxd entries via our proxy RSS feed
       setSyncPhaseInfo(`Connecting to Letterboxd, pulling public diary RSS for "${username}"...`);
       const rawMovies = await syncLetterboxdRSS(username);
       
@@ -391,7 +324,7 @@ export default function Navbar({
 
       setSyncPhaseInfo(`Successfully fetched ${rawMovies.length} watched entries! Synchronizing with database past screenings archive...`);
 
-      // 3. Format and save to Firestore using batch-import callback if present
+      // 2. Format and save to Firestore using batch-import callback if present
       if (onImportPastMovies) {
         const formattedMovies = rawMovies.map(m => ({
           id: m.title.toLowerCase().replace(/[^a-z0-9]+/g, '-') + '-' + m.year,
@@ -409,10 +342,10 @@ export default function Navbar({
         await onImportPastMovies(formattedMovies);
       }
 
-      // 4. Save username cache
+      // 3. Save username cache
       localStorage.setItem('last_letterboxd_sync_username', username);
 
-      // 5. Complete login session as Admin!
+      // 4. Complete login session as Admin!
       setAdminMode(true);
       onLogin('movie.activity@iiserkol.ac.in', `${username} (Letterboxd Sync)`, 'admin', 'https://upload.wikimedia.org/wikipedia/commons/e/e0/Letterboxd_logo_transparent_text.png');
       
@@ -854,7 +787,7 @@ export default function Navbar({
                 }}
                 className={`flex-1 pb-2 border-b-2 font-bold transition-all cursor-pointer ${adminTab === 'passcode' ? 'border-amber-500 text-amber-500 font-extrabold' : 'border-transparent text-zinc-500 hover:text-zinc-300'}`}
               >
-                Passcode / Google
+                Google Authentication
               </button>
               <button
                 type="button"
@@ -868,14 +801,18 @@ export default function Navbar({
               </button>
             </div>
 
-            {/* Passcode / Google Tab */}
+            {/* Google OAuth Tab */}
             {adminTab === 'passcode' && (
               <div className="space-y-4">
+                <div className="rounded-xl bg-zinc-900/60 border border-zinc-800 p-3.5 text-[11px] text-zinc-400 leading-relaxed font-sans">
+                  🔒 <b>Secure Authentication:</b> Administrative privileges are strictly enforced by Firebase Firestore Security Rules. Access is restricted exclusively to authenticated Google accounts with <code className="text-amber-400">movie.activity@iiserkol.ac.in</code>.
+                </div>
+
                 {/* Real Google Sign-In Action Button for Coordinator */}
                 <button
                   type="button"
                   onClick={handleAdminGoogleSignIn}
-                  className="w-full mb-1 flex items-center justify-center space-x-3 p-3.5 rounded-xl border border-zinc-800 bg-zinc-900/40 hover:bg-zinc-900/90 hover:border-amber-500/50 transition-all text-center cursor-pointer shadow-lg group font-medium"
+                  className="w-full flex items-center justify-center space-x-3 p-3.5 rounded-xl border border-zinc-800 bg-zinc-900 hover:bg-zinc-850 hover:border-amber-500/50 transition-all text-center cursor-pointer shadow-lg group font-medium"
                 >
                   <svg className="h-5 w-5" viewBox="0 0 24 24" width="20" height="20" xmlns="http://www.w3.org/2000/svg">
                     <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12V14.4h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.23z" fill="#4285F4"/>
@@ -883,69 +820,29 @@ export default function Navbar({
                     <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22c-.87-2.6-2.87-4.53-6.16-4.53z" fill="#FBBC05"/>
                     <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/>
                   </svg>
-                  <span className="text-sm font-semibold text-zinc-200 group-hover:text-amber-400 transition-colors">
-                    Sign in with Google (Admin)
+                  <span className="text-sm font-semibold text-zinc-100 group-hover:text-amber-400 transition-colors">
+                    Sign in with Google (movie.activity@iiserkol.ac.in)
                   </span>
                 </button>
 
-                <div className="relative my-4 flex items-center justify-center">
-                  <div className="absolute inset-0 flex items-center">
-                    <div className="w-full border-t border-zinc-900 border-zinc-900/40"></div>
+                {errorMsg && (
+                  <div className="rounded-lg bg-red-500/10 border border-red-500/25 p-3 text-xs text-red-400 text-center leading-relaxed font-mono">
+                    ⚠️ {errorMsg}
                   </div>
-                  <span className="relative bg-zinc-950 px-3 text-[9px] font-mono text-zinc-500 uppercase tracking-widest select-none">
-                    OR USE PASSCODE
-                  </span>
+                )}
+
+                <div className="flex justify-end space-x-3 pt-2">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setShowAdminVerify(false);
+                      setErrorMsg('');
+                    }}
+                    className="px-4 py-2 text-sm font-semibold text-zinc-400 hover:text-zinc-200 cursor-pointer"
+                  >
+                    Close
+                  </button>
                 </div>
-
-                <form onSubmit={handleAdminAuthSubmit} className="space-y-4">
-                  <div>
-                    <label className="block text-xs font-mono text-zinc-400 mb-1.5 uppercase tracking-wider">
-                      Admin Passcode
-                    </label>
-                    <input
-                      type="password"
-                      required
-                      autoFocus
-                      placeholder="Enter coordinates or admin passcode"
-                      value={passwordInput}
-                      onChange={(e) => {
-                        setPasswordInput(e.target.value);
-                        if (errorMsg) setErrorMsg('');
-                      }}
-                      className="w-full rounded-lg border border-zinc-800 bg-zinc-900/60 px-4 py-2.5 text-sm text-zinc-100 placeholder-zinc-650 focus:border-amber-500/50 focus:outline-none focus:ring-1 focus:ring-amber-500/50 text-center"
-                    />
-                    <span className="text-[10px] text-zinc-550 block text-center mt-2 font-mono">
-                      Please enter the secure coordinator passcode.
-                    </span>
-                  </div>
-
-                  {errorMsg && (
-                    <div className="rounded-lg bg-red-500/10 border border-red-500/25 p-3 text-xs text-red-400 text-center leading-relaxed font-mono">
-                      ⚠️ {errorMsg}
-                    </div>
-                  )}
-
-                  <div className="flex justify-end space-x-3 pt-2">
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setShowAdminVerify(false);
-                        setPasswordInput('');
-                        setErrorMsg('');
-                      }}
-                      className="px-4 py-2 text-sm font-semibold text-zinc-400 hover:text-zinc-200 cursor-pointer"
-                    >
-                      Close
-                    </button>
-                    <button
-                      type="submit"
-                      className="bg-amber-500 hover:bg-amber-600 text-zinc-950 px-5 py-2 rounded-lg text-sm font-semibold transition-colors flex items-center space-x-1 cursor-pointer"
-                    >
-                      <ShieldCheck className="h-4 w-4" />
-                      <span>Authenticate</span>
-                    </button>
-                  </div>
-                </form>
               </div>
             )}
 
@@ -984,22 +881,8 @@ export default function Navbar({
                 </div>
 
                 {currentUser?.email !== 'movie.activity@iiserkol.ac.in' && (
-                  <div>
-                    <label className="block text-xs font-mono text-zinc-400 mb-1.5 uppercase tracking-wider">
-                      Coordinator Passcode
-                    </label>
-                    <input
-                      type="password"
-                      required
-                      placeholder="Enter admin passcode to authorize"
-                      value={passwordInput}
-                      onChange={(e) => {
-                        setPasswordInput(e.target.value);
-                        if (errorMsg) setErrorMsg('');
-                      }}
-                      disabled={isLetterboxdSyncing}
-                      className="w-full rounded-lg border border-zinc-800 bg-zinc-900/60 px-4 py-2.5 text-sm text-zinc-100 placeholder-zinc-650 focus:border-amber-500/50 focus:outline-none focus:ring-1 focus:ring-amber-500/50 text-center"
-                    />
+                  <div className="rounded-xl bg-amber-500/10 border border-amber-500/20 p-3 text-xs text-amber-300 text-center leading-relaxed">
+                    🔑 Please sign in with Google (<code className="text-amber-200">movie.activity@iiserkol.ac.in</code>) on the Google Authentication tab first before authorizing Letterboxd synchronization.
                   </div>
                 )}
 
