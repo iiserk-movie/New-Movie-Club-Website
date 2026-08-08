@@ -396,7 +396,7 @@ export default function Recommendations({
             Student Wishlist
           </h2>
           <p className="text-zinc-400 text-xs md:text-sm font-sans font-medium line-clamp-2 leading-relaxed">
-            Suggest masterpieces for our next active club screening cycle!
+            Suggest movies for upcoming club screenings and vote on member requests.
           </p>
         </div>
       </div>
@@ -459,7 +459,7 @@ export default function Recommendations({
           <BookOpen className="h-10 w-10 text-zinc-700 mx-auto mb-3" />
           <h4 className="text-zinc-400 font-serif text-base font-semibold">No requests meet your filter</h4>
           <p className="text-xs text-zinc-650 mt-1 max-w-xs mx-auto">
-            Try revising your search terms or be the first to recommend a masterpiece.
+            Try adjusting your search terms or be the first to suggest a movie.
           </p>
         </div>
       ) : (
@@ -836,11 +836,11 @@ export default function Recommendations({
               </div>
 
               <div>
-                <label className="block text-xs font-mono text-zinc-400 mb-1.5">SCREENING ESSAY / MOTIVATION *</label>
+                <label className="block text-xs font-mono text-zinc-400 mb-1.5">WHY SHOULD WE SCREEN THIS? *</label>
                 <textarea
                   rows={3}
                   required
-                  placeholder="In 2 to 3 lines, motivate why the film carries merit (concept, sound design, academic themes, philosophical depth or cinematic mastery) and why the IISER Kolkata student club must screen it..."
+                  placeholder="Briefly explain why this movie would be a good pick for a club screening..."
                   value={notes}
                   onChange={(e) => setNotes(e.target.value)}
                   className="w-full rounded-lg border border-zinc-800 bg-zinc-900/60 px-3.5 py-2 text-sm text-zinc-100 placeholder-zinc-600 focus:border-amber-500/50 focus:outline-none resize-none"

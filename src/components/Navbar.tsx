@@ -335,7 +335,7 @@ export default function Navbar({
           rating: m.rating || 4.0,
           letterboxdUrl: m.letterboxdUrl || `https://letterboxd.com/film/${m.title.toLowerCase().replace(/[^a-z0-9]+/g, '-')}/`,
           posterUrl: m.posterUrl || 'https://images.unsplash.com/photo-1489599849927-2ee91cede3ba?q=80&w=300',
-          synopsis: m.synopsis || 'Cinema screening curated and imported from the Movie Club Letterboxd feed.',
+          synopsis: m.synopsis || 'Imported from the Movie Club Letterboxd feed.',
           genre: m.genre || ['Drama']
         }));
 
@@ -968,7 +968,7 @@ export default function Navbar({
                 <span>Customize Your Avatar</span>
               </h2>
               <p className="text-xs text-zinc-400 mt-1">
-                Choose a cinematic classic preset, paste any direct image URL, or drop your own custom files!
+                Select a preset avatar, paste an image link, or upload your own image.
               </p>
             </div>
 

@@ -190,7 +190,7 @@ export default function PastScreenings({
             rating,
             letterboxdUrl,
             posterUrl: 'https://images.unsplash.com/photo-1489599849927-2ee91cede3ba?q=80&w=300',
-            synopsis: 'Cinema screening curated and imported from the Movie Club Letterboxd feed.',
+            synopsis: 'Imported from the Movie Club Letterboxd feed.',
             genre: ['Cinema']
           });
         }
@@ -523,7 +523,7 @@ export default function PastScreenings({
           <a
             href="https://letterboxd.com"
             target="_blank"
-            rel="noreferrer"
+            rel="noopener noreferrer"
             className="flex items-center space-x-1.5 border border-zinc-800 hover:border-zinc-700 text-zinc-400 hover:text-white px-4 py-2.5 rounded-xl text-xs font-semibold bg-zinc-950/85 backdrop-blur-sm transition-all"
           >
             <span>Letterboxd Profile</span>
@@ -1026,7 +1026,7 @@ export default function PastScreenings({
                     <a
                       href={movie.letterboxdUrl}
                       target="_blank"
-                      rel="noreferrer"
+                      rel="noopener noreferrer"
                       className="text-[11px] text-zinc-500 hover:text-zinc-300 font-mono flex items-center gap-1"
                     >
                       <span>View details on Letterboxd</span>

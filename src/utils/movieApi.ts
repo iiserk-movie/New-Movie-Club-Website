@@ -313,7 +313,7 @@ async function resolveMovieMetadataKeyless(query: string): Promise<MovieDetails 
       return {
         title: wikiMeta.title,
         year: wikiMeta.year || year || 2024,
-        description: wikiMeta.description || description || 'Pristine cinematic experience.',
+        description: wikiMeta.description || description || 'No description available.',
         director: wikiMeta.director || 'Unknown',
         duration: '120 min',
         genre: wikiMeta.genre || 'Drama/Sci-Fi',
@@ -330,7 +330,7 @@ async function resolveMovieMetadataKeyless(query: string): Promise<MovieDetails 
       return {
         title: title,
         year: year || 2024,
-        description: description || 'Pristine cinematic experience.',
+        description: description || 'No description available.',
         director: 'Unknown',
         duration: '120 min',
         genre: 'Cinema',
@@ -449,10 +449,10 @@ export async function getMovieDetails(movieQuery: string): Promise<MovieDetails>
     const ai = new GoogleGenAI({ apiKey });
     
     // Create prompt
-    const prompt = `Find complete, highly accurate and precise cinematic metadata details for the movie query/reference: "${cleanQuery}". 
-    Find the exact official release year, director name, runtime duration (e.g. '130 min' or '1h 55m'), genre list, a complete synoptic description, its exact Letterboxd slug (e.g., 'tumbbad', 'perfect-days'), and its exact Wikipedia page title (e.g., 'Tumbbad (film)'). Also find a beautiful widescreen photographic landscape backdrop URL, a premium quality poster (ideally TMDB/Wikipedia), its primary spoken language with English subtitles (e.g. 'Japanese (with English Subs)'), and its official YouTube trailer link.`;
+    const prompt = `Find accurate metadata details for the movie: "${cleanQuery}". 
+    Find the official release year, director, runtime (e.g. '130 min'), genres, synopsis, Letterboxd slug (e.g., 'tumbbad'), and Wikipedia page title. Also locate a widescreen backdrop URL, poster image URL, primary language, and official YouTube trailer link.`;
 
-    const systemInstruction = "You are a professional cinema curator for the IISER Kolkata Movie Club. Search movie archives and retrieve precise metadata. Return the synopsis/description concisely (approx 100-150 words). Format the genre as a comma-separated list. If backdrop or poster urls cannot be found, populate placeholders or tmdb URLs. For trailerUrl, always provide a real embedding YouTube link like 'https://www.youtube.com/watch?v=...' or if not found, a YouTube search query link like 'https://www.youtube.com/results?search_query=...'";
+    const systemInstruction = "Retrieve accurate movie metadata for IISER Kolkata Movie Club. Return a concise synopsis (approx 100-150 words). Format genres as a comma-separated list. For trailerUrl, provide a working YouTube link or search URL.";
 
     const response = await ai.models.generateContent({
       model: "gemini-3.5-flash",

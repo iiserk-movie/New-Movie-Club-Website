@@ -233,8 +233,8 @@ export default function TriviaGame() {
 
       {/* CineQuiz Guidelines Info box */}
       <div className="rounded-xl border border-zinc-900 bg-zinc-950/20 p-5 text-xs text-zinc-500 leading-relaxed">
-        <h4 className="font-semibold text-zinc-300 mb-1">About the Arena:</h4>
-        Trivia is curated by members of the IISER Kolkata Movie Club editorial committee. Want to submit your own trivia entries? Share them with administrators or send suggestions inside student wishlist notes tagged with <b>[Trivia Idea]</b> in the title!
+        <h4 className="font-semibold text-zinc-300 mb-1">About Movie Trivia:</h4>
+        Trivia questions are submitted by IISER Kolkata Movie Club members. Want to contribute a question? Share it with team coordinators or include it in your wishlist notes tagged with <b>[Trivia Idea]</b> in the title.
       </div>
     </div>
   );

@@ -1343,6 +1343,10 @@ export default function App() {
                   src={featured.backdropUrl || 'https://images.unsplash.com/photo-1489599849927-2ee91cede3ba?q=80&w=1200'} 
                   alt="" 
                   className="w-full h-full object-cover object-center scale-102 filter blur-[2px] opacity-25 brightness-[0.4]"
+                  referrerPolicy="no-referrer"
+                  onError={(e) => {
+                    (e.currentTarget as HTMLImageElement).src = 'https://images.unsplash.com/photo-1489599849927-2ee91cede3ba?q=80&w=1200';
+                  }}
                 />
                 <div className="absolute inset-0 bg-gradient-to-r from-[#0a090d]/80 via-[#0a090d]/65 to-[#0a090d]/20"></div>
                 <div className="absolute inset-0 bg-gradient-to-t from-[#0a090d]/60 via-transparent to-transparent"></div>
@@ -1471,6 +1475,9 @@ export default function App() {
                       alt="" 
                       className="h-[380px] w-[260px] object-cover rounded-2xl shadow-[0_25px_50px_-12px_rgba(0,0,0,0.8)] border border-zinc-800 transition-all duration-700 ease-out transform group-hover/poster:-translate-y-2 group-hover/poster:rotate-1 group-hover/poster:shadow-[0_30px_60px_-10px_rgba(245,158,11,0.25)]"
                       referrerPolicy="no-referrer"
+                      onError={(e) => {
+                        (e.currentTarget as HTMLImageElement).src = 'https://images.unsplash.com/photo-1489599849927-2ee91cede3ba?q=80&w=600';
+                      }}
                     />
                     <div className="absolute top-3 left-3 bg-zinc-950/90 backdrop-blur-md px-2.5 py-1 rounded-md text-[9px] font-mono font-bold text-amber-400 uppercase border border-zinc-800 shadow-md">
                       🍿 {featured.runtime}
@@ -1599,7 +1606,7 @@ export default function App() {
             <a 
               href="https://letterboxd.com/ikmc/diary/" 
               target="_blank" 
-              rel="noreferrer" 
+              rel="noopener noreferrer" 
               className="hover:text-amber-400 transition-colors font-medium inline-flex items-center gap-1.5"
             >
               <Film className="h-3.5 w-3.5 text-amber-500/80" />
@@ -1609,7 +1616,7 @@ export default function App() {
             <a 
               href="https://www.instagram.com/movieclub.iiserk/" 
               target="_blank" 
-              rel="noreferrer" 
+              rel="noopener noreferrer" 
               className="hover:text-pink-400 transition-colors font-medium inline-flex items-center gap-1.5"
             >
               <Instagram className="h-3.5 w-3.5 text-pink-500/80" />

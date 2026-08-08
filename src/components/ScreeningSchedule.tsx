@@ -471,7 +471,7 @@ export default function ScreeningSchedule({
             Upcoming Screenings
           </h2>
           <p className="text-zinc-400 text-xs md:text-sm font-sans font-medium line-clamp-2 leading-relaxed">
-            Join us at the M.N. Saha Auditorium for regular screenings of global film masterpieces, indie retrospectives, and academic discussion sessions.
+            Join us at M.N. Saha Auditorium for upcoming screenings, discussions, and special film events.
           </p>
         </div>
       </div>
@@ -674,7 +674,7 @@ export default function ScreeningSchedule({
                       <a 
                         href={screening.trailerUrl} 
                         target="_blank" 
-                        rel="noreferrer"
+                        rel="noopener noreferrer"
                         className="flex items-center space-x-1.5 border border-zinc-800/80 hover:border-zinc-700 text-zinc-400 hover:text-zinc-200 px-4 py-2 rounded-xl text-xs font-medium bg-zinc-900/20 transition-all shadow-sm"
                       >
                         <span>Trailer</span>
@@ -1097,7 +1097,7 @@ export default function ScreeningSchedule({
                 <label className="block text-xs font-mono text-zinc-400 mb-1">SYNOPSIS / HIGHLIGHTS</label>
                 <textarea
                   rows={3}
-                  placeholder="Provide a compelling preview review or description describing why this film is selected..."
+                  placeholder="Provide a short description or synopsis for this screening..."
                   value={description}
                   onChange={(e) => {
                     setDescription(e.target.value);

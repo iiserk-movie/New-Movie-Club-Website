@@ -431,7 +431,7 @@ export default function PollsSection({
             Movie Selection Polls
           </h2>
           <p className="text-zinc-400 text-xs md:text-sm font-sans font-medium line-clamp-2 leading-relaxed">
-            Vote on upcoming themed double-features and select which cinematic classics we screen next semester at the auditorium.
+            Vote on upcoming screening themes and help choose what we watch next.
           </p>
         </div>
       </div>
@@ -855,7 +855,7 @@ export default function PollsSection({
                       type="text"
                       value={pollQuestion}
                       onChange={(e) => setPollQuestion(e.target.value)}
-                      placeholder='e.g. Which sci-fi masterpiece should we screen next week?'
+                      placeholder='e.g. Which sci-fi movie should we screen next week?'
                       className="w-full rounded-xl border border-zinc-800 bg-zinc-950 px-4 py-2.5 text-xs text-zinc-100 placeholder-zinc-600 focus:border-amber-500/50 focus:outline-none focus:ring-1 focus:ring-amber-500/50"
                     />
                   </div>
@@ -863,12 +863,12 @@ export default function PollsSection({
                   {/* Description */}
                   <div className="space-y-1.5">
                     <label className="block text-xs font-mono tracking-wider text-zinc-400 uppercase">
-                      Overview Description / Curates notes
+                      Overview Description / Notes
                     </label>
                     <textarea
                       value={pollDescription}
                       onChange={(e) => setPollDescription(e.target.value)}
-                      placeholder="Add an editorial context, venue confirmation or commentary for this survey..."
+                      placeholder="Add context, location info, or notes for this poll..."
                       rows={2}
                       className="w-full rounded-xl border border-zinc-800 bg-zinc-950 px-4 py-2.5 text-xs text-zinc-100 placeholder-zinc-600 focus:border-amber-500/50 focus:outline-none focus:ring-1 focus:ring-amber-500/50"
                     />
@@ -1073,7 +1073,7 @@ export default function PollsSection({
                             <textarea
                               value={opt.synopsis}
                               onChange={(e) => handleOptionChange(idx, 'synopsis', e.target.value)}
-                              placeholder="Brief overview / review highlight for this movie selection choice..."
+                              placeholder="Brief synopsis or summary for this movie option..."
                               rows={2}
                               className="w-full rounded-lg border border-zinc-800 bg-zinc-950 px-3 py-1.5 text-xs text-zinc-100 placeholder-zinc-700"
                             />
