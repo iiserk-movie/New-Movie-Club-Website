@@ -6,22 +6,24 @@
   --font-serif: "Playfair Display", "Georgia", serif;
   --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, monospace;
 
-  --color-zinc-50: #fbfbfd;
-  --color-zinc-100: #f3f3f7;
-  --color-zinc-200: #e3e3eb;
-  --color-zinc-300: #cfcfde;
-  --color-zinc-400: #9e9eb8;
-  --color-zinc-500: #787896;
-  --color-zinc-600: #585876;
-  --color-zinc-750: #38374d;
-  --color-zinc-850: #222133;
-  --color-zinc-900: #181724;
-  --color-zinc-950: #0f0e17;
+  --color-zinc-50: #fafafa;
+  --color-zinc-100: #f4f4f6;
+  --color-zinc-200: #e4e4e7;
+  --color-zinc-300: #d4d4d8;
+  --color-zinc-400: #a1a1aa;
+  --color-zinc-500: #71717a;
+  --color-zinc-600: #52525b;
+  --color-zinc-750: #27272a;
+  --color-zinc-850: #18181b;
+  --color-zinc-900: #0f0f12;
+  --color-zinc-950: #09090b;
 }
 
-/* Base resets & smooth rendering */
+/* Base resets & OLED black background */
 html, body {
   color-scheme: dark;
+  background-color: #09090b;
+  color: #fafafa;
   scroll-behavior: smooth;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
@@ -30,34 +32,49 @@ html, body {
   width: 100%;
 }
 
+/* Subtle 35mm film grain texture overlay */
+body::before {
+  content: "";
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  pointer-events: none;
+  z-index: 9999;
+  opacity: 0.022;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
+}
+
 ::selection {
   background: rgba(245, 158, 11, 0.25);
   color: #fef08a;
 }
 
-/* Accessible & distinct focus states */
+/* Accessible & crisp focus states */
 :focus-visible {
   outline: 2px solid rgba(245, 158, 11, 0.7);
   outline-offset: 2px;
 }
 
-/* Ensure mobile touch target ergonomics */
+/* Touch targets on mobile: 48x48px minimum */
 button, 
 a, 
 input, 
 select, 
 textarea {
   touch-action: manipulation;
+  transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 @media (max-width: 640px) {
   button, 
   .touch-target {
-    min-height: 44px;
+    min-height: 48px;
   }
 }
 
-/* Custom glow animation */
+/* Glow animation */
 @keyframes glow {
   0%, 100% {
     text-shadow: 0 0 12px rgba(245, 158, 11, 0.2);
@@ -85,7 +102,7 @@ textarea {
   height: 6px;
 }
 ::-webkit-scrollbar-track {
-  background: rgba(15, 14, 23, 0.6);
+  background: rgba(9, 9, 11, 0.8);
 }
 ::-webkit-scrollbar-thumb {
   background: rgba(245, 158, 11, 0.25);
@@ -97,36 +114,41 @@ textarea {
 
 /* Glass panel & cards styling */
 .glass-panel {
-  background: rgba(24, 23, 36, 0.5);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  border: 1px solid rgba(255, 255, 255, 0.05);
-}
-
-.glass-panel-heavy {
-  background: rgba(15, 14, 23, 0.88);
+  background: rgba(15, 15, 18, 0.65);
   backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(16px);
   border: 1px solid rgba(255, 255, 255, 0.08);
 }
 
+.glass-panel-heavy {
+  background: rgba(9, 9, 11, 0.92);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.aspect-poster {
+  aspect-ratio: 2 / 3;
+}
+
+/* Card hover scaling and micro-elevation */
 .card-hover {
-  transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1), 
-              box-shadow 0.25s cubic-bezier(0.16, 1, 0.3, 1), 
-              border-color 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1), 
+              box-shadow 0.4s cubic-bezier(0.16, 1, 0.3, 1), 
+              border-color 0.4s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .card-hover:hover {
-  transform: translateY(-3px);
-  box-shadow: 0 16px 32px -8px rgba(0, 0, 0, 0.6);
-  border-color: rgba(245, 158, 11, 0.25);
+  transform: translateY(-4px) scale(1.02);
+  box-shadow: 0 20px 40px -12px rgba(0, 0, 0, 0.8);
+  border-color: rgba(245, 158, 11, 0.3);
 }
 
 .interactive-btn {
-  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
 }
 .interactive-btn:active {
-  transform: scale(0.98);
+  transform: scale(0.97);
 }
 
 
