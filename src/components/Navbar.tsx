@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Film, User as UserIcon, LogOut, Shield, ShieldCheck, HelpCircle, GraduationCap, Camera, UploadCloud, Image as ImageIcon, Settings, Key, Eye, EyeOff, RefreshCw, Menu, X, Calendar, MessageSquare, Sparkles, BarChart2, History } from 'lucide-react';
+import { Film, User as UserIcon, LogOut, Shield, ShieldCheck, HelpCircle, GraduationCap, Camera, UploadCloud, Image as ImageIcon, Settings, Key, Eye, EyeOff, RefreshCw, Menu, X, Calendar, MessageSquare, Sparkles, BarChart2, History, Award } from 'lucide-react';
 import { User, PastMovie } from '../types';
 import { auth, googleProvider, db } from '../firebase';
 import { doc, setDoc } from 'firebase/firestore';
@@ -388,7 +388,7 @@ export default function Navbar({
               <div className="absolute -top-0.5 -right-0.5 flex h-2.5 w-2.5 rounded-full bg-amber-500 animate-pulse"></div>
             </div>
             <div>
-              <h1 className="font-serif text-lg font-extrabold tracking-wide text-transparent bg-clip-text bg-gradient-to-r from-zinc-100 via-amber-200 to-amber-400 sm:text-xl drop-shadow-[0_2px_8px_rgba(245,158,11,0.2)] uppercase">
+              <h1 className="font-serif text-lg font-extrabold tracking-wide text-zinc-100 sm:text-xl uppercase">
                 Movie Club
               </h1>
               <p className="font-mono text-[10px] tracking-wider text-amber-500/80 uppercase">
@@ -599,7 +599,7 @@ export default function Navbar({
                   <MovieClubLogo className="h-full w-full" />
                 </div>
                 <div>
-                  <span className="font-serif text-sm font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-zinc-100 to-amber-400 uppercase tracking-wide block">
+                  <span className="font-serif text-sm font-extrabold text-zinc-100 uppercase tracking-wide block">
                     Movie Club
                   </span>
                   <span className="font-mono text-[9px] text-amber-500/80 block uppercase tracking-wider font-semibold">

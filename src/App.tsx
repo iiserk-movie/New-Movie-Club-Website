@@ -1294,8 +1294,8 @@ export default function App() {
                       <span>MOVIE CLUB • IISER KOLKATA</span>
                     </div>
 
-                    <h2 className="font-serif text-4xl sm:text-6xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-zinc-100 via-amber-200 to-amber-300 tracking-tight leading-[1.1] animate-glow">
-                      Explore the Language of Cinema.
+                    <h2 className="font-serif text-4xl sm:text-6xl font-extrabold text-zinc-100 tracking-tight leading-[1.1]">
+                      Explore the Language of <span className="text-amber-400">Cinema.</span>
                     </h2>
                     
                     <p className="mt-4 text-sm sm:text-base text-zinc-350 max-w-2xl leading-relaxed italic font-serif">
@@ -1364,7 +1364,7 @@ export default function App() {
                     </span>
                   </div>
 
-                  <h2 className="font-serif text-4xl sm:text-6xl font-black text-transparent bg-clip-text bg-gradient-to-r from-zinc-550 via-zinc-150 to-amber-250 tracking-tight leading-[1.05] animate-glow">
+                  <h2 className="font-serif text-4xl sm:text-6xl font-black text-zinc-50 tracking-tight leading-[1.05]">
                     {featured.title}
                   </h2>
 
@@ -1502,10 +1502,10 @@ export default function App() {
         <AnimatePresence mode="wait">
           <motion.div
             key={activeTab}
-            initial={{ opacity: 0, y: 10 }}
+            initial={{ opacity: 0, y: 12 }}
             animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -10 }}
-            transition={{ duration: 0.25, ease: 'easeOut' }}
+            exit={{ opacity: 0, y: -12 }}
+            transition={{ duration: 0.35, ease: [0.16, 1, 0.3, 1] }}
           >
             {activeTab === 'schedule' && (
               <ScreeningSchedule
@@ -1581,8 +1581,6 @@ export default function App() {
                 onDeleteReview={handleDeleteReview}
               />
             )}
-
-
           </motion.div>
         </AnimatePresence>
       </main>
