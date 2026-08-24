@@ -11,7 +11,7 @@ import { compressAndResizeImage } from '../utils/imageCompressor';
 import { getMovieDetails, searchMovies } from '../utils/movieApi';
 
 const COLLAGE_POSTERS = [
-  'https://upload.wikimedia.org/wikipedia/en/a/a2/2001_A_Space_Odyssey_Poster.jpg', // 2001: A Space Odyssey
+  'https://upload.wikimedia.org/wikipedia/en/d/d4/Stalker_poster.jpg', // Stalker
   'https://upload.wikimedia.org/wikipedia/en/b/bc/Interstellar_film_poster.jpg', // Interstellar
   'https://upload.wikimedia.org/wikipedia/en/3/3d/Pulp_Fiction_cover.jpg', // Pulp Fiction
   'https://upload.wikimedia.org/wikipedia/en/a/ab/La_La_Land_%28film%29.png', // La La Land

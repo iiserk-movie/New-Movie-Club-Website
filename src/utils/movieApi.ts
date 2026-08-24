@@ -58,6 +58,37 @@ export function clearLocalGeminiKey(): void {
   localStorage.removeItem('iiser_movieclub_gemini_key');
 }
 
+// Client-side Memory & Session Caches for instant UI response
+const clientDetailsMemoryCache = new Map<string, MovieDetails>();
+const clientSearchMemoryCache = new Map<string, SearchMovieResult[]>();
+
+function getCachedMovieDetails(key: string): MovieDetails | null {
+  const normKey = key.toLowerCase().trim();
+  if (clientDetailsMemoryCache.has(normKey)) {
+    return clientDetailsMemoryCache.get(normKey)!;
+  }
+  try {
+    const raw = sessionStorage.getItem(`movie_cache_${normKey}`);
+    if (raw) {
+      const parsed = JSON.parse(raw) as MovieDetails;
+      clientDetailsMemoryCache.set(normKey, parsed);
+      return parsed;
+    }
+  } catch (e) {}
+  return null;
+}
+
+function setCachedMovieDetails(key: string, data: MovieDetails): void {
+  const normKey = key.toLowerCase().trim();
+  clientDetailsMemoryCache.set(normKey, data);
+  if (data.title) {
+    clientDetailsMemoryCache.set(data.title.toLowerCase().trim(), data);
+  }
+  try {
+    sessionStorage.setItem(`movie_cache_${normKey}`, JSON.stringify(data));
+  } catch (e) {}
+}
+
 // Helper to extract content from meta tags with single, double or no quotes and arbitrary attribute ordering
 function extractMetaContent(html: string, name: string): string {
   const regexes = [
@@ -412,16 +443,25 @@ async function searchWikipediaKeyless(query: string): Promise<SearchMovieResult[
 export async function getMovieDetails(movieQuery: string): Promise<MovieDetails> {
   const cleanQuery = movieQuery.trim();
   
+  // 0. Check client cache first
+  const cached = getCachedMovieDetails(cleanQuery);
+  if (cached) {
+    return cached;
+  }
+
   // 1. Try to fetch from Express backend API endpoint
   try {
     const res = await fetch('/api/movie-details', {
       method: 'POST',
+      signal: AbortSignal.timeout(4500),
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ movieQuery: cleanQuery }),
     });
 
     if (res.ok) {
-      return await res.json();
+      const data = await res.json();
+      setCachedMovieDetails(cleanQuery, data);
+      return data;
     }
   } catch (err) {
     console.log('[Movie API] Backend /api/movie-details inaccessible. Falling back to keyless client resolver.', err);
@@ -431,13 +471,14 @@ export async function getMovieDetails(movieQuery: string): Promise<MovieDetails>
   try {
     const keylessData = await resolveMovieMetadataKeyless(cleanQuery);
     if (keylessData) {
+      setCachedMovieDetails(cleanQuery, keylessData);
       return keylessData;
     }
   } catch (keylessErr) {
     console.log('[Movie API] Keyless client-side resolver failed. Falling back to local/Gemini API key verification.', keylessErr);
   }
 
-  // 3. Fallback to client-side Gemini-3.5 engine if key is configured locally
+  // 3. Fallback to client-side Gemini engine if key is configured locally
   const apiKey = getLocalGeminiKey();
   if (!apiKey) {
     throw new Error(
@@ -455,7 +496,7 @@ export async function getMovieDetails(movieQuery: string): Promise<MovieDetails>
     const systemInstruction = "Retrieve accurate movie metadata for IISER Kolkata Movie Club. Return a concise synopsis (approx 100-150 words). Format genres as a comma-separated list. For trailerUrl, provide a working YouTube link or search URL.";
 
     const response = await ai.models.generateContent({
-      model: "gemini-3.5-flash",
+      model: "gemini-2.5-flash",
       contents: prompt,
       config: {
         systemInstruction,
@@ -469,8 +510,8 @@ export async function getMovieDetails(movieQuery: string): Promise<MovieDetails>
             director: { type: Type.STRING, description: "Director of the film." },
             duration: { type: Type.STRING, description: "Runtime format, e.g. '130 min' or '1h 55m'." },
             genre: { type: Type.STRING, description: "Primary genre(s) formatted as a comma-separated list, e.g. 'Drama, Thriller, Sci-Fi'." },
-            letterboxdSlug: { type: Type.STRING, description: "The lowercase official Letterboxd URL slug, e.g. 'tumbbad', 'perfect-days'." },
-            wikipediaTitle: { type: Type.STRING, description: "The exact Wikipedia title suitable for URL encoding, e.g. 'Tumbbad (film)'." },
+            letterboxdSlug: { type: Type.STRING, description: "The lowercase official Letterboxd URL slug, e.g. 'oppenheimer', 'stalker'." },
+            wikipediaTitle: { type: Type.STRING, description: "The exact Wikipedia title suitable for URL encoding, e.g. 'Oppenheimer (film)'." },
             posterUrl: { type: Type.STRING, description: "A high-quality movie poster URL. Prefer TMDB poster URL if found." },
             backdropUrl: { type: Type.STRING, description: "Widescreen background image/snapshot of the movie." },
             language: { type: Type.STRING, description: "Spoken language name optionally including English subtitles status." },
@@ -493,7 +534,7 @@ export async function getMovieDetails(movieQuery: string): Promise<MovieDetails>
       try {
         const titleSlug = movieData.wikipediaTitle.trim().replace(/ /g, '_');
         const wikiUrl = `https://en.wikipedia.org/api/rest_v1/page/summary/${encodeURIComponent(titleSlug)}`;
-        const wikiRes = await fetch(wikiUrl);
+        const wikiRes = await fetch(wikiUrl, { signal: AbortSignal.timeout(3000) });
         if (wikiRes.ok) {
           const wikiJson = await wikiRes.json();
           if (wikiJson.originalimage && wikiJson.originalimage.source) {
@@ -505,6 +546,7 @@ export async function getMovieDetails(movieQuery: string): Promise<MovieDetails>
       }
     }
 
+    setCachedMovieDetails(cleanQuery, movieData);
     return movieData;
   } catch (error: any) {
     console.error('[Movie API] Client-side Gemini content generation error:', error);
@@ -519,16 +561,25 @@ export async function searchMovies(query: string): Promise<SearchMovieResult[]> 
   const cleanQuery = query.trim();
   if (cleanQuery.length < 2) return [];
 
+  // Check client search cache
+  const norm = cleanQuery.toLowerCase();
+  if (clientSearchMemoryCache.has(norm)) {
+    return clientSearchMemoryCache.get(norm)!;
+  }
+
   // 1. Try backend
   try {
     const res = await fetch('/api/search-movies', {
       method: 'POST',
+      signal: AbortSignal.timeout(4000),
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ query: cleanQuery }),
     });
 
     if (res.ok) {
-      return await res.json();
+      const data = await res.json();
+      clientSearchMemoryCache.set(norm, data);
+      return data;
     }
   } catch (err) {
     console.log('[Movie API] Backend /api/search-movies inaccessible. Falling back to client-side search.', err);
@@ -538,7 +589,9 @@ export async function searchMovies(query: string): Promise<SearchMovieResult[]> 
   const apiKey = getLocalGeminiKey();
   if (!apiKey) {
     try {
-      return await searchWikipediaKeyless(cleanQuery);
+      const data = await searchWikipediaKeyless(cleanQuery);
+      clientSearchMemoryCache.set(norm, data);
+      return data;
     } catch (wikiErr) {
       console.log('[Movie API] Keyless client-side search autocomplete failed:', wikiErr);
       return [];
@@ -552,7 +605,7 @@ export async function searchMovies(query: string): Promise<SearchMovieResult[]> 
     const systemInstruction = "You are a professional cinema curator. Provide search suggestions for matches with precise title, year, director, runtime duration, comma-separated genres, and standard web poster artwork URLs.";
 
     const response = await ai.models.generateContent({
-      model: "gemini-3.5-flash",
+      model: "gemini-2.5-flash",
       contents: prompt,
       config: {
         systemInstruction,
@@ -582,10 +635,18 @@ export async function searchMovies(query: string): Promise<SearchMovieResult[]> 
     const textOutput = response.text;
     if (!textOutput) return [];
     
-    return JSON.parse(textOutput.trim()) as SearchMovieResult[];
+    const results = JSON.parse(textOutput.trim()) as SearchMovieResult[];
+    clientSearchMemoryCache.set(norm, results);
+    return results;
   } catch (error) {
-    console.error('[Movie API] Client-side search autocomplete failed:', error);
-    return [];
+    console.error('[Movie API] Client-side search autocomplete error:', error);
+    try {
+      const data = await searchWikipediaKeyless(cleanQuery);
+      clientSearchMemoryCache.set(norm, data);
+      return data;
+    } catch {
+      return [];
+    }
   }
 }
 
@@ -619,12 +680,19 @@ export function extractLetterboxdUsername(input: string): string {
  */
 export function parseLetterboxdXml(xmlText: string): LetterboxdWatchEntry[] {
   const items: LetterboxdWatchEntry[] = [];
+  if (!xmlText || typeof xmlText !== 'string') return items;
   
   // Use a regex that matches <item> tags
   const itemRegex = /<item>([\s\S]*?)<\/item>/gi;
-  let match;
+  let match: RegExpExecArray | null;
+  let maxIterations = 100;
+  let prevLastIndex = -1;
   
   while ((match = itemRegex.exec(xmlText)) !== null) {
+    if (itemRegex.lastIndex <= prevLastIndex || --maxIterations < 0) {
+      break;
+    }
+    prevLastIndex = itemRegex.lastIndex;
     const content = match[1];
     
     // Extract Title
@@ -771,6 +839,7 @@ export async function syncLetterboxdRSS(username: string): Promise<LetterboxdWat
   try {
     const res = await fetch('/api/letterboxd-rss', {
       method: 'POST',
+      signal: AbortSignal.timeout(4000),
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ username: cleanUsername }),
     });
@@ -790,7 +859,7 @@ export async function syncLetterboxdRSS(username: string): Promise<LetterboxdWat
     const feedUrl = `https://letterboxd.com/${encodeURIComponent(cleanUsername)}/rss/`;
     const proxyUrl = `https://api.allorigins.win/get?url=${encodeURIComponent(feedUrl)}`;
     
-    const res = await fetch(proxyUrl);
+    const res = await fetch(proxyUrl, { signal: AbortSignal.timeout(4500) });
     if (!res.ok) {
       throw new Error(`Public RSS feed not accessible via proxy. Please check if Letterboxd username "${cleanUsername}" is valid.`);
     }
@@ -827,7 +896,7 @@ export async function syncLetterboxdRSS(username: string): Promise<LetterboxdWat
 
     const ai = new GoogleGenAI({ apiKey });
     const response = await ai.models.generateContent({
-      model: "gemini-3.5-flash",
+      model: "gemini-2.5-flash",
       contents: `Parse the following raw Letterboxd RSS XML Feed into a high-quality, structured JSON array of watched movies. 
       Each object MUST represent a watched movie and have the following properties:
       - title: The official name/title of the movie.

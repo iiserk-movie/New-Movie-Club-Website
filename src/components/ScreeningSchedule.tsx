@@ -378,14 +378,14 @@ export default function ScreeningSchedule({
           const parsedErr = JSON.parse(err.message);
           const errorText = (parsedErr.error || "").toLowerCase();
           if (errorText.includes("permission denied") || errorText.includes("insufficient permissions")) {
-            parsedMsg = "Firebase Permission Denied: Your IISER Kolkata admin credentials or passcode login has expired or is unauthorized.";
+            parsedMsg = "Firebase Permission Denied: Your IISER Kolkata admin credentials (movie.activity@iiserkol.ac.in) have expired or are unauthorized.";
           } else {
             parsedMsg = parsedErr.error || err.message;
           }
         } catch (e) {
           const lowerMsg = (err.message || "").toLowerCase();
           if (lowerMsg.includes("permission denied") || lowerMsg.includes("insufficient permissions")) {
-            parsedMsg = "Firebase Permission Denied: Your IISER Kolkata admin credentials or passcode login has expired or is unauthorized.";
+            parsedMsg = "Firebase Permission Denied: Your IISER Kolkata admin credentials (movie.activity@iiserkol.ac.in) have expired or are unauthorized.";
           } else {
             parsedMsg = err.message || "Failed to publish. Check connection/credentials and try again.";
           }

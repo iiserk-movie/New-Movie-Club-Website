@@ -1,88 +1,9 @@
 import { Screening, PastMovie, Recommendation, TriviaQuestion, ClubDiscussion } from './types';
 
-// Let's populate with realistic cinematic entries fit for an institute of scientific and creative minds (IISER Kolkata)
-export const initialScreenings: Screening[] = [
-  {
-    id: 's-1',
-    title: '2001: A Space Odyssey',
-    director: 'Stanley Kubrick',
-    year: 1968,
-    date: '2026-06-19',
-    time: '18:30',
-    venue: 'MND Auditorium',
-    description: 'After discovering a mysterious artifact buried beneath the Lunar surface, mankind sets off on a quest to find its origins with the help of H.A.L. 9000, a sentient supercomputer.',
-    posterUrl: 'https://upload.wikimedia.org/wikipedia/en/a/a2/2001_A_Space_Odyssey_Poster.jpg', // 2001 Space Odyssey official poster
-    backdropUrl: 'https://images.unsplash.com/photo-1541185933-ef5d8ed016c2?q=80&w=1200&auto=format&fit=crop',
-    runtime: '149 min',
-    genre: ['Sci-Fi', 'Adventure', 'Mystery'],
-    language: 'English (with Subs)',
-    trailerUrl: 'https://www.youtube.com/watch?v=oR_e9y-bka0'
-  },
-  {
-    id: 's-2',
-    title: 'Tumbbad',
-    director: 'Rahi Anil Barve',
-    year: 2018,
-    date: '2026-06-26',
-    time: '19:00',
-    venue: 'M.N. Saha Auditorium, Ground Floor, TRC building',
-    description: 'A mythological story about a goddess who created the entire universe and her first-born son, Hastar, a monster who wants to consume all the gold and grain. A family built a shrine for Hastar, which brings about a terrible curse.',
-    posterUrl: 'https://upload.wikimedia.org/wikipedia/en/3/38/Tumbbad_poster.jpg', // Tumbbad official poster
-    backdropUrl: 'https://images.unsplash.com/photo-1518709268805-4e9042af9f23?q=80&w=1200&auto=format&fit=crop',
-    runtime: '104 min',
-    genre: ['Horror', 'Fantasy', 'Drama'],
-    language: 'Hindi (with English Subs)',
-    trailerUrl: 'https://www.youtube.com/watch?v=sN7AtarS24E'
-  },
-  {
-    id: 's-3',
-    title: 'Perfect Days',
-    director: 'Wim Wenders',
-    year: 2023,
-    date: '2026-07-03',
-    time: '18:00',
-    venue: 'LHC G-02 Lecture Room',
-    description: 'Hirayama seems utterly content with his simple life as a cleaner of toilets in Tokyo. Outside of his very structured everyday routine he enjoys his passion for music and for books. And he loves trees and takes photos of them.',
-    posterUrl: 'https://upload.wikimedia.org/wikipedia/en/4/4b/Perfect_Days_poster.jpeg', // Perfect Days official poster fallback
-    backdropUrl: 'https://images.unsplash.com/photo-1540959733332-eab4deceeaf7?q=80&w=1200&auto=format&fit=crop',
-    runtime: '124 min',
-    genre: ['Drama'],
-    language: 'Japanese (with English Subs)',
-    trailerUrl: 'https://www.youtube.com/watch?v=48S43cE0Kz8'
-  }
-];
+// Initial dataset for IISER Kolkata Movie Club
+export const initialScreenings: Screening[] = [];
 
 export const initialPastMovies: PastMovie[] = [
-  {
-    id: 'p-1',
-    title: 'Oppenheimer',
-    director: 'Christopher Nolan',
-    year: 2023,
-    screenedDate: '2026-05-18',
-    rating: 4.8,
-    letterboxdUrl: 'https://letterboxd.com/film/oppenheimer-2023/',
-    posterUrl: 'https://upload.wikimedia.org/wikipedia/en/8/8a/Oppenheimer_%28film%29.jpg', // Oppenheimer official poster
-    synopsis: 'The story of American scientist J. Robert Oppenheimer and his role in the development of the atomic bomb during World War II.',
-    genre: ['Biography', 'Drama', 'History'],
-    reviews: [
-      {
-        id: 'r-1',
-        userEmail: 'arindam.phys@iiserkol.ac.in',
-        userName: 'Arindam Ghosh',
-        rating: 5,
-        comment: 'As a physics student, this is a spectacular piece of historical realism. The sound design during the Trinity test absolute silence, then the shockwave was stunning.',
-        createdAt: '2026-05-18T22:15:00Z'
-      },
-      {
-        id: 'r-2',
-        userEmail: 'soham.bio@iiserkol.ac.in',
-        userName: 'Soham Mukherjee',
-        rating: 4,
-        comment: 'Brilliant editing. Nolan somehow made three hours of men talking in chalky rooms feel like an edge-of-your-seat thriller.',
-        createdAt: '2026-05-19T09:30:00Z'
-      }
-    ]
-  },
   {
     id: 'p-2',
     title: 'Stalker',
@@ -183,10 +104,10 @@ export const initialRecommendations: Recommendation[] = [
 export const triviaQuestions: TriviaQuestion[] = [
   {
     id: 'q-1',
-    question: 'In Christopher Nolan’s Oppenheimer, who did Robert Oppenheimer poison with an injected apple, only to change his mind the next morning?',
-    options: ['Patrick Blackett', 'Ernest Lawrence', 'Niels Bohr', 'Luis Alvarez'],
+    question: 'In Wong Kar-wai’s In the Mood for Love, where does Chow Mo-wan whisper his secret into a hollow in the wall before sealing it with mud?',
+    options: ['Angkor Wat', 'Forbidden City', 'Borobudur', 'Victoria Peak'],
     answer: 0,
-    explanation: 'Oppenheimer injected Patrick Blackett’s apple with potassium cyanide due to an academic dispute, before rushing in the next day to prevent Niels Bohr from eating it.'
+    explanation: 'In the final sequence, Chow Mo-wan travels to the ancient temple complex of Angkor Wat in Cambodia to whisper his untold secret into a hollow stone wall.'
   },
   {
     id: 'q-2',
@@ -197,10 +118,10 @@ export const triviaQuestions: TriviaQuestion[] = [
   },
   {
     id: 'q-3',
-    question: 'In Stanley Kubrick’s 2001: A Space Odyssey, what is the designation/name of the spacecraft carrying Dr. David Bowman and Dr. Frank Poole to Jupiter?',
-    options: ['Hermes II', 'Discovery One', 'Aries IB', 'Odyssey Prime'],
-    answer: 1,
-    explanation: 'The USSC Discovery One (XD-1) is the nuclear-powered interplanetary spacecraft that carries the crew and the HAL 9000 supercomputer to Jupiter.'
+    question: 'In Satyajit Ray’s landmark classic Pather Panchali (1955), who composed the legendary sitar and flute musical score?',
+    options: ['Pandit Ravi Shankar', 'Ustad Ali Akbar Khan', 'Salil Chowdhury', 'Vilayat Khan'],
+    answer: 0,
+    explanation: 'Pandit Ravi Shankar composed the seminal classical score for Pather Panchali in a marathon eleven-hour recording session.'
   }
 ];
 
@@ -233,20 +154,5 @@ export const initialDiscussions: ClubDiscussion[] = [
         createdAt: new Date(Date.now() - 3600000 * 24 * 2).toISOString()
       }
     ]
-  },
-  {
-    id: 'disc-2',
-    title: "Perfect Days: Finding Zen in Komorebi",
-    movieTitle: "Perfect Days",
-    movieSlug: "perfect-days",
-    category: "Review",
-    content: "Wim Wenders has crafted a work of supreme beauty. Perfect Days (2023) is a silent protest against digital overdrive and modern hyper-productivity.\n\nHirayama teaches us the art of mindfulness. The repetition of his chores (cleaning Tokyo public toilets with absolute precision), his devotion to physical cassette music, and his analog photos of komorebi (the sunlight filtering through leaves) are magnificent.\n\nThis film is a warm blanket of comfort for those days when you feel overwhelmed by research papers and exams. Highly recommended!",
-    rating: 5,
-    authorEmail: "soham.bio@iiserkol.ac.in",
-    authorName: "Soham Mukherjee",
-    createdAt: new Date(Date.now() - 3600000 * 24 * 1).toISOString(), // 1 day ago
-    votes: ["aditi.chem@iiserkol.ac.in", "poulami.chem@iiserkol.ac.in"],
-    comments: []
   }
 ];
-

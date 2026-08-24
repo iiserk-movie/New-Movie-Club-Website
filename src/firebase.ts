@@ -65,19 +65,4 @@ export const sanitizeDoc = <T extends object>(obj: T): T => {
   return JSON.parse(JSON.stringify(obj));
 };
 
-// Check initial Firestore connectivity safely
-async function testConnection() {
-  try {
-    await getDocFromServer(doc(db, 'test', 'connection'));
-    console.log('[Firebase] Connection validation succeeded.');
-  } catch (error) {
-    if (error instanceof Error && error.message.includes('the client is offline')) {
-      console.log('[Firebase] Running in offline cache mode.');
-    } else {
-      console.log('[Firebase] Initial connection check initialized.');
-    }
-  }
-}
-testConnection();
-
 

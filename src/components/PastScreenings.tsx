@@ -9,7 +9,7 @@ import { getPolishedPosterUrl, getDeterministicPoster } from '../letterboxdDb';
 import { syncLetterboxdRSS, extractLetterboxdUsername } from '../utils/movieApi';
 
 const COLLAGE_POSTERS = [
-  'https://upload.wikimedia.org/wikipedia/en/a/a2/2001_A_Space_Odyssey_Poster.jpg', // 2001
+  'https://upload.wikimedia.org/wikipedia/en/d/d4/Stalker_poster.jpg', // Stalker
   'https://upload.wikimedia.org/wikipedia/en/3/3d/Pulp_Fiction_cover.jpg', // Pulp Fiction
   'https://upload.wikimedia.org/wikipedia/en/2/2e/Inception_%282010%29_theatrical_poster.jpg', // Inception
   'https://upload.wikimedia.org/wikipedia/en/b/bc/Interstellar_film_poster.jpg', // Interstellar

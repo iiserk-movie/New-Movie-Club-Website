@@ -36,6 +36,48 @@ const BACKGROUND_POSTERS = DISTINCT_FALLBACK_POSTERS;
 
 const FALLBACK_POSTERS = DISTINCT_FALLBACK_POSTERS;
 
+// Permanent purge filter for initial test films and removed films
+const isPurgedMovie = (item: { id?: string; title?: string; movieTitle?: string; name?: string }) => {
+  const t = (item.title || item.movieTitle || item.name || '').toLowerCase().trim();
+  const id = (item.id || '').toLowerCase().trim();
+  if (
+    t === 'tumbbad' || 
+    t === 'perfect days' || 
+    t === 'perfects days' || 
+    t === 'oppenheimer' ||
+    t === '2001: a space odyssey' ||
+    t === '2001 a space odyssey' ||
+    t === '2001: a space odessey' ||
+    t.startsWith('tumbbad') || 
+    t.startsWith('perfect days') ||
+    t.startsWith('oppenheimer') ||
+    t.startsWith('2001:') ||
+    t.startsWith('2001 ')
+  ) {
+    return true;
+  }
+  if (
+    id === 's-1' ||
+    id === 's-2' || 
+    id === 's-3' || 
+    id === 'p-1' ||
+    id === 'pm-1' ||
+    id === 'pm-s-1' ||
+    id === 'pm-s-2' || 
+    id === 'pm-s-3' || 
+    id === 'pm-p-1' || 
+    id === 'tumbbad' || 
+    id === 'perfect-days' ||
+    id === 'oppenheimer' ||
+    id === 'oppenheimer-2023' ||
+    id === '2001-a-space-odyssey' ||
+    id === 'disc-2'
+  ) {
+    return true;
+  }
+  return false;
+};
+
 // Use database-level seeding markers to prevent unwanted re-seeding on fresh page load/hard refresh
 
 const sanitizeDoc = <T extends object>(obj: T): T => {
@@ -64,7 +106,7 @@ interface BackgroundPosterItemProps {
   onError?: (failedUrl: string) => void;
 }
 
-function BackgroundPosterItem({ src, index, onError }: BackgroundPosterItemProps) {
+const BackgroundPosterItem = React.memo(function BackgroundPosterItem({ src, index, onError }: BackgroundPosterItemProps) {
   const [isLoaded, setIsLoaded] = useState(false);
 
   useEffect(() => {
@@ -108,7 +150,7 @@ function BackgroundPosterItem({ src, index, onError }: BackgroundPosterItemProps
       />
     </div>
   );
-}
+});
 
 export default function App() {
   const [currentUser, setCurrentUser] = useState<User | null>(null);
@@ -169,47 +211,22 @@ export default function App() {
     return merged;
   }, [screenings, pastMovies]);
 
-  // Dynamic Background Posters state ensuring 100% strictly unique posters across grid with zero duplicates
-  const [masterPool, setMasterPool] = useState<string[]>(() => DISTINCT_FALLBACK_POSTERS);
-  const [gridPosters, setGridPosters] = useState<string[]>(() => DISTINCT_FALLBACK_POSTERS.slice(0, 32));
-
-  const handlePosterError = useCallback((failedUrl: string) => {
-    setGridPosters(prev => {
-      if (!prev.includes(failedUrl)) return prev;
-      const currentSet = new Set(prev);
-      // Find candidate URLs from masterPool that are NOT currently shown anywhere in grid
-      const available = masterPool.filter(url => url !== failedUrl && !currentSet.has(url));
-      if (available.length === 0) {
-        const fallbackAvailable = DISTINCT_FALLBACK_POSTERS.filter(url => url !== failedUrl && !currentSet.has(url));
-        if (fallbackAvailable.length === 0) return prev;
-        const replacement = fallbackAvailable[Math.floor(Math.random() * fallbackAvailable.length)];
-        return prev.map(u => (u === failedUrl ? replacement : u));
-      }
-      const replacement = available[Math.floor(Math.random() * available.length)];
-      return prev.map(u => (u === failedUrl ? replacement : u));
-    });
-  }, [masterPool]);
-
-  useEffect(() => {
-    // Collect all valid unique poster URLs across our active collections & database catalogs
+  // Dynamic Master Poster Pool derived efficiently
+  const masterPool = useMemo(() => {
     const poolSet = new Set<string>();
-    
     const isValidPosterUrl = (url: any): url is string => {
       return !!url && typeof url === 'string' && url.trim().startsWith('http') && !url.includes('images.unsplash.com');
     };
 
-    // 1. Include DISTINCT_FALLBACK_POSTERS
     DISTINCT_FALLBACK_POSTERS.forEach(url => {
       if (isValidPosterUrl(url)) poolSet.add(url.trim());
     });
 
-    // 2. Include full Letterboxd movie catalog using getPolishedPosterUrl
     letterboxdMovies.forEach(m => {
       const polished = getPolishedPosterUrl(m.title, m.posterUrl);
       if (isValidPosterUrl(polished)) poolSet.add(polished.trim());
     });
 
-    // 3. Include active screenings, past screenings, recommendations, and polls
     screenings.forEach(s => {
       const polished = getPolishedPosterUrl(s.title, s.posterUrl);
       if (isValidPosterUrl(polished)) poolSet.add(polished.trim());
@@ -234,42 +251,52 @@ export default function App() {
       });
     });
 
-    const fullPool = Array.from(poolSet);
-    setMasterPool(fullPool);
+    return Array.from(poolSet);
+  }, [screenings, computedPastMovies, recommendations, polls]);
 
-    const GRID_SIZE = 32;
+  const masterPoolRef = useRef<string[]>(masterPool);
+  masterPoolRef.current = masterPool;
 
+  const [gridPosters, setGridPosters] = useState<string[]>(() => {
+    const pool = DISTINCT_FALLBACK_POSTERS;
+    const initial: string[] = [];
+    const used = new Set<string>();
+    for (const url of pool) {
+      if (initial.length >= 32) break;
+      if (!used.has(url)) {
+        initial.push(url);
+        used.add(url);
+      }
+    }
+    return initial;
+  });
+
+  const handlePosterError = useCallback((failedUrl: string) => {
     setGridPosters(prev => {
-      const currentValid = prev.filter(url => poolSet.has(url));
-      const usedSet = new Set(currentValid);
-
-      if (currentValid.length === GRID_SIZE && usedSet.size === GRID_SIZE) {
-        return currentValid;
+      if (!prev.includes(failedUrl)) return prev;
+      const currentSet = new Set(prev);
+      const pool = masterPoolRef.current;
+      const available = pool.filter(url => url !== failedUrl && !currentSet.has(url));
+      if (available.length === 0) {
+        const fallbackAvailable = DISTINCT_FALLBACK_POSTERS.filter(url => url !== failedUrl && !currentSet.has(url));
+        if (fallbackAvailable.length === 0) return prev;
+        const replacement = fallbackAvailable[Math.floor(Math.random() * fallbackAvailable.length)];
+        return prev.map(u => (u === failedUrl ? replacement : u));
       }
-
-      // Pick GRID_SIZE 100% strictly UNIQUE posters
-      const shuffled = [...fullPool].sort(() => Math.random() - 0.5);
-      const initial: string[] = [];
-      const used = new Set<string>();
-
-      for (const url of shuffled) {
-        if (initial.length >= GRID_SIZE) break;
-        if (!used.has(url)) {
-          initial.push(url);
-          used.add(url);
-        }
-      }
-
-      return initial;
+      const replacement = available[Math.floor(Math.random() * available.length)];
+      return prev.map(u => (u === failedUrl ? replacement : u));
     });
+  }, []);
 
-    // Periodic ambient ticker: flips 1 poster card randomly, selecting exclusively an unused poster to prevent duplicates
+  // Ambient background ticker flips 1 poster every 15s smoothly without resetting on db changes
+  useEffect(() => {
+    const GRID_SIZE = 32;
     const interval = setInterval(() => {
       setGridPosters(current => {
-        if (current.length < GRID_SIZE) return current;
+        const pool = masterPoolRef.current;
+        if (current.length < GRID_SIZE || pool.length === 0) return current;
         const currentSet = new Set(current);
-        // Find posters in fullPool that are NOT currently displayed anywhere in the grid
-        const unusedInGrid = fullPool.filter(url => !currentSet.has(url));
+        const unusedInGrid = pool.filter(url => !currentSet.has(url));
         if (unusedInGrid.length === 0) return current;
 
         const next = [...current];
@@ -278,56 +305,70 @@ export default function App() {
         next[randomSlot] = randomNewPoster;
         return next;
       });
-    }, 12000);
+    }, 15000);
 
     return () => clearInterval(interval);
-  }, [screenings, computedPastMovies, recommendations, polls]);
+  }, []);
+
+  const isArchivingRef = useRef(false);
+  const archivedIdsRef = useRef<Set<string>>(new Set());
 
   // Automatic database auto-archive for past screenings when an administrative user is logged in
   useEffect(() => {
-    if (!adminMode || !dbLoaded || screenings.length === 0) return;
+    if (!adminMode || !dbLoaded || screenings.length === 0 || isArchivingRef.current) return;
+
+    const toArchive = screenings.filter(s => isScreeningFullyPast(s.date, s.time) && !archivedIdsRef.current.has(s.id));
+    if (toArchive.length === 0) return;
 
     const archiveJob = async () => {
-      for (const s of screenings) {
-        if (isScreeningFullyPast(s.date, s.time)) {
-          console.log(`[Auto-Archive] Archive threshold met for "${s.title}". Triggering migration...`);
-          const pastId = `pm-${s.id}`;
-          const newPastMovie: PastMovie = {
-            id: pastId,
-            title: s.title,
-            director: s.director || 'Unknown',
-            year: s.year || 2026,
-            screenedDate: s.date,
-            rating: 4.5,
-            letterboxdUrl: `https://letterboxd.com/film/${s.title.toLowerCase().replace(/[^a-z0-9]+/g, '-')}/`,
-            posterUrl: s.posterUrl || 'https://images.unsplash.com/photo-1489599849927-2ee91cede3ba?q=80&w=300',
-            synopsis: s.description || '',
-            genre: s.genre || ['Cinema'],
-            reviews: []
-          };
+      isArchivingRef.current = true;
+      for (const s of toArchive) {
+        archivedIdsRef.current.add(s.id);
+        console.log(`[Auto-Archive] Archive threshold met for "${s.title}". Triggering migration...`);
+        const pastId = `pm-${s.id}`;
+        const newPastMovie: PastMovie = {
+          id: pastId,
+          title: s.title,
+          director: s.director || 'Unknown',
+          year: s.year || 2026,
+          screenedDate: s.date,
+          rating: 4.5,
+          letterboxdUrl: `https://letterboxd.com/film/${s.title.toLowerCase().replace(/[^a-z0-9]+/g, '-')}/`,
+          posterUrl: s.posterUrl || 'https://images.unsplash.com/photo-1489599849927-2ee91cede3ba?q=80&w=300',
+          synopsis: s.description || '',
+          genre: s.genre || ['Cinema'],
+          reviews: []
+        };
 
-          try {
-            await setDoc(doc(db, 'pastMovies', pastId), sanitizeDoc(newPastMovie));
-            await deleteDoc(doc(db, 'screenings', s.id));
-            console.log(`[Auto-Archive] Successfully moved "${s.title}" to database pastMovies.`);
-          } catch (err) {
-            console.warn(`[Auto-Archive] Failed to write past movie / delete screening:`, err);
-          }
+        try {
+          await setDoc(doc(db, 'pastMovies', pastId), sanitizeDoc(newPastMovie));
+          await deleteDoc(doc(db, 'screenings', s.id));
+          console.log(`[Auto-Archive] Successfully moved "${s.title}" to database pastMovies.`);
+        } catch (err) {
+          console.warn(`[Auto-Archive] Failed to write past movie / delete screening:`, err);
         }
       }
+      isArchivingRef.current = false;
     };
 
     archiveJob();
-  }, [screenings, adminMode]);
+  }, [screenings, adminMode, dbLoaded]);
 
   // Load session auth from local storage on bootstrap
   useEffect(() => {
     const savedUser = localStorage.getItem('iiser_movie_user');
     if (savedUser) {
-      const parsed = JSON.parse(savedUser) as User;
-      setCurrentUser(parsed);
-      if (parsed.role === 'admin') {
-        setAdminMode(true);
+      try {
+        const parsed = JSON.parse(savedUser) as User;
+        const isOfficialAdmin = parsed.email?.toLowerCase() === 'movie.activity@iiserkol.ac.in';
+        const safeUser: User = {
+          ...parsed,
+          role: isOfficialAdmin ? 'admin' : 'student'
+        };
+        setCurrentUser(safeUser);
+        setAdminMode(isOfficialAdmin);
+      } catch (err) {
+        console.warn('Failed to parse saved user:', err);
       }
       // Guarantee a real Firebase Auth session is active
       if (!auth.currentUser) {
@@ -351,6 +392,52 @@ export default function App() {
           });
         } catch (e) {
           console.warn('[Firebase] Failed to fetch exclusion markers:', e);
+        }
+
+        // Active Purge Routine: Delete test/removed films if found in any live collection
+        const purgeBannedFromCollection = async (collName: string) => {
+          try {
+            const snap = await getDocs(collection(db, collName));
+            const batch = writeBatch(db);
+            let toDelete = 0;
+            snap.forEach((docSnap) => {
+              const data = docSnap.data();
+              if (isPurgedMovie({ id: docSnap.id, ...data })) {
+                batch.delete(doc(db, collName, docSnap.id));
+                toDelete++;
+              }
+            });
+            if (toDelete > 0) {
+              await batch.commit();
+              console.log(`[Firebase Purge] Successfully purged ${toDelete} test documents from ${collName}.`);
+            }
+          } catch (err) {
+            console.warn(`[Firebase Purge] Collection purge check bypassed for ${collName}:`, err);
+          }
+        };
+
+        // Run purge across collections
+        await Promise.allSettled([
+          purgeBannedFromCollection('screenings'),
+          purgeBannedFromCollection('pastMovies'),
+          purgeBannedFromCollection('discussions'),
+          purgeBannedFromCollection('recommendations')
+        ]);
+
+        // Write permanent exclusion markers for removed films so they never return
+        const permanentExclusionIds = [
+          's-1', 's-2', 's-3', 'p-1', 'pm-1', 'pm-s-1', 'pm-s-2', 'pm-s-3', 'pm-p-1',
+          'tumbbad', 'perfect-days', 'oppenheimer', 'oppenheimer-2023', '2001-a-space-odyssey', 'disc-2'
+        ];
+        for (const banId of permanentExclusionIds) {
+          if (!excludedIds.has(banId)) {
+            setDoc(doc(db, 'exclusionMarkers', banId), {
+              excluded: true,
+              reason: 'Removed by user request',
+              updatedAt: new Date().toISOString()
+            }).catch(() => {});
+            excludedIds.add(banId);
+          }
         }
 
         // Backward compatible check: look for 'dbSeeded' in exclusionMarkers, then fallback to users/dbSeeded doc
@@ -403,8 +490,7 @@ export default function App() {
           console.warn('[Firebase] discussions empty check failed:', e);
         }
 
-        // CRITICAL BUG FIX: We ONLY seed the database if it is completely brand new and empty across all core collections.
-        // If some collections have data, we assume the site has already been initialized and active, and skip seeding entirely.
+        // CRITICAL: We ONLY seed the database if it is completely brand new and empty across all core collections.
         const databaseIsEmpty = screeningsEmpty && pastMoviesEmpty && recommendationsEmpty && discussionsEmpty;
 
         if (databaseIsEmpty) {
@@ -415,7 +501,7 @@ export default function App() {
             const batch = writeBatch(db);
             let addedCount = 0;
             initialScreenings.forEach((s) => {
-              if (!excludedIds.has(s.id)) {
+              if (!excludedIds.has(s.id) && !isPurgedMovie(s)) {
                 batch.set(doc(db, 'screenings', s.id), sanitizeDoc(s));
                 addedCount++;
               }
@@ -434,7 +520,7 @@ export default function App() {
             let addedCount = 0;
             initialPastMovies.forEach((m) => {
               const baseId = m.id.startsWith('pm-') ? m.id.replace('pm-', '') : m.id;
-              if (!excludedIds.has(m.id) && !excludedIds.has(baseId)) {
+              if (!excludedIds.has(m.id) && !excludedIds.has(baseId) && !isPurgedMovie(m)) {
                 batch.set(doc(db, 'pastMovies', m.id), sanitizeDoc(m));
                 addedCount++;
               }
@@ -453,7 +539,7 @@ export default function App() {
             const userEmail = auth.currentUser?.email || null;
             let addedCount = 0;
             initialRecommendations.forEach((r) => {
-              if (!excludedIds.has(r.id)) {
+              if (!excludedIds.has(r.id) && !isPurgedMovie(r)) {
                 const adjustedRec = {
                   ...r,
                   suggestedBy: userEmail || r.suggestedBy,
@@ -475,7 +561,9 @@ export default function App() {
           try {
             const batch = writeBatch(db);
             initialDiscussions.forEach((d) => {
-              batch.set(doc(db, 'discussions', d.id), sanitizeDoc(d));
+              if (!isPurgedMovie(d)) {
+                batch.set(doc(db, 'discussions', d.id), sanitizeDoc(d));
+              }
             });
             await batch.commit();
             console.log('[Firebase] Successfully seeded discussions.');
@@ -507,7 +595,7 @@ export default function App() {
 
     const timer = setTimeout(() => {
       runBootstrap();
-    }, 1500);
+    }, 1000);
 
     return () => clearTimeout(timer);
   }, []);
@@ -519,7 +607,10 @@ export default function App() {
     const unsubscribe = onSnapshot(screeningsCol, (snapshot) => {
       const list: Screening[] = [];
       snapshot.forEach((docSnap) => {
-        list.push({ id: docSnap.id, ...docSnap.data() } as Screening);
+        const data = { id: docSnap.id, ...docSnap.data() } as Screening;
+        if (!isPurgedMovie(data)) {
+          list.push(data);
+        }
       });
       // Sort by date/time order
       list.sort((a, b) => {
@@ -558,7 +649,10 @@ export default function App() {
     const unsubscribe = onSnapshot(pastCol, (snapshot) => {
       const list: PastMovie[] = [];
       snapshot.forEach((docSnap) => {
-        list.push({ id: docSnap.id, ...docSnap.data() } as PastMovie);
+        const data = { id: docSnap.id, ...docSnap.data() } as PastMovie;
+        if (!isPurgedMovie(data)) {
+          list.push(data);
+        }
       });
       // Sort past movies descending by screening date
       list.sort((a, b) => (b.screenedDate || '').localeCompare(a.screenedDate || ''));
@@ -592,7 +686,10 @@ export default function App() {
     const unsubscribe = onSnapshot(recsCol, (snapshot) => {
       const list: Recommendation[] = [];
       snapshot.forEach((docSnap) => {
-        list.push({ id: docSnap.id, ...docSnap.data() } as Recommendation);
+        const data = { id: docSnap.id, ...docSnap.data() } as Recommendation;
+        if (!isPurgedMovie(data)) {
+          list.push(data);
+        }
       });
       // Sort by proposed date descending
       list.sort((a, b) => (b.suggestedAt || '').localeCompare(a.suggestedAt || ''));
@@ -626,7 +723,10 @@ export default function App() {
     const unsubscribe = onSnapshot(discussionsCol, (snapshot) => {
       const list: ClubDiscussion[] = [];
       snapshot.forEach((docSnap) => {
-        list.push({ id: docSnap.id, ...docSnap.data() } as ClubDiscussion);
+        const data = { id: docSnap.id, ...docSnap.data() } as ClubDiscussion;
+        if (!isPurgedMovie(data)) {
+          list.push(data);
+        }
       });
       // Sort by createdAt descending
       list.sort((a, b) => (b.createdAt || '').localeCompare(a.createdAt || ''));
@@ -781,12 +881,12 @@ export default function App() {
         console.warn('[Firebase] Failed to fetch custom user profile during handleLogin:', e);
       }
     }
-    const userObj: User = { uid: activeUid, email, name, role, photoURL: finalPhotoURL, lastActive: new Date().toISOString() };
+    const isOfficialAdmin = email.toLowerCase() === 'movie.activity@iiserkol.ac.in';
+    const finalRole: 'admin' | 'student' = isOfficialAdmin ? 'admin' : 'student';
+    const userObj: User = { uid: activeUid, email, name, role: finalRole, photoURL: finalPhotoURL, lastActive: new Date().toISOString() };
     setCurrentUser(userObj);
     localStorage.setItem('iiser_movie_user', JSON.stringify(userObj));
-    if (role === 'admin') {
-      setAdminMode(true);
-    }
+    setAdminMode(isOfficialAdmin);
     randomizeQuote();
     syncUserToFirestore(userObj);
   };

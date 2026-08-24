@@ -6,11 +6,50 @@ import dotenv from "dotenv";
 
 dotenv.config();
 
+// High-performance In-Memory Cache with TTL
+interface CacheEntry<T> {
+  data: T;
+  expiry: number;
+}
+class SimpleCache<T> {
+  private cache = new Map<string, CacheEntry<T>>();
+  private maxItems: number;
+
+  constructor(maxItems = 300) {
+    this.maxItems = maxItems;
+  }
+
+  get(key: string): T | null {
+    const entry = this.cache.get(key.toLowerCase().trim());
+    if (!entry) return null;
+    if (Date.now() > entry.expiry) {
+      this.cache.delete(key.toLowerCase().trim());
+      return null;
+    }
+    return entry.data;
+  }
+
+  set(key: string, data: T, ttlMs: number): void {
+    if (this.cache.size >= this.maxItems) {
+      const firstKey = this.cache.keys().next().value;
+      if (firstKey) this.cache.delete(firstKey);
+    }
+    this.cache.set(key.toLowerCase().trim(), {
+      data,
+      expiry: Date.now() + ttlMs,
+    });
+  }
+}
+
+const movieDetailsCache = new SimpleCache<any>(400); // 1-hour TTL
+const movieSearchCache = new SimpleCache<any[]>(400); // 15-minute TTL
+const letterboxdRssCache = new SimpleCache<any>(100); // 5-minute TTL
+
 async function startServer() {
   const app = express();
   const PORT = 3000;
 
-  app.use(express.json());
+  app.use(express.json({ limit: '10mb' }));
 
   // Initialize Gemini client using official @google/genai SDK guidelines
   const ai = new GoogleGenAI({
@@ -58,6 +97,7 @@ async function fetchUrlMetadata(url: string) {
 
     console.log(`[Metadata Scraper] Pre-fetching URL: ${targetUrl}`);
     const response = await fetch(targetUrl, {
+      signal: AbortSignal.timeout(3500),
       headers: {
         'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/115.0.0.0 Safari/537.36',
         'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8',
@@ -163,10 +203,18 @@ async function fetchUrlMetadata(url: string) {
       return res.status(400).json({ error: "movieQuery is required" });
     }
 
-    console.log(`[Server] Resolving movie details for query/link: "${movieQuery}"`);
+    const cleanQuery = movieQuery.trim();
+
+    // Check high-speed in-memory cache first
+    const cachedDetails = movieDetailsCache.get(cleanQuery);
+    if (cachedDetails) {
+      res.setHeader('Cache-Control', 'public, max-age=3600');
+      return res.json(cachedDetails);
+    }
+
+    console.log(`[Server] Resolving movie details for query/link: "${cleanQuery}"`);
 
     try {
-      const cleanQuery = movieQuery.trim();
       let scrapedMetadata = null;
       
       // Attempt pre-scraping for direct URL metadata if the input is a valid URL
@@ -207,10 +255,10 @@ async function fetchUrlMetadata(url: string) {
       let gResponse;
       try {
         gResponse = await ai.models.generateContent({
-          model: "gemini-3.5-flash",
+          model: "gemini-2.5-flash",
           contents: `Find complete, highly accurate and precise cinematic/television/anime metadata details for the query/reference: "${geminiQueryPrompt}". 
           ${focalIdInstructions}
-          Find the exact official release year, director/creator/studio name, runtime duration or episode count (e.g. '130 min', '24 eps', '8 episodes', '2 Seasons'), genre list, a complete synoptic description, its exact Letterboxd, TMDB, or MyAnimeList slug (e.g., 'tumbbad', 'attack-on-titan'), and its exact Wikipedia page title (e.g., 'Tumbbad (film)', 'Attack on Titan'). Also find a beautiful widescreen photographic landscape backdrop URL, a premium quality poster (ideally TMDB/Wikipedia/MyAnimeList), its primary spoken language with English subtitles (e.g. 'Japanese (with English Subs)'), and its official YouTube trailer link.`,
+          Find the exact official release year, director/creator/studio name, runtime duration or episode count (e.g. '130 min', '24 eps', '8 episodes', '2 Seasons'), genre list, a complete synoptic description, its exact Letterboxd, TMDB, or MyAnimeList slug (e.g., 'oppenheimer', 'attack-on-titan'), and its exact Wikipedia page title (e.g., 'Oppenheimer (film)', 'Attack on Titan'). Also find a beautiful widescreen photographic landscape backdrop URL, a premium quality poster (ideally TMDB/Wikipedia/MyAnimeList), its primary spoken language with English subtitles (e.g. 'Japanese (with English Subs)'), and its official YouTube trailer link.`,
           config: {
             systemInstruction: "You are a professional cinema, television, and anime curator for the IISER Kolkata Movie Club. Search global archives (Wikipedia, IMDb, TMDB, MyAnimeList) and retrieve precise metadata. Return the synopsis/description concisely (approx 100-150 words). Format the genre as a comma-separated list. If backdrop or poster urls cannot be found, populate placeholders or tmdb URLs. For trailerUrl, always provide a real embedding YouTube link like 'https://www.youtube.com/watch?v=...' or if not found, a YouTube search query link like 'https://www.youtube.com/results?search_query=...'",
             tools: [{ googleSearch: {} }],
@@ -224,8 +272,8 @@ async function fetchUrlMetadata(url: string) {
                 director: { type: Type.STRING, description: "Director, creator, or studio of the film/show/anime." },
                 duration: { type: Type.STRING, description: "Runtime format or episode/season count, e.g. '130 min', '24 eps', '2 Seasons'." },
                 genre: { type: Type.STRING, description: "Primary genre(s) or medium formatted as a comma-separated list, e.g. 'Drama, Thriller, Anime, Sci-Fi'." },
-                letterboxdSlug: { type: Type.STRING, description: "The lowercase official Letterboxd, TMDB, or MyAnimeList URL slug, e.g. 'tumbbad', 'attack-on-titan'." },
-                wikipediaTitle: { type: Type.STRING, description: "The exact Wikipedia title suitable for URL encoding, e.g. 'Tumbbad (film)', 'Attack on Titan'." },
+                letterboxdSlug: { type: Type.STRING, description: "The lowercase official Letterboxd, TMDB, or MyAnimeList URL slug, e.g. 'oppenheimer', 'attack-on-titan'." },
+                wikipediaTitle: { type: Type.STRING, description: "The exact Wikipedia title suitable for URL encoding, e.g. 'Oppenheimer (film)', 'Attack on Titan'." },
                 posterUrl: { type: Type.STRING, description: "A high-quality poster URL. Prefer TMDB or MAL poster URL if found." },
                 backdropUrl: { type: Type.STRING, description: "Widescreen background image/snapshot of the movie/show/anime." },
                 language: { type: Type.STRING, description: "Spoken language name optionally including English subtitles status (e.g., 'Japanese (with English Subs)', etc.)." },
@@ -238,10 +286,10 @@ async function fetchUrlMetadata(url: string) {
       } catch (searchError) {
         console.warn("[Server] Gemini content generation with search grounding failed. Retrying without search grounding...", searchError);
         gResponse = await ai.models.generateContent({
-          model: "gemini-3.5-flash",
+          model: "gemini-2.5-flash",
           contents: `Find complete, highly accurate and precise cinematic/television/anime metadata details for the query/reference: "${geminiQueryPrompt}". 
           ${focalIdInstructions}
-          Find the exact official release year, director/creator/studio name, runtime duration or episode count (e.g. '130 min', '24 eps', '8 episodes', '2 Seasons'), genre list, a complete synoptic description, its exact Letterboxd, TMDB, or MyAnimeList slug (e.g., 'tumbbad', 'attack-on-titan'), and its exact Wikipedia page title (e.g., 'Tumbbad (film)', 'Attack on Titan'). Also find a beautiful widescreen photographic landscape backdrop URL, a premium quality poster (ideally TMDB/Wikipedia/MyAnimeList), its primary spoken language with English subtitles (e.g. 'Japanese (with English Subs)'), and its official YouTube trailer link.`,
+          Find the exact official release year, director/creator/studio name, runtime duration or episode count (e.g. '130 min', '24 eps', '8 episodes', '2 Seasons'), genre list, a complete synoptic description, its exact Letterboxd, TMDB, or MyAnimeList slug (e.g., 'oppenheimer', 'attack-on-titan'), and its exact Wikipedia page title (e.g., 'Oppenheimer (film)', 'Attack on Titan'). Also find a beautiful widescreen photographic landscape backdrop URL, a premium quality poster (ideally TMDB/Wikipedia/MyAnimeList), its primary spoken language with English subtitles (e.g. 'Japanese (with English Subs)'), and its official YouTube trailer link.`,
           config: {
             systemInstruction: "You are a professional cinema, television, and anime curator for the IISER Kolkata Movie Club. Search global archives (Wikipedia, IMDb, TMDB, MyAnimeList) and retrieve precise metadata. Return the synopsis/description concisely (approx 100-150 words). Format the genre as a comma-separated list. If backdrop or poster urls cannot be found, populate placeholders or tmdb/MAL URLs. For trailerUrl, provide the official trailer YouTube URL or a search query link if not found.",
             responseMimeType: "application/json",
@@ -254,8 +302,8 @@ async function fetchUrlMetadata(url: string) {
                 director: { type: Type.STRING, description: "Director, creator, or studio of the film/show/anime." },
                 duration: { type: Type.STRING, description: "Runtime format or episode/season count, e.g. '130 min', '24 eps', '2 Seasons'." },
                 genre: { type: Type.STRING, description: "Primary genre(s) or medium formatted as a comma-separated list, e.g. 'Drama, Thriller, Anime, Sci-Fi'." },
-                letterboxdSlug: { type: Type.STRING, description: "The lowercase official Letterboxd, TMDB, or MyAnimeList URL slug, e.g. 'tumbbad', 'attack-on-titan'." },
-                wikipediaTitle: { type: Type.STRING, description: "The exact Wikipedia title suitable for URL encoding, e.g. 'Tumbbad (film)', 'Attack on Titan'." },
+                letterboxdSlug: { type: Type.STRING, description: "The lowercase official Letterboxd, TMDB, or MyAnimeList URL slug, e.g. 'oppenheimer', 'attack-on-titan'." },
+                wikipediaTitle: { type: Type.STRING, description: "The exact Wikipedia title suitable for URL encoding, e.g. 'Oppenheimer (film)', 'Attack on Titan'." },
                 posterUrl: { type: Type.STRING, description: "A high-quality poster URL. Prefer TMDB or MAL poster URL if found." },
                 backdropUrl: { type: Type.STRING, description: "Widescreen background image/snapshot of the movie/show/anime." },
                 language: { type: Type.STRING, description: "Spoken language name optionally including English subtitles status (e.g., 'English (with Subs)', etc.)." },
@@ -290,6 +338,7 @@ async function fetchUrlMetadata(url: string) {
           console.log(`[Server Scraper] Fetching Letterboxd metadata for: ${lbUrl}`);
           
           const lbRes = await fetch(lbUrl, {
+            signal: AbortSignal.timeout(3000),
             headers: {
               'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/115.0.0.0 Safari/537.36',
               'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8'
@@ -318,6 +367,7 @@ async function fetchUrlMetadata(url: string) {
           console.log(`[Server Scraper] Requesting Wikipedia original image for: ${wikiUrl}`);
           
           const wikiRes = await fetch(wikiUrl, {
+            signal: AbortSignal.timeout(3000),
             headers: {
               'User-Agent': 'IISERKolkataMovieClub/1.0 (movie.activity@iiserkol.ac.in) Node-Fetch'
             }
@@ -341,6 +391,14 @@ async function fetchUrlMetadata(url: string) {
       }
 
       console.log(`[Server] Successfully resolved details for: "${movieData.title}" (${movieData.year})`);
+      
+      // Save to in-memory cache for 1 hour
+      movieDetailsCache.set(cleanQuery, movieData, 60 * 60 * 1000);
+      if (movieData.title) {
+        movieDetailsCache.set(movieData.title, movieData, 60 * 60 * 1000);
+      }
+
+      res.setHeader('Cache-Control', 'public, max-age=3600');
       res.json(movieData);
     } catch (e: any) {
       console.error("Gemini Movie Details Fetch Failure:", e);
@@ -355,16 +413,23 @@ async function fetchUrlMetadata(url: string) {
       return res.json([]);
     }
 
-    console.log(`[Server Autocomplete] Searching for partial query: "${query}"`);
+    const cleanQuery = query.trim();
+
+    // Check in-memory search cache first for instant response
+    const cachedResults = movieSearchCache.get(cleanQuery);
+    if (cachedResults) {
+      res.setHeader('Cache-Control', 'public, max-age=900');
+      return res.json(cachedResults);
+    }
+
+    console.log(`[Server Autocomplete] Searching for partial query: "${cleanQuery}"`);
 
     try {
-      const isUrl = query.toLowerCase().includes("imdb.com/") || query.toLowerCase().includes("letterboxd.com/") || query.toLowerCase().includes("myanimelist.net/");
-      
       let gResponse;
       try {
         gResponse = await ai.models.generateContent({
-          model: "gemini-3.5-flash",
-          contents: `Search Google for movies, TV shows, anime, documentaries, or series matching: "${query}". Return a structured list of up to 4 most matching entries. If the query is a direct link (IMDb, Letterboxd, MAL), resolve details for that single exact entry. For each entry, find its title, year, director/creator/studio, runtime/episodes (e.g. '120 min', '24 eps', '2 Seasons'), genre(s) comma-separated, a short 1-sentence description, a Letterboxd/TMDB/MAL slug (e.g. 'inception', 'attack-on-titan'), a Wikipedia title, and a high-quality poster (prefer TMDB/Wikipedia/MAL URLs or high-quality posters from search).`,
+          model: "gemini-2.5-flash",
+          contents: `Search Google for movies, TV shows, anime, documentaries, or series matching: "${cleanQuery}". Return a structured list of up to 4 most matching entries. If the query is a direct link (IMDb, Letterboxd, MAL), resolve details for that single exact entry. For each entry, find its title, year, director/creator/studio, runtime/episodes (e.g. '120 min', '24 eps', '2 Seasons'), genre(s) comma-separated, a short 1-sentence description, a Letterboxd/TMDB/MAL slug (e.g. 'inception', 'attack-on-titan'), a Wikipedia title, and a high-quality poster (prefer TMDB/Wikipedia/MAL URLs or high-quality posters from search).`,
           config: {
             systemInstruction: "You are a professional curator for movies, television, and anime. Provide search suggestions with precise title, year, director/creator/studio, runtime/episode count, comma-separated genres/categories, and standard web poster artwork URLs.",
             tools: [{ googleSearch: {} }],
@@ -393,8 +458,8 @@ async function fetchUrlMetadata(url: string) {
       } catch (searchError) {
         console.warn("[Server Autocomplete] Autocomplete search grounding failed, retrying without grounding...", searchError);
         gResponse = await ai.models.generateContent({
-          model: "gemini-3.5-flash",
-          contents: `Find up to 4 movies, TV shows, anime, documentaries, or series matching the keyword search: "${query}". For each entry, find its title, year, director/creator/studio, runtime/episodes (e.g. '120 min', '24 eps', '2 Seasons'), genre(s) comma-separated, a short 1-sentence description, a Letterboxd/TMDB/MAL slug (e.g. 'inception', 'attack-on-titan'), a Wikipedia title, and a high-quality poster.`,
+          model: "gemini-2.5-flash",
+          contents: `Find up to 4 movies, TV shows, anime, documentaries, or series matching the keyword search: "${cleanQuery}". For each entry, find its title, year, director/creator/studio, runtime/episodes (e.g. '120 min', '24 eps', '2 Seasons'), genre(s) comma-separated, a short 1-sentence description, a Letterboxd/TMDB/MAL slug (e.g. 'inception', 'attack-on-titan'), a Wikipedia title, and a high-quality poster.`,
           config: {
             systemInstruction: "You are a professional curator for movies, television, and anime. Provide search suggestions with precise title, year, director/creator/studio, runtime/episode count, comma-separated genres/categories, and standard web poster artwork URLs.",
             responseMimeType: "application/json",
@@ -427,6 +492,11 @@ async function fetchUrlMetadata(url: string) {
       }
 
       const moviesList = JSON.parse(textOutput.trim());
+      
+      // Save search results in cache for 15 minutes
+      movieSearchCache.set(cleanQuery, moviesList, 15 * 60 * 1000);
+
+      res.setHeader('Cache-Control', 'public, max-age=900');
       res.json(moviesList);
     } catch (e: any) {
       console.error("Gemini Movie Suggestion Failure:", e);
@@ -460,10 +530,18 @@ function extractLetterboxdUsername(input: string): string {
 
 function parseLetterboxdXmlServer(xmlText: string): any[] {
   const items: any[] = [];
+  if (!xmlText || typeof xmlText !== 'string') return items;
+
   const itemRegex = /<item>([\s\S]*?)<\/item>/gi;
-  let match;
+  let match: RegExpExecArray | null;
+  let maxIterations = 100;
+  let prevLastIndex = -1;
   
   while ((match = itemRegex.exec(xmlText)) !== null) {
+    if (itemRegex.lastIndex <= prevLastIndex || --maxIterations < 0) {
+      break;
+    }
+    prevLastIndex = itemRegex.lastIndex;
     const content = match[1];
     
     // Extract Title
@@ -605,11 +683,20 @@ function parseLetterboxdXmlServer(xmlText: string): any[] {
     }
 
     const cleanUsername = extractLetterboxdUsername(username);
+
+    // Check RSS cache
+    const cachedRss = letterboxdRssCache.get(cleanUsername);
+    if (cachedRss) {
+      res.setHeader('Cache-Control', 'public, max-age=300');
+      return res.json(cachedRss);
+    }
+
     console.log(`[Server] Syncing Letterboxd diary RSS for user: "${cleanUsername}" (original raw input: "${username}")`);
 
     try {
       const feedUrl = `https://letterboxd.com/${encodeURIComponent(cleanUsername)}/rss/`;
       const response = await fetch(feedUrl, {
+        signal: AbortSignal.timeout(4000),
         headers: {
           'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/115.0.0.0 Safari/537.36',
           'Accept': 'application/xml, text/xml, */*'
@@ -629,7 +716,10 @@ function parseLetterboxdXmlServer(xmlText: string): any[] {
       const parsedMovies = parseLetterboxdXmlServer(xmlText);
       if (parsedMovies.length > 0) {
         console.log(`[Server] Successfully parsed ${parsedMovies.length} movies locally via regex parser.`);
-        return res.json({ success: true, username, movies: parsedMovies });
+        const result = { success: true, username, movies: parsedMovies };
+        letterboxdRssCache.set(cleanUsername, result, 5 * 60 * 1000);
+        res.setHeader('Cache-Control', 'public, max-age=300');
+        return res.json(result);
       }
 
       // Limit XML length to fit safely in model token window while capturing up to 12 recent entries
@@ -646,7 +736,7 @@ function parseLetterboxdXmlServer(xmlText: string): any[] {
 
       // Prompt Gemini to parse the RSS XML into structured JSON
       const gResponse = await ai.models.generateContent({
-        model: "gemini-3.5-flash",
+        model: "gemini-2.5-flash",
         contents: `Parse the following raw Letterboxd RSS XML Feed into a high-quality, structured JSON array of watched movies. 
         Each object MUST represent a watched movie and have the following properties:
         - title: The official name/title of the movie.
@@ -694,7 +784,10 @@ function parseLetterboxdXmlServer(xmlText: string): any[] {
       }
 
       const moviesList = JSON.parse(parsedText.trim());
-      res.json({ success: true, username, movies: moviesList });
+      const result = { success: true, username, movies: moviesList };
+      letterboxdRssCache.set(cleanUsername, result, 5 * 60 * 1000);
+      res.setHeader('Cache-Control', 'public, max-age=300');
+      res.json(result);
     } catch (err: any) {
       console.error("[ServerError] Letterboxd RSS sync failed:", err);
       res.status(500).json({ error: err.message || "Failed to parse current Letterboxd RSS feed." });

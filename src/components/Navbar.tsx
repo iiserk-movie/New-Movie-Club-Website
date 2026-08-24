@@ -52,7 +52,7 @@ export default function Navbar({
   const [avatarError, setAvatarError] = useState('');
 
   // Letterboxd Login & Sync States
-  const [adminTab, setAdminTab] = useState<'passcode' | 'letterboxd'>('passcode');
+  const [adminTab, setAdminTab] = useState<'google' | 'letterboxd'>('google');
   const [isLetterboxdSyncing, setIsLetterboxdSyncing] = useState(false);
   const [letterboxdUserToSync, setLetterboxdUserToSync] = useState(() => {
     return localStorage.getItem('last_letterboxd_sync_username') || 'ikmc';
@@ -148,7 +148,7 @@ export default function Navbar({
 
     // Default role is student. Manual simulation of the administrator email is blocked for safety.
     if (trimmedEmail === 'movie.activity@iiserkol.ac.in') {
-      setErrorMsg('For safety, custom simulation of movie.activity@iiserkol.ac.in is blocked. Please use the Admin Access passcode instead.');
+      setErrorMsg('For safety, accessing administrator privileges requires signing in with Google using movie.activity@iiserkol.ac.in.');
       return;
     }
     const role: 'admin' | 'student' = 'student';
@@ -261,9 +261,9 @@ export default function Navbar({
     } catch (err: any) {
       console.error('Google Admin Sign-In Error:', err);
       if (err.code === 'auth/popup-closed-by-user') {
-        setErrorMsg('Google Admin popup was closed. Please try again or use the secure passcode validation below.');
+        setErrorMsg('Google Admin popup was closed. Please try again or open the app in a new tab.');
       } else if (err.message && err.message.includes('cross-origin')) {
-        setErrorMsg('Embedded login error. Please use the secure passcode validation tab below.');
+        setErrorMsg('Embedded browser iframe restriction. Please try clicking "Open in New Tab" to sign in.');
       } else {
         setErrorMsg(err.message || 'An error occurred during Google Admin Sign-In.');
       }
@@ -782,10 +782,10 @@ export default function Navbar({
               <button
                 type="button"
                 onClick={() => {
-                  setAdminTab('passcode');
+                  setAdminTab('google');
                   setErrorMsg('');
                 }}
-                className={`flex-1 pb-2 border-b-2 font-bold transition-all cursor-pointer ${adminTab === 'passcode' ? 'border-amber-500 text-amber-500 font-extrabold' : 'border-transparent text-zinc-500 hover:text-zinc-300'}`}
+                className={`flex-1 pb-2 border-b-2 font-bold transition-all cursor-pointer ${adminTab === 'google' ? 'border-amber-500 text-amber-500 font-extrabold' : 'border-transparent text-zinc-500 hover:text-zinc-300'}`}
               >
                 Google Authentication
               </button>
@@ -802,7 +802,7 @@ export default function Navbar({
             </div>
 
             {/* Google OAuth Tab */}
-            {adminTab === 'passcode' && (
+            {adminTab === 'google' && (
               <div className="space-y-4">
                 <div className="rounded-xl bg-zinc-900/60 border border-zinc-800 p-3.5 text-[11px] text-zinc-400 leading-relaxed font-sans">
                   🔒 <b>Secure Authentication:</b> Administrative privileges are strictly enforced by Firebase Firestore Security Rules. Access is restricted exclusively to authenticated Google accounts with <code className="text-amber-400">movie.activity@iiserkol.ac.in</code>.
